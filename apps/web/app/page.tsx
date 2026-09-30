@@ -1,214 +1,79 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchHome,
-  fetchOpportunities,
-  fetchCampaigns,
-  fetchFestivalsContext,
-  fetchUdhaarEntries,
-  fetchCatalog,
-  fetchCustomers,
-  fetchGuardrails,
-  fetchKitRequests,
-  approveOpportunity,
-  rejectOpportunity,
-  useRealtimeEvents,
-} from "../lib/api";
+import React, { useState, useEffect } from "react";
+import { useVyomStore } from "../lib/store";
 import { Header } from "../components/Header";
-import { BottomNav, TabKey } from "../components/BottomNav";
-import { GlobalFABs } from "../components/GlobalFABs";
-import { CopilotModal } from "../components/CopilotModal";
-import { KhataScanModal } from "../components/KhataScanModal";
+import { BottomNav } from "../components/BottomNav";
+import { DesktopSidebar } from "../components/DesktopSidebar";
+import { DesktopActivityPanel } from "../components/DesktopActivityPanel";
+import { VoiceOverlay } from "../components/VoiceOverlay";
 import { OpportunityModal } from "../components/OpportunityModal";
+import { OnboardingModal } from "../components/OnboardingModal";
 import { DemoModal } from "../components/DemoModal";
+import { ToastContainer } from "../components/ToastContainer";
+import { InstallPromptBanner } from "../components/InstallPromptBanner";
+
+// Tab Screens
 import { HomeTab } from "../components/tabs/HomeTab";
-import { GrowTab } from "../components/tabs/GrowTab";
-import { FestivalsTab } from "../components/tabs/FestivalsTab";
+import { OpportunitiesTab } from "../components/tabs/OpportunitiesTab";
+import { CampaignsTab } from "../components/tabs/CampaignsTab";
 import { UdhaarTab } from "../components/tabs/UdhaarTab";
-import { ShopTab } from "../components/tabs/ShopTab";
+import { MoreTab } from "../components/tabs/MoreTab";
 
 export default function MerchantPWA() {
-  const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<TabKey>("home");
-  const [copilotOpen, setCopilotOpen] = useState(false);
-  const [scanOpen, setScanOpen] = useState(false);
-  const [demoOpen, setDemoOpen] = useState(false);
-  const [selectedOpportunity, setSelectedOpportunity] = useState<any>(null);
+  const { activeTab, setActiveTab } = useVyomStore();
+  const [demoLabOpen, setDemoLabOpen] = useState(false);
 
-  // Real-time SSE listener
-  useRealtimeEvents(() => {
-    // Queries automatically invalidated on SSE events
-  });
-
-  // Queries
-  const { data: homeData, refetch: refetchHome } = useQuery({
-    queryKey: ["home"],
-    queryFn: fetchHome,
-  });
-
-  const { data: opportunities = [], refetch: refetchOpps } = useQuery({
-    queryKey: ["opportunities"],
-    queryFn: fetchOpportunities,
-  });
-
-  const { data: campaigns = [], refetch: refetchCampaigns } = useQuery({
-    queryKey: ["campaigns"],
-    queryFn: fetchCampaigns,
-  });
-
-  const { data: festivalContext } = useQuery({
-    queryKey: ["festivals"],
-    queryFn: fetchFestivalsContext,
-  });
-
-  const { data: udhaarEntries = [], refetch: refetchUdhaar } = useQuery({
-    queryKey: ["udhaar"],
-    queryFn: fetchUdhaarEntries,
-  });
-
-  const { data: catalog = [], refetch: refetchCatalog } = useQuery({
-    queryKey: ["catalog"],
-    queryFn: fetchCatalog,
-  });
-
-  const { data: customers = [] } = useQuery({
-    queryKey: ["customers"],
-    queryFn: fetchCustomers,
-  });
-
-  const { data: guardrails, refetch: refetchGuardrails } = useQuery({
-    queryKey: ["guardrails"],
-    queryFn: fetchGuardrails,
-  });
-
-  const { data: kitRequests = [], refetch: refetchKitRequests } = useQuery({
-    queryKey: ["kit_requests"],
-    queryFn: fetchKitRequests,
-  });
-
-  const handleApprove = async (oppId: string) => {
-    try {
-      await approveOpportunity(oppId);
-      refetchHome();
-      refetchOpps();
-      refetchCampaigns();
-    } catch {
-      //
+  // Service Worker registration for PWA
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          console.log("VYOM PWA ServiceWorker registered with scope:", reg.scope);
+        })
+        .catch((err) => {
+          console.log("SW registration notice:", err);
+        });
     }
-  };
-
-  const handleReject = async (oppId: string) => {
-    try {
-      await rejectOpportunity(oppId);
-      refetchHome();
-      refetchOpps();
-    } catch {
-      //
-    }
-  };
-
-  const handleGlobalRefresh = () => {
-    refetchHome();
-    refetchOpps();
-    refetchCampaigns();
-    refetchUdhaar();
-    refetchCatalog();
-    refetchKitRequests();
-    refetchGuardrails();
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-paper flex flex-col font-ui text-obsidian selection:bg-sky selection:text-blue">
-      {/* 1. Header */}
-      <Header onOpenDemo={() => setDemoOpen(true)} />
+      {/* 1. Header (Sticky Top Bar) */}
+      <Header onOpenDemoLab={() => setDemoLabOpen(true)} />
 
-      {/* 2. Main Content Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 pt-5 sm:px-6">
-        {activeTab === "home" && (
-          <HomeTab
-            homeData={homeData}
-            onSelectOpportunity={(opp) => setSelectedOpportunity(opp)}
-            onApproveOpportunity={handleApprove}
-            onDismissOpportunity={handleReject}
-            onNavigateTab={(tab) => setActiveTab(tab)}
-          />
-        )}
+      {/* 2. Responsive Layout Container */}
+      <div className="flex-1 w-full max-w-7xl mx-auto flex">
+        {/* Left Sidebar (Desktop Only) */}
+        <DesktopSidebar />
 
-        {activeTab === "grow" && (
-          <GrowTab
-            opportunities={opportunities}
-            campaigns={campaigns}
-            onSelectOpportunity={(opp) => setSelectedOpportunity(opp)}
-            onApproveOpportunity={handleApprove}
-            onRejectOpportunity={handleReject}
-          />
-        )}
+        {/* Main Content Area */}
+        <main className="flex-1 max-w-3xl w-full mx-auto px-4 pt-4 sm:px-6">
+          {activeTab === "aaj" && <HomeTab />}
+          {activeTab === "mauke" && <OpportunitiesTab />}
+          {activeTab === "campaigns" && <CampaignsTab />}
+          {activeTab === "udhaar" && <UdhaarTab />}
+          {activeTab === "aur" && <MoreTab />}
+        </main>
 
-        {activeTab === "festivals" && (
-          <FestivalsTab
-            festivalContext={festivalContext}
-            onNavigateTab={(tab) => setActiveTab(tab)}
-          />
-        )}
+        {/* Right Activity Panel (Wide Desktop Only) */}
+        <DesktopActivityPanel />
+      </div>
 
-        {activeTab === "udhaar" && (
-          <UdhaarTab
-            entries={udhaarEntries}
-            onOpenScan={() => setScanOpen(true)}
-            onRefresh={refetchUdhaar}
-          />
-        )}
+      {/* 3. Mobile Bottom Tab Bar Navigation */}
+      <BottomNav />
 
-        {activeTab === "shop" && (
-          <ShopTab
-            catalog={catalog}
-            customers={customers}
-            guardrails={guardrails}
-            kitRequests={kitRequests}
-            onRefresh={handleGlobalRefresh}
-          />
-        )}
-      </main>
-
-      {/* 3. Global Floating Action Buttons */}
-      <GlobalFABs
-        onOpenVoice={() => setCopilotOpen(true)}
-        onOpenCamera={() => setScanOpen(true)}
-      />
-
-      {/* 4. Bottom Tab Bar Navigation */}
-      <BottomNav
-        activeTab={activeTab}
-        onChangeTab={setActiveTab}
-        pendingApprovalsCount={opportunities.length}
-      />
-
-      {/* 5. Drawers and Modals */}
-      <CopilotModal
-        isOpen={copilotOpen}
-        onClose={() => setCopilotOpen(false)}
-      />
-
-      <KhataScanModal
-        isOpen={scanOpen}
-        onClose={() => setScanOpen(false)}
-        onSuccess={refetchUdhaar}
-      />
-
-      <OpportunityModal
-        opportunity={selectedOpportunity}
-        isOpen={!!selectedOpportunity}
-        onClose={() => setSelectedOpportunity(null)}
-        onApproved={handleGlobalRefresh}
-      />
-
+      {/* 4. Global Modals & Overlays */}
+      <VoiceOverlay />
+      <OpportunityModal />
+      <OnboardingModal />
       <DemoModal
-        isOpen={demoOpen}
-        onClose={() => setDemoOpen(false)}
-        onTriggered={handleGlobalRefresh}
+        isOpen={demoLabOpen}
+        onClose={() => setDemoLabOpen(false)}
       />
+      <ToastContainer />
+      <InstallPromptBanner />
     </div>
   );
 }

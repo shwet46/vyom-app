@@ -1,54 +1,87 @@
 "use client";
 
 import React, { useState } from "react";
+import { useVyomStore } from "../lib/store";
 import { useT } from "../lib/i18n";
-import { simulateCustomerVisit, simulatePayment, advanceDemoDay } from "../lib/api";
-import { X, Play, CreditCard, FastForward, CheckCircle2, Sliders, Calendar } from "lucide-react";
+import {
+  X,
+  Play,
+  CreditCard,
+  FastForward,
+  CheckCircle2,
+  Sliders,
+  Calendar,
+  Sparkles,
+  Radio,
+} from "lucide-react";
 
 interface DemoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onTriggered: () => void;
 }
 
-export function DemoModal({ isOpen, onClose, onTriggered }: DemoModalProps) {
+export function DemoModal({ isOpen, onClose }: DemoModalProps) {
+  const {
+    markUdhaarPaid,
+    udhaarCustomers,
+    addActivity,
+    addToast,
+    opportunities,
+    approveOpportunity,
+  } = useVyomStore();
   const { t } = useT();
-  const [loading, setLoading] = useState(false);
+
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const runAction = async (actionFn: () => Promise<any>, successText: string) => {
-    setLoading(true);
-    setStatusMsg(null);
-    try {
-      await actionFn();
-      setStatusMsg(successText);
-      onTriggered();
-    } catch (e: any) {
-      setStatusMsg("Action executed in simulated mode.");
-      onTriggered();
-    } finally {
-      setLoading(false);
+  const handleSimulatePayment = () => {
+    const overdueCust = udhaarCustomers.find((c) => c.status !== "Paid ✓");
+    if (overdueCust) {
+      markUdhaarPaid(overdueCust.id);
+      setStatusMsg(`₹${overdueCust.amount} Paytm Soundbox payment cleared for ${overdueCust.name}!`);
+    } else {
+      setStatusMsg("All udhaar accounts already settled!");
     }
   };
 
+  const handleSimulateVisit = () => {
+    addToast({
+      type: "success",
+      title: "Grahak Aavak (Customer Visit)",
+      description: "Sunita Patil visited shop and purchased ₹420 Navratri Vrat pack via Paytm QR.",
+    });
+    addActivity("Paytm Soundbox: ₹420 received for Navratri Vrat Pack", "success");
+    setStatusMsg("Simulated customer visit & ₹420 Paytm Soundbox purchase recorded!");
+  };
+
+  const handleAdvanceDay = () => {
+    addToast({
+      type: "info",
+      title: "Demo Time Advanced +1 Day",
+      description: "Clock moved closer to Navratri start. Autonomous sweeps evaluated 6 reminders.",
+    });
+    addActivity("Time advanced 1 day. Recomputed dead hours & festival timeline.", "system");
+    setStatusMsg("Advanced 1 day. Vyom evaluated transactions & ran morning sweep.");
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-md bg-paper rounded-3xl border border-soft-line shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-soft-line bg-cloud/40">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-obsidian flex items-center justify-center text-festive-amber">
-              <Sliders className="w-4 h-4" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-obsidian text-paper flex items-center justify-center shadow-button">
+              <Sliders className="w-4 h-4 text-sky" />
             </div>
             <div>
               <h2 className="font-display font-bold text-sm text-obsidian">
-                {t("demo.title")}
+                Interactive Demo Lab
               </h2>
               <p className="text-[11px] text-charcoal">Test real-time store events</p>
             </div>
           </div>
+
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full hover:bg-cloud flex items-center justify-center text-charcoal transition-colors"
@@ -59,10 +92,13 @@ export function DemoModal({ isOpen, onClose, onTriggered }: DemoModalProps) {
 
         {/* Content */}
         <div className="p-5 space-y-3">
-          {/* Current Date Banner */}
-          <div className="flex items-center gap-2 p-3 rounded-2xl bg-sky/30 border border-line text-xs font-semibold text-blue">
-            <Calendar className="w-4 h-4" />
-            <span>Clock: 30 Sep 2026 (Pune, Pitru Paksha Day 4)</span>
+          {/* Current Date Badge */}
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-sky/30 border border-line text-xs font-bold text-blue">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>30 Sep 2026 (Pune, Pitru Paksha Day 4)</span>
+            </div>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
 
           {statusMsg && (
@@ -74,43 +110,46 @@ export function DemoModal({ isOpen, onClose, onTriggered }: DemoModalProps) {
 
           <div className="space-y-2 pt-1">
             <button
-              onClick={() => runAction(simulateCustomerVisit, "Customer visited & bought ₹380 vrat items.")}
-              disabled={loading}
+              onClick={handleSimulateVisit}
               className="w-full p-3.5 rounded-2xl border border-line bg-paper hover:bg-cloud font-semibold text-obsidian shadow-button flex items-center justify-between text-xs transition-colors"
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <Play className="w-4 h-4 text-blue" />
                 <div className="text-left">
-                  <p className="font-bold">{t("demo.simulate_visit")}</p>
-                  <p className="text-[10px] text-charcoal font-normal">Creates a transaction in Pune store profile</p>
+                  <p className="font-bold">Simulate Customer Visit</p>
+                  <p className="text-[10px] text-charcoal font-normal">
+                    Triggers a ₹420 Paytm QR purchase & updates sales
+                  </p>
                 </div>
               </div>
             </button>
 
             <button
-              onClick={() => runAction(simulatePayment, "Simulated ₹1,250 Paytm QR udhaar clearance!")}
-              disabled={loading}
+              onClick={handleSimulatePayment}
               className="w-full p-3.5 rounded-2xl border border-line bg-paper hover:bg-cloud font-semibold text-obsidian shadow-button flex items-center justify-between text-xs transition-colors"
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <CreditCard className="w-4 h-4 text-emerald-600" />
                 <div className="text-left">
-                  <p className="font-bold">{t("demo.simulate_payment")}</p>
-                  <p className="text-[10px] text-charcoal font-normal">Triggers Paytm status webhook & marks udhaar paid</p>
+                  <p className="font-bold">Simulate Paytm QR Udhaar Clearance</p>
+                  <p className="text-[10px] text-charcoal font-normal">
+                    Triggers Paytm Soundbox webhook & settles customer credit
+                  </p>
                 </div>
               </div>
             </button>
 
             <button
-              onClick={() => runAction(advanceDemoDay, "Advanced 1 day. Recomputed opportunities & sweeps.")}
-              disabled={loading}
+              onClick={handleAdvanceDay}
               className="w-full p-3.5 rounded-2xl border border-line bg-paper hover:bg-cloud font-semibold text-obsidian shadow-button flex items-center justify-between text-xs transition-colors"
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <FastForward className="w-4 h-4 text-festive-amber" />
                 <div className="text-left">
-                  <p className="font-bold">{t("demo.advance_time")}</p>
-                  <p className="text-[10px] text-charcoal font-normal">Clock moves closer to Navratri start (11 Oct)</p>
+                  <p className="font-bold">Advance 1 Day (Time Travel)</p>
+                  <p className="text-[10px] text-charcoal font-normal">
+                    Advances clock toward Navratri start & re-evaluates sweeps
+                  </p>
                 </div>
               </div>
             </button>
