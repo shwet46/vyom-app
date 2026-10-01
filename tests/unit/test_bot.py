@@ -52,8 +52,8 @@ def test_bot_keyboards() -> None:
 
 
 def test_create_bot_and_dispatcher() -> None:
-    """Verify bot and dispatcher instantiation with dummy demo token."""
-    bot, dp = create_bot_and_dispatcher(Settings(telegram_bot_token=""))
+    """Verify bot and dispatcher instantiation with an explicit test token."""
+    bot, dp = create_bot_and_dispatcher(Settings(telegram_bot_token="1234567890:AATestTelegramTokenForUnitTests"))
     assert isinstance(bot, Bot)
     assert isinstance(dp, Dispatcher)
 

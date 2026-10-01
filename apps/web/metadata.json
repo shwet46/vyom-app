@@ -1,0 +1,6 @@
+{
+  "name": "VYOM - Kirana AI Teammate",
+  "description": "AI teammate for Paytm merchants to recover lost revenue from silent churn, dead hours, and pending udhaar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

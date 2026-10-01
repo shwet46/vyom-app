@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root, .app-shell {
+  --obsidian: #070709;
+  --paper: #ffffff;
+  --cloud: #f5f5f5;
+  --sky: #d7e6f5;
+  --charcoal: #60606c;
+  --slate: #8b8b8b;
+  --ink: #151515;
+  --blue: #2597d0;
+  --line: rgba(7, 7, 9, 0.12);
+  --soft-line: rgba(7, 7, 9, 0.08);
+  --error: #9d4b4b;
+  --feature-shadow: rgba(16, 55, 132, 0.03) 0 17px 37px, rgba(16, 55, 132, 0.03) 0 67px 67px, rgba(16, 55, 132, 0.02) 0 150px 90px;
+  --button-shadow: rgba(36, 36, 40, 0.1) 0 1px 2px, rgba(36, 36, 40, 0.09) 0 3px 3px, rgba(36, 36, 40, 0.05) 0 6px 4px, rgba(36, 36, 40, 0.01) 0 11px 4px;
+}
+
+@theme {
+  --color-obsidian: var(--obsidian);
+  --color-paper: var(--paper);
+  --color-cloud: var(--cloud);
+  --color-sky: var(--sky);
+  --color-charcoal: var(--charcoal);
+  --color-slate: var(--slate);
+  --color-ink: var(--ink);
+  --color-blue: var(--blue);
+  --color-line: var(--line);
+  --color-soft-line: var(--soft-line);
+  --color-error: var(--error);
+  --font-sans: 'Google Sans', 'Google Sans Text', 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-lora: 'Lora', Georgia, serif;
+  --font-heading: 'Google Sans', 'Google Sans Text', sans-serif;
+  --font-google: 'Google Sans', 'Google Sans Text', sans-serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+  overflow: clip;
+  background: var(--paper);
+  color: var(--obsidian);
+  font-family: 'Google Sans', 'Google Sans Text', 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.font-google {
+  font-family: 'Google Sans', 'Google Sans Text', sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.font-heading {
+  font-family: 'Google Sans', 'Google Sans Text', sans-serif;
+}
+
+.font-lora {
+  font-family: 'Lora', Georgia, serif;
+}
+
+/* Custom utility shadows matching the design specification */
+.shadow-feature {
+  box-shadow: var(--feature-shadow);
+}
+
+.shadow-button {
+  box-shadow: var(--button-shadow);
+}
+
+.shadow-glow-blue {
+  box-shadow: 0 0 30px rgba(37, 151, 208, 0.25);
+}
+
+/* Pulsing voice ripple */
+@keyframes voice-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.animate-voice-ring-1 {
+  animation: voice-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+.animate-voice-ring-2 {
+  animation: voice-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite 0.7s;
+}
+
+.animate-voice-ring-3 {
+  animation: voice-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite 1.4s;
+}
+
+/* Voice Equalizer Visualizer Bars */
+@keyframes sound-bar-1 { 0%, 100% { height: 10px; } 50% { height: 36px; } }
+@keyframes sound-bar-2 { 0%, 100% { height: 24px; } 50% { height: 44px; } }
+@keyframes sound-bar-3 { 0%, 100% { height: 14px; } 50% { height: 32px; } }
+@keyframes sound-bar-4 { 0%, 100% { height: 28px; } 50% { height: 48px; } }
+@keyframes sound-bar-5 { 0%, 100% { height: 8px; } 50% { height: 26px; } }
+
+.animate-sound-1 { animation: sound-bar-1 0.75s ease-in-out infinite; }
+.animate-sound-2 { animation: sound-bar-2 0.6s ease-in-out infinite; }
+.animate-sound-3 { animation: sound-bar-3 0.85s ease-in-out infinite; }
+.animate-sound-4 { animation: sound-bar-4 0.65s ease-in-out infinite; }
+.animate-sound-5 { animation: sound-bar-5 0.9s ease-in-out infinite; }
+
+/* Custom scrollbar for horizontal chip rows */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

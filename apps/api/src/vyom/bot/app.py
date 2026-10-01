@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import structlog
@@ -15,11 +16,9 @@ from vyom.bot.handlers.khata import router as khata_router
 from vyom.bot.handlers.start import router as start_router
 from vyom.bot.handlers.voice import router as voice_router
 from vyom.config import Settings, get_settings
+from vyom.db import close_mongo, init_mongo
 
 logger = structlog.get_logger()
-
-# Dummy token when running in demo/mock mode
-DUMMY_TOKEN = "1234567890:AAFakeTelegramTokenForDemoAndTestsZeroKey"
 
 
 _bot: Bot | None = None
@@ -31,7 +30,9 @@ def create_bot_and_dispatcher(settings: Settings | None = None) -> tuple[Bot, Di
     global _bot, _dp
     if _bot is None or _dp is None:
         cfg = settings or get_settings()
-        token = cfg.telegram_bot_token.strip() if cfg.telegram_bot_token else DUMMY_TOKEN
+        token = cfg.telegram_bot_token.strip()
+        if not token:
+            raise ValueError("TELEGRAM_BOT_TOKEN must be configured")
 
         _bot = Bot(
             token=token,
@@ -57,3 +58,19 @@ async def feed_telegram_update(update_dict: dict[str, Any]) -> None:
 
     telegram_update = Update.model_validate(update_dict, context={"bot": bot})
     await dp.feed_update(bot, telegram_update)
+
+
+async def run_polling() -> None:
+    """Run the Telegram bot as a standalone polling process."""
+    settings = get_settings()
+    await init_mongo(settings)
+    try:
+        await bot.delete_webhook(drop_pending_updates=False)
+        logger.info("telegram_bot_polling_started", username=settings.bot_username or "configured")
+        await dp.start_polling(bot)
+    finally:
+        await close_mongo()
+
+
+if __name__ == "__main__":
+    asyncio.run(run_polling())

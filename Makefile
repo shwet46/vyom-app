@@ -21,6 +21,9 @@ setup:
 
 api: dev
 
+bot:
+	uv run --project apps/api python -m vyom.bot.app
+
 dev:
 	uv run uvicorn vyom.main:app --reload --host 0.0.0.0 --port 8000
 
