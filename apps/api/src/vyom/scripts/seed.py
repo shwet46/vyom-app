@@ -817,7 +817,7 @@ async def seed_master_data(db: Any | None = None) -> None:
     for cat in CATEGORIES:
         await db.product_categories.update_one(
             {"key": cat.key},
-            {"$set": cat.to_mongo()},
+            cat.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_product_categories", count=len(CATEGORIES))
@@ -859,7 +859,7 @@ async def seed_master_data(db: Any | None = None) -> None:
     )
     await db.merchants.update_one(
         {"_id": merchant.id},
-        {"$set": merchant.to_mongo()},
+        merchant.to_mongo_upsert(),
         upsert=True,
     )
     logger.info("seeded_merchant", name=merchant.name)
@@ -878,7 +878,7 @@ async def seed_master_data(db: Any | None = None) -> None:
     )
     await db.guardrails.update_one(
         {"merchant_id": MERCHANT_ID},
-        {"$set": guardrails.to_mongo()},
+        guardrails.to_mongo_upsert(),
         upsert=True,
     )
     logger.info("seeded_guardrails")
@@ -909,7 +909,7 @@ async def seed_master_data(db: Any | None = None) -> None:
         catalog_items.append(cat_item)
         await db.merchant_catalog_items.update_one(
             {"_id": cat_item.id},
-            {"$set": cat_item.to_mongo()},
+            cat_item.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_catalog_items", count=len(catalog_items))
@@ -997,7 +997,7 @@ async def seed_master_data(db: Any | None = None) -> None:
         customers.append(cust)
         await db.customers.update_one(
             {"_id": cust.id},
-            {"$set": cust.to_mongo()},
+            cust.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_customers", count=len(customers))
@@ -1178,7 +1178,7 @@ async def seed_master_data(db: Any | None = None) -> None:
         khata_entries.append(entry)
         await db.khata_entries.update_one(
             {"_id": entry.id},
-            {"$set": entry.to_mongo()},
+            entry.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_khata_entries", count=len(khata_entries))
@@ -1197,7 +1197,7 @@ async def seed_master_data(db: Any | None = None) -> None:
     )
     await db.business_profiles.update_one(
         {"merchant_id": MERCHANT_ID},
-        {"$set": profile.to_mongo()},
+        profile.to_mongo_upsert(),
         upsert=True,
     )
     logger.info("computed_and_seeded_business_profile", dead_hours=len(profile.dead_hours))
@@ -1262,7 +1262,7 @@ async def seed_master_data(db: Any | None = None) -> None:
     for o in opps:
         await db.opportunities.update_one(
             {"merchant_id": MERCHANT_ID, "dedupe_key": o.dedupe_key},
-            {"$set": o.to_mongo()},
+            o.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_opportunities", count=len(opps))

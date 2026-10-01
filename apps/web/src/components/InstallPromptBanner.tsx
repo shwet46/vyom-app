@@ -28,8 +28,8 @@ export const InstallPromptBanner: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-18 sm:bottom-4 left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-40 animate-in slide-in-from-bottom-5 duration-300">
-        <div className="bg-obsidian text-white rounded-3xl p-4 shadow-feature border border-line flex items-center justify-between gap-3 relative overflow-hidden">
+      <div className="fixed top-16 left-3 right-3 sm:top-auto sm:bottom-5 sm:left-68 lg:sm:left-72 sm:right-auto sm:max-w-md z-40 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="bg-obsidian text-white rounded-2xl p-3.5 sm:p-4 shadow-feature border border-line flex items-center justify-between gap-3 relative overflow-hidden">
           {/* Subtle glow accent */}
           <div className="absolute -right-8 -top-8 w-24 h-24 bg-blue/30 rounded-full blur-xl pointer-events-none" />
 

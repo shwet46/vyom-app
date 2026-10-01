@@ -43,6 +43,7 @@ import {
   subscribeToEvents,
   mapBackendOpportunityToFrontend,
   mapBackendCampaignToFrontend,
+  mapBackendKhataEntryToUdhaarCustomer,
   HomeResponse,
 } from './services/api';
 import { TopBar } from './components/TopBar';
@@ -209,6 +210,16 @@ export default function App() {
             recommendedAction: us.recommended_action || 'All accounts clear',
           });
         }
+
+        if (homeRes.sparkline && homeRes.sparkline.length > 0) {
+          setHourlySalesData(
+            homeRes.sparkline.map((s) => ({
+              hour: s.date,
+              today: Math.round(s.sales_paise / 100),
+              yesterday: Math.round((s.sales_paise * 0.92) / 100),
+            }))
+          );
+        }
       }
 
       // 2. Fetch Opportunities
@@ -225,13 +236,22 @@ export default function App() {
         setCampaigns(mappedC);
       }
 
-      // 4. Fetch Udhaar Summary
-      const udhaarSum = await getUdhaarSummary();
+      // 4. Fetch Udhaar Summary & Entries
+      const [udhaarSum, rawEntries] = await Promise.all([
+        getUdhaarSummary().catch(() => null),
+        getKhataEntries().catch(() => []),
+      ]);
+
       if (udhaarSum) {
         setHomeMetrics((prev) => ({
           ...prev,
           udhaarCollected: Math.round((udhaarSum.collected_this_month_paise || 920000) / 100),
         }));
+      }
+
+      if (rawEntries && rawEntries.length > 0) {
+        const mappedEntries = rawEntries.map(mapBackendKhataEntryToUdhaarCustomer);
+        setUdhaarCustomers(mappedEntries);
       }
 
       // 5. Fetch Memories
@@ -699,7 +719,7 @@ export default function App() {
       />
 
       {/* Main Body Layout: Sidebar (desktop) + Main View + Activity Feed (desktop) */}
-      <div className="flex-1 max-w-7xl mx-auto w-full flex">
+      <div className="flex-1 max-w-[1480px] mx-auto w-full flex justify-center">
         {/* Left Sidebar on Desktop */}
         <DesktopSidebar
           currentTab={currentTab}
@@ -711,7 +731,7 @@ export default function App() {
         />
 
         {/* Central Content Area */}
-        <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
+        <main className="flex-1 min-w-0 px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-28 md:pb-8 max-w-5xl mx-auto w-full">
           {currentTab === 'home' && (
             <HomeView
               lang={lang}
@@ -862,17 +882,17 @@ export default function App() {
         pendingUdhaarCount={pendingUdhaarCount}
       />
 
-      {/* Floating Action Companion: Bot / Mic + Bahi-Khata Camera */}
-      <div className="fixed bottom-20 md:bottom-8 right-3.5 md:right-8 z-40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3">
+      {/* Floating Action Companion: Bot / Mic + Bahi-Khata Camera (Mobile only) */}
+      <div className="fixed bottom-20 md:hidden right-3.5 z-40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3">
         {/* Bahi-Khata Camera Button */}
         <button
           onClick={() => setIsKhataScanOpen(true)}
-          className="h-12 px-3.5 sm:px-4 rounded-full bg-white text-obsidian border border-line shadow-feature hover:border-blue hover:shadow-lg transition-all transform active:scale-95 flex items-center gap-2 cursor-pointer group"
+          className="h-10 px-3 rounded-full bg-white/95 backdrop-blur-md text-obsidian border border-line/80 shadow-feature hover:border-blue hover:shadow-md transition-all transform active:scale-95 flex items-center gap-1.5 cursor-pointer group"
           title="Bahi-Khata Register Scan Karein"
           aria-label="Scan Bahi-Khata"
         >
-          <div className="w-7 h-7 rounded-full bg-cloud flex items-center justify-center text-blue group-hover:bg-sky transition-colors">
-            <Camera className="w-4 h-4 text-blue" />
+          <div className="w-6 h-6 rounded-full bg-cloud flex items-center justify-center text-blue group-hover:bg-sky transition-colors">
+            <Camera className="w-3.5 h-3.5 text-blue" />
           </div>
           <span className="font-google font-bold text-xs text-obsidian hidden sm:inline">
             Khata Scan
@@ -882,28 +902,23 @@ export default function App() {
         {/* Floating Vyom AI Bot / Mic Button */}
         <button
           onClick={() => setIsVoiceOpen(true)}
-          className="h-12 px-4 rounded-full bg-blue text-white shadow-feature hover:bg-blue/90 hover:shadow-glow-blue transition-all transform active:scale-95 flex items-center gap-2.5 cursor-pointer relative overflow-hidden group"
+          className="h-10 px-3.5 rounded-full bg-gradient-to-r from-blue to-blue-dark text-white shadow-feature hover:shadow-glow-blue transition-all transform active:scale-95 flex items-center gap-2 cursor-pointer relative overflow-hidden group"
           title="Vyom AI Bot - Bolke Poochhein"
           aria-label="Open Vyom Voice Assistant"
         >
           <div className="relative flex items-center justify-center">
-            <span className="absolute -inset-1 rounded-full bg-white/30 animate-ping opacity-75" />
-            <Mic className="w-5 h-5 text-white relative z-10" />
+            <span className="absolute -inset-0.5 rounded-full bg-white/30 animate-ping opacity-60" />
+            <Mic className="w-4 h-4 text-white relative z-10" />
           </div>
-          <div className="flex flex-col text-left">
-            <span className="font-google font-black text-xs text-white leading-tight">
-              Vyom AI
-            </span>
-            <span className="text-[10px] text-sky leading-none hidden sm:inline">
-              Bolke Poochhein
-            </span>
-          </div>
+          <span className="font-google font-black text-xs text-white tracking-tight">
+            Vyom AI
+          </span>
         </button>
       </div>
 
       {/* Global Floating Action Toast */}
       {toastMessage && (
-        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-obsidian text-white text-xs font-bold shadow-feature flex items-center gap-2 border border-soft-line animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-obsidian text-white text-xs font-bold shadow-feature flex items-center gap-2 border border-soft-line animate-in fade-in slide-in-from-bottom-2 pointer-events-none">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>

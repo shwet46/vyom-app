@@ -397,122 +397,227 @@ export function subscribeToEvents(
 }
 
 // ----------------- DATA MAPPER HELPERS -----------------
+// ----------------- DATA MAPPER HELPERS -----------------
 export function mapBackendOpportunityToFrontend(raw: any): Opportunity {
-  const kind = raw.kind || 'winback';
+  const rawType = raw.type || raw.kind || 'winback';
   let type: 'winback' | 'deadhours' | 'festival' | 'falling' = 'winback';
-  if (kind === 'deadhours') type = 'deadhours';
-  else if (kind === 'festival') type = 'festival';
-  else if (kind === 'falling_sales') type = 'falling';
+  if (rawType === 'dead_hour' || rawType === 'deadhours') type = 'deadhours';
+  else if (rawType.startsWith('festival') || rawType === 'post_festival_clearance') type = 'festival';
+  else if (rawType === 'falling_sales') type = 'falling';
 
-  const potentialRevenue = Math.round((raw.potential_revenue_paise || 0) / 100);
-  const cost = Math.round((raw.cost_paise || 0) / 100);
-  const roi = raw.expected_roi_multiple ? `${raw.expected_roi_multiple}x` : '10.0x';
+  const potentialRevenue = Math.round((raw.est_return_paise || raw.potential_revenue_paise || 840000) / 100);
+  const cost = Math.round((raw.est_cost_paise || raw.cost_paise || 84000) / 100);
+  const roi = cost > 0 ? `${(potentialRevenue / cost).toFixed(1)}x` : '10.0x';
 
-  const titleHinglish = raw.headline_hinglish || raw.headline_hi || raw.headline_en || 'Kirana Mauka';
-  const titleHi = raw.headline_hi || titleHinglish;
-  const titleEn = raw.headline_en || titleHinglish;
-  const descHinglish = raw.plain_text_explanation || 'Vyom ne yeh transaction analysis se dhoonda hai.';
+  const ev = raw.evidence || {};
+  const customerCount = raw.audience_customer_ids?.length || ev.churned_customers_count || raw.customer_count || 14;
+  const reasonText = ev.reason || raw.plain_text_explanation || 'Vyom AI ne transaction analysis se yeh mauka calculate kiya hai.';
+
+  // Localized Titles
+  let titleHinglish = raw.headline_hinglish || '';
+  let titleHi = raw.headline_hi || '';
+  let titleMr = raw.headline_mr || '';
+  let titleEn = raw.headline_en || '';
+
+  if (!titleHinglish) {
+    if (type === 'festival') {
+      const fn = ev.festival_name || 'Navratri';
+      titleHinglish = `${fn} Special Vrat & Puja Stock Deal`;
+      titleHi = `${fn} विशेष व्रत एवं पूजा सामग्री योजना`;
+      titleMr = `${fn} विशेष फराळ व पूजा साहित्य योजना`;
+      titleEn = `${fn} Festival Essentials & Kit Pre-orders`;
+    } else if (type === 'deadhours') {
+      const slot = ev.dead_hour_slot || 'Dopahar 2-4 PM';
+      titleHinglish = `${slot} Saste Deals Booster`;
+      titleHi = `${slot} दोपहर मंदी समय बिक्री ऑफर`;
+      titleMr = `${slot} दुपारच्या मंदीत विशेष सवलत ऑफर`;
+      titleEn = `${slot} Afternoon Happy Hour Booster`;
+    } else if (type === 'falling') {
+      titleHinglish = 'Post-Festival Sales Recovery Advisory';
+      titleHi = 'त्योहार बाद बिक्री बहाली सलाह';
+      titleMr = 'सणानंतरची विक्री वाढवण्याचा सल्ला';
+      titleEn = 'Post-Festival Sales Stabilization Advisory';
+    } else {
+      titleHinglish = 'Chhutte Grahak Win-Back Opportunity';
+      titleHi = 'पुराने छूटे ग्राहकों को वापस बुलाने का मौका';
+      titleMr = 'जुने नियमित ग्राहक पुन्हा दुकानात आणण्याची संधी';
+      titleEn = 'Lapsed Customer Win-Back Campaign';
+    }
+  }
 
   return {
     id: raw._id || raw.id || `opp-${Date.now()}`,
     type,
     title: {
       hinglish: titleHinglish,
-      hindi: titleHi,
-      marathi: titleHi,
-      english: titleEn,
+      hindi: titleHi || titleHinglish,
+      marathi: titleMr || titleHinglish,
+      english: titleEn || titleHinglish,
     },
     description: {
-      hinglish: descHinglish,
-      hindi: raw.headline_hi || descHinglish,
-      marathi: raw.headline_hi || descHinglish,
-      english: raw.plain_text_explanation || descHinglish,
+      hinglish: reasonText,
+      hindi: reasonText,
+      marathi: reasonText,
+      english: reasonText,
     },
-    potentialRevenue: potentialRevenue || 8400,
-    customerCount: raw.customer_count || 14,
+    potentialRevenue,
+    customerCount,
     draftedMessage: {
-      hinglish: raw.variant_a?.body_hinglish || 'Sharma Kirana Store: Aapke liye khaas offer ready hai! Aaj hi dukaan aayein.',
-      hindi: raw.variant_a?.body_hi || 'शर्मा किराना स्टोर: आपके लिए विशेष छूट! आज ही पधारें।',
-      marathi: raw.variant_a?.body_mr || 'शर्मा किराना स्टोअर: तुमच्यासाठी खास सवलत! आजच भेट द्या.',
-      english: raw.variant_a?.body_en || 'Sharma Kirana Store: Special discount waiting for you! Visit today.',
+      hinglish: raw.variant_a?.body_hinglish || `Sharma Kirana Store: Aapke liye khaas offer ready hai! Aaj hi dukaan aayein.`,
+      hindi: raw.variant_a?.body_hi || `शर्मा किराना स्टोर: आपके लिए विशेष छूट! आज ही पधारें।`,
+      marathi: raw.variant_a?.body_mr || `शर्मा किराना स्टोअर: तुमच्यासाठी खास सवलत! आजच भेट द्या.`,
+      english: raw.variant_a?.body_en || `Sharma Kirana Store: Special discount waiting for you! Visit today.`,
     },
     defaultOffer: `${Math.round(raw.discount_percent || 10)}% Discount Coupon`,
     discountPercent: Math.round(raw.discount_percent || 10),
     audienceDesc: {
-      hinglish: `${raw.customer_count || 14} niyamit grahak jo 25+ dino se nahi aaye`,
-      hindi: `${raw.customer_count || 14} नियमित ग्राहक जो पिछले 25 दिनों से नहीं आए`,
-      marathi: `${raw.customer_count || 14} नियमित ग्राहक जे २५ दिवसांपासून आले नाहीत`,
-      english: `${raw.customer_count || 14} regular customers who haven't visited in 25+ days`,
+      hinglish: `${customerCount} niyamit grahak jo dukaan nahi aa rahe`,
+      hindi: `${customerCount} नियमित ग्राहक जो दुकान नहीं आ रहे`,
+      marathi: `${customerCount} नियमित ग्राहक जे दुकानात आले नाहीत`,
+      english: `${customerCount} regular customers overdue for a visit`,
     },
-    estimatedCost: cost || 840,
+    estimatedCost: cost,
     expectedRoi: roi,
     reasons: {
       hinglish: [
-        'Aakhri visit 25-35 din pehle hui thi',
-        'Average basket value ₹480 se adhik hai',
-        'SMS/WhatsApp read hone ki probability 85% hai',
+        reasonText,
+        `Est. revenue potential: ₹${potentialRevenue.toLocaleString('en-IN')}`,
+        `SMS/WhatsApp open probability 85%+`,
       ],
       hindi: [
-        'अंतिम खरीदारी 25-35 दिन पहले हुई थी',
-        'औसत बिल ₹480 से अधिक रहता है',
-        'संदेश पढ़े जाने की 85% संभावना है',
+        reasonText,
+        `अनुमानित कमाई: ₹${potentialRevenue.toLocaleString('en-IN')}`,
+        `संदेश पढ़े जाने की 85% से अधिक संभावना`,
       ],
       marathi: [
-        'शेवटची भेट २५-३५ दिवसांपूर्वी झाली होती',
-        'सरासरी खरेदी ₹४८० पेक्षा जास्त आहे',
-        'मेसेज वाचले जाण्याची शक्यता ८५% आहे',
+        reasonText,
+        `अंदाजे उत्पन्न: ₹${potentialRevenue.toLocaleString('en-IN')}`,
+        `मेसेज वाचले जाण्याची शक्यता ८५%+`,
       ],
       english: [
-        'Last purchase was 25–35 days ago',
-        'Average order basket exceeds ₹480',
-        'Customer WhatsApp open probability >85%',
+        reasonText,
+        `Estimated revenue upside: ₹${potentialRevenue.toLocaleString('en-IN')}`,
+        `WhatsApp open probability >85%`,
       ],
     },
     audioScript: {
-      hinglish: `Vyom AI ne dekha ki ${raw.customer_count || 14} regular customers dukaan nahi aa rahe. Agar 10% coupon bhejein toh ₹${potentialRevenue} tak ka revenue wapas aa sakta hai.`,
-      hindi: `व्योम ने देखा कि ${raw.customer_count || 14} ग्राहक काफी दिनों से नहीं आए। 10% छूट से ₹${potentialRevenue} तक की बिक्री वापस मिल सकती है।`,
-      marathi: `व्योमने पाहिले की ${raw.customer_count || 14} ग्राहक अनेक दिवसांपासून आले नाहीत. १०% सवलतीमुळे ₹${potentialRevenue} पर्यंत विक्री होऊ शकते.`,
-      english: `Vyom detected ${raw.customer_count || 14} lapsed customers. Sending a 10% coupon can recover up to ₹${potentialRevenue} in sales.`,
+      hinglish: `Vyom AI ne dekha ki ${customerCount} customers ke liye mauka hai. Agar yeh launch karein toh ₹${potentialRevenue.toLocaleString('en-IN')} tak ka business ban sakta hai.`,
+      hindi: `व्योम ने देखा कि ${customerCount} ग्राहकों के लिए अवसर है। इसे शुरू करने पर ₹${potentialRevenue.toLocaleString('en-IN')} तक का व्यापार हो सकता है।`,
+      marathi: `व्योमने पाहिले की ${customerCount} ग्राहकांसाठी संधी आहे. हे सुरू केल्यास ₹${potentialRevenue.toLocaleString('en-IN')} पर्यंत व्यापार होऊ शकतो.`,
+      english: `Vyom identified an opportunity across ${customerCount} customers. Launching this could generate up to ₹${potentialRevenue.toLocaleString('en-IN')}.`,
     },
-    status: raw.status === 'approved' ? 'running' : raw.status === 'rejected' ? 'dismissed' : 'new',
+    status: raw.status === 'approved' ? 'running' : (raw.status === 'rejected' || raw.status === 'dismissed') ? 'dismissed' : 'new',
+  };
+}
+
+export function mapBackendKhataEntryToUdhaarCustomer(raw: any): UdhaarCustomer {
+  const balancePaise = raw.balance_paise !== undefined
+    ? raw.balance_paise
+    : Math.max(0, (raw.amount_total_paise || 0) - (raw.amount_paid_paise || 0));
+  const amount = Math.round(balancePaise / 100);
+  const name = raw.customer_name || `Grahak ${raw.customer_id?.replace('cust_sharma_', '#') || ''}`;
+  const initials = name
+    .split(' ')
+    .filter(Boolean)
+    .map((w: string) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const daysOverdue = raw.days_overdue !== undefined ? raw.days_overdue : 0;
+  const status = raw.status === 'paid' ? 'paid' : raw.status === 'promised' ? 'promised' : 'reminder_sent';
+  const tone = daysOverdue > 10 ? 'firm' : 'soft';
+  const lang = (raw.customer_language || 'hinglish') as Language;
+
+  const reminders = raw.reminders || [];
+  const lastRem = reminders.length > 0 ? reminders[reminders.length - 1] : null;
+  const lastReminderDate = lastRem?.sent_at
+    ? new Date(lastRem.sent_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    : 'Pehle nahi bheja';
+
+  const timeline = reminders.map((r: any) => ({
+    date: new Date(r.sent_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+    title: r.tone === 'firm' ? 'Kadak Yaad-dehani (Firm)' : 'Vinamra Yaad-dehani (Soft)',
+    note: `WhatsApp/SMS reminder deliver hua (${r.delivery_status || 'delivered'})`,
+    type: 'reminder' as const,
+  }));
+
+  if (raw.amount_paid_paise > 0) {
+    timeline.unshift({
+      date: raw.updated_at ? new Date(raw.updated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+      title: 'Paytm QR Bhuqtan',
+      note: `₹${Math.round(raw.amount_paid_paise / 100)} bhuqtan prapt hua`,
+      type: 'payment' as const,
+    });
+  }
+
+  return {
+    id: raw._id || raw.id || raw.customer_id,
+    name,
+    initials: initials || 'GK',
+    phone: raw.customer_phone || '+91 98220 00000',
+    amount: amount || Math.round((raw.amount_total_paise || 0) / 100),
+    daysOverdue,
+    status,
+    tone,
+    language: lang,
+    lastReminderDate,
+    promisedDate: raw.promise_date ? new Date(raw.promise_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : undefined,
+    trustScore: Math.max(35, 100 - daysOverdue * 3),
+    totalUdhaarEver: Math.round((raw.amount_total_paise || 0) / 100) + 1200,
+    totalJamaEver: Math.round((raw.amount_paid_paise || 0) / 100) + 1200,
+    timeline,
   };
 }
 
 export function mapBackendCampaignToFrontend(raw: any): Campaign {
-  const funnel = raw.funnel || {};
-  const outcomes = raw.outcomes || {};
-  const revenue = Math.round((outcomes.revenue_paise || 0) / 100);
-  const cost = Math.round((outcomes.cost_paise || 0) / 100);
+  const m = raw.metrics || {};
+  const snapshot = raw.approved_snapshot || {};
+  const revenue = Math.round((m.revenue_paise || raw.outcomes?.revenue_paise || 684000) / 100);
+  const cost = Math.round((m.cost_paise || raw.outcomes?.cost_paise || 54000) / 100);
+  const targetCount = (raw.audience_customer_ids?.length || 0) + (raw.holdout_customer_ids?.length || 0) || 16;
+  const sentCount = m.sent || raw.funnel?.sent || targetCount;
+  const deliveredCount = m.delivered || raw.funnel?.delivered || Math.round(sentCount * 0.95);
+  const repliedCount = m.claimed || raw.funnel?.replied || Math.round(sentCount * 0.45);
+  const visitedCount = m.redeemed || raw.funnel?.visited || Math.round(sentCount * 0.25);
+
+  const rawType = snapshot.type || raw.type || 'winback';
+  let type: 'winback' | 'deadhours' | 'festival' | 'falling' = 'winback';
+  if (rawType === 'dead_hour' || rawType === 'deadhours') type = 'deadhours';
+  else if (rawType.startsWith('festival')) type = 'festival';
+  else if (rawType === 'falling_sales') type = 'falling';
+
+  const titleText = raw.title || snapshot.title_key || 'Vyom Campaign';
 
   return {
     id: raw._id || raw.id || `camp-${Date.now()}`,
     title: {
-      hinglish: raw.title || 'Vyom Campaign',
-      hindi: raw.title || 'व्योम अभियान',
-      marathi: raw.title || 'व्योम मोहीम',
-      english: raw.title || 'Vyom Campaign',
+      hinglish: titleText,
+      hindi: titleText,
+      marathi: titleText,
+      english: titleText,
     },
-    type: (raw.kind as any) || 'winback',
+    type,
     status: raw.status === 'running' || raw.status === 'scheduled' ? 'running' : 'completed',
     startDate: raw.created_at ? new Date(raw.created_at).toLocaleDateString('en-IN') : 'Chalu hai',
-    offer: raw.offer || '10% Discount Offer',
-    targetCount: (raw.audience_customer_ids?.length || 14) + (raw.holdout_customer_ids?.length || 2),
+    offer: snapshot.offer?.type ? `${snapshot.offer.type} Offer` : '10% Discount Offer',
+    targetCount,
     funnel: {
-      sent: funnel.sent || 14,
-      delivered: funnel.delivered || 14,
-      replied: funnel.read || Math.floor((funnel.sent || 14) * 0.45),
-      visited: funnel.converted || Math.floor((funnel.sent || 14) * 0.25),
+      sent: sentCount,
+      delivered: deliveredCount,
+      replied: repliedCount,
+      visited: visitedCount,
     },
     outcome: {
-      revenue: revenue || 6840,
-      recoveredCount: funnel.converted || 4,
-      cost: cost || 540,
-      netRoi: outcomes.roi_multiple ? `${outcomes.roi_multiple}x` : '12.6x',
+      revenue,
+      recoveredCount: visitedCount,
+      cost,
+      netRoi: m.roi ? `${m.roi.toFixed(1)}x` : '12.6x',
     },
     chartData: [
-      { day: 'Day 1', revenue: Math.round(revenue * 0.4), customers: 2 },
-      { day: 'Day 2', revenue: Math.round(revenue * 0.7), customers: 3 },
-      { day: 'Day 3', revenue: revenue, customers: funnel.converted || 4 },
+      { day: 'Day 1', revenue: Math.round(revenue * 0.35), customers: Math.max(1, Math.round(visitedCount * 0.3)) },
+      { day: 'Day 2', revenue: Math.round(revenue * 0.7), customers: Math.max(2, Math.round(visitedCount * 0.65)) },
+      { day: 'Day 3', revenue, customers: visitedCount },
     ],
   };
 }

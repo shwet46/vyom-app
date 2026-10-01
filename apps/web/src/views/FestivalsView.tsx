@@ -97,14 +97,14 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
   return (
     <div className="space-y-5 pb-8 animate-in fade-in duration-150">
       {/* 1. Header Banner */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-50 via-sky/30 to-cloud border border-line shadow-feature space-y-2">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 via-sky/30 to-cloud border border-line/70 shadow-feature space-y-1.5">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-          <span className="text-xs font-google font-extrabold uppercase tracking-wider text-charcoal">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          <span className="text-[11px] font-google font-extrabold uppercase tracking-wider text-charcoal">
             Cultural Intelligence Engine
           </span>
         </div>
-        <h1 className="font-google font-black text-2xl sm:text-3xl text-obsidian tracking-tight">
+        <h1 className="font-google font-black text-xl sm:text-2xl text-obsidian tracking-tight">
           Pune Regional Festival Radar
         </h1>
         <p className="text-xs text-charcoal max-w-xl leading-relaxed font-sans">
@@ -113,8 +113,8 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
       </div>
 
       {/* 2. Festival Timeline Cards */}
-      <div className="space-y-3">
-        <h2 className="font-google font-black text-sm text-obsidian uppercase tracking-wider">
+      <div className="space-y-2.5">
+        <h2 className="font-google font-black text-xs text-obsidian uppercase tracking-wider">
           Maharashtra / Pune Upcoming Festivals
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -124,14 +124,14 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
               <div
                 key={fest.key}
                 onClick={() => setSelectedFestival(fest.key)}
-                className={`p-4 rounded-3xl border cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                   isSelected
                     ? 'bg-white ring-2 ring-blue border-transparent shadow-feature'
-                    : 'bg-white hover:bg-cloud border-line shadow-xs'
+                    : 'bg-white hover:bg-cloud border-line/70 shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-google font-extrabold uppercase ${fest.color}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-google font-extrabold uppercase ${fest.color}`}>
                     {fest.phase}
                   </span>
                   <span className="text-xs text-slate font-medium">{fest.dates}</span>
@@ -145,7 +145,7 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
       </div>
 
       {/* 3. AI Stock Advisor for Navratri */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-soft-line">
           <div>
             <h3 className="font-google font-black text-base text-obsidian flex items-center gap-2">

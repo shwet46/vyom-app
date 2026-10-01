@@ -54,17 +54,17 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
   ];
 
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-soft-line bg-paper h-[calc(100vh-57px)] sticky top-[57px] p-4 justify-between flex-shrink-0">
-      <div className="space-y-6">
+    <aside className="hidden md:flex flex-col w-60 lg:w-64 border-r border-soft-line bg-paper/60 backdrop-blur-xs h-[calc(100vh-57px)] sticky top-[57px] p-4 justify-between flex-shrink-0 overflow-y-auto no-scrollbar">
+      <div className="space-y-5">
         {/* Merchant Card */}
-        <div className="p-3.5 rounded-2xl bg-cloud border border-line">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue/15 text-blue font-bold flex items-center justify-center text-sm">
+        <div className="p-3 rounded-2xl bg-cloud border border-line/60">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue/15 text-blue font-bold flex items-center justify-center text-xs font-google">
               RS
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-obsidian text-sm truncate">Ramesh Sharma</div>
-              <div className="text-xs text-charcoal truncate">Sharma Kirana Store</div>
+              <div className="font-bold text-obsidian text-xs truncate font-google">Ramesh Sharma</div>
+              <div className="text-[11px] text-charcoal truncate">Sharma Kirana Store</div>
               <div className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Paytm Connected
               </div>
@@ -80,18 +80,18 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
               <button
                 key={item.key}
                 onClick={() => onSelectTab(item.key)}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-sm font-semibold transition cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer font-google ${
                   isActive
-                    ? 'bg-sky/60 text-blue font-bold shadow-sm'
+                    ? 'bg-sky/70 text-blue font-black shadow-xs'
                     : 'text-charcoal hover:bg-cloud hover:text-obsidian'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <span className={isActive ? 'text-blue' : 'text-slate'}>{item.icon}</span>
                   <span>{item.label}</span>
                 </div>
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue text-white font-bold">
+                  <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-blue text-white font-bold font-google">
                     {item.badge}
                   </span>
                 )}
@@ -100,30 +100,30 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
           })}
         </nav>
 
-        {/* Voice Trigger Banner */}
+        {/* Voice Trigger Capsule Banner */}
         <button
           onClick={onOpenVoice}
-          className="w-full p-3.5 rounded-2xl bg-gradient-to-br from-blue to-[#1881b5] text-white flex items-center gap-3 shadow-button hover:opacity-95 transition cursor-pointer"
+          className="w-full p-3 rounded-2xl bg-gradient-to-br from-blue to-blue-dark text-white flex items-center gap-2.5 shadow-button hover:opacity-95 transition cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div className="text-left min-w-0">
-            <div className="text-xs font-bold leading-tight">Vyom Voice Bolke</div>
-            <div className="text-[11px] text-sky leading-tight truncate">"Aaj dhanda kaisa hai?"</div>
+            <div className="text-xs font-black leading-tight font-google">Vyom Voice AI</div>
+            <div className="text-[10px] text-sky leading-tight truncate">"Aaj dhanda kaisa hai?"</div>
           </div>
         </button>
       </div>
 
       {/* Footer System Status */}
-      <div className="p-3 rounded-2xl bg-cloud/80 border border-soft-line text-xs space-y-1.5">
+      <div className="p-2.5 rounded-xl bg-cloud border border-soft-line text-xs space-y-1">
         <div className="flex items-center justify-between font-semibold text-ink">
-          <span className="flex items-center gap-1.5 text-charcoal">
-            <Shield className="w-3.5 h-3.5 text-blue" /> Guardrails
+          <span className="flex items-center gap-1.5 text-charcoal text-[11px] font-google">
+            <Shield className="w-3 h-3 text-blue" /> Guardrails
           </span>
-          <span className="text-emerald-700 text-[11px] bg-emerald-100/70 px-1.5 py-0.5 rounded">Active</span>
+          <span className="text-emerald-700 text-[10px] bg-emerald-100/70 px-1.5 py-0.2 rounded font-bold">Active</span>
         </div>
-        <p className="text-[11px] text-slate leading-relaxed">
+        <p className="text-[10px] text-slate leading-relaxed">
           Vyom aapki limits ke bahar bina ijaazat ke koi offer nahi bhejta.
         </p>
       </div>

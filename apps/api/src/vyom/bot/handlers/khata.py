@@ -50,7 +50,7 @@ async def handle_my_khata(message: Message) -> None:
             entry_count += 1
             due = entry.get("due_date")
             if due:
-                due_d = due if isinstance(due, datetime.date) else due.date()
+                due_d = due.date() if isinstance(due, datetime.datetime) else due
                 if not earliest_due or due_d < earliest_due:
                     earliest_due = due_d
 

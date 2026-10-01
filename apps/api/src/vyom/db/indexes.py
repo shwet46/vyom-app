@@ -31,7 +31,7 @@ async def ensure_indexes(db: AsyncDatabase) -> None:  # type: ignore[type-arg]
             {
                 "keys": [("merchant_id", ASCENDING), ("telegram.chat_id", ASCENDING)],
                 "unique": True,
-                "sparse": True,
+                "partialFilterExpression": {"telegram.chat_id": {"$gt": 0}},
             },
             {"keys": [("merchant_id", ASCENDING), ("phone_e164", ASCENDING)]},
             {"keys": [("merchant_id", ASCENDING), ("last_visit_at", ASCENDING)]},

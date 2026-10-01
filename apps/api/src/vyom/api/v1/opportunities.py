@@ -139,12 +139,13 @@ async def approve_opportunity(
 
 
 @router.post("/{opportunity_id}/reject")
+@router.post("/{opportunity_id}/dismiss")
 async def reject_opportunity(
     opportunity_id: str,
     merchant: CurrentMerchant,
     db: DatabaseDep,
 ) -> dict[str, str]:
-    """Reject an opportunity."""
+    """Reject or dismiss an opportunity."""
     res = await db.opportunities.update_one(
         {"_id": opportunity_id, "merchant_id": merchant.id},
         {"$set": {"status": OpportunityStatus.REJECTED, "updated_at": Clock.now()}},
@@ -152,6 +153,41 @@ async def reject_opportunity(
     if res.matched_count == 0:
         raise NotFoundError("Opportunity not found")
     return {"status": "rejected"}
+
+
+@router.get("/{opportunity_id}/explain")
+async def explain_opportunity(
+    opportunity_id: str,
+    merchant: CurrentMerchant,
+    db: DatabaseDep,
+    lang: str = "hinglish",
+) -> dict[str, Any]:
+    """Provide AI explanation and soundbite script for an opportunity."""
+    doc = await db.opportunities.find_one({"_id": opportunity_id, "merchant_id": merchant.id})
+    if not doc:
+        raise NotFoundError("Opportunity not found")
+    opp = Opportunity.model_validate(doc)
+
+    return_rs = round(opp.est_return_paise / 100)
+    cost_rs = round(opp.est_cost_paise / 100)
+    cust_count = len(opp.audience_customer_ids) or opp.evidence.churned_customers_count or 14
+
+    script_map = {
+        "hinglish": f"Vyom AI ne transaction analysis se dekha ki {cust_count} regular customers dukaan par nahi aa rahe. Agar offer bhejein toh ₹{return_rs:,} tak ka revenue wapas aa sakta hai.",
+        "hi": f"व्योम ने देखा कि {cust_count} नियमित ग्राहक दुकान पर नहीं आए। विशेष छूट से ₹{return_rs:,} तक की बिक्री वापस मिल सकती है।",
+        "mr": f"व्योमने पाहिले की {cust_count} नियमित ग्राहक आले नाहीत. सवलत दिल्यास ₹{return_rs:,} पर्यंत विक्री होऊ शकते.",
+        "en": f"Vyom detected {cust_count} lapsed customers. Sending an offer can recover up to ₹{return_rs:,}.",
+    }
+
+    return {
+        "opportunity_id": opp.id,
+        "language": lang,
+        "explanation": opp.evidence.reason or script_map.get(lang, script_map["hinglish"]),
+        "audio_script": script_map.get(lang, script_map["hinglish"]),
+        "potential_revenue": return_rs,
+        "cost": cost_rs,
+        "customer_count": cust_count,
+    }
 
 
 @router.post("/{opportunity_id}/snooze")

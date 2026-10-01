@@ -16,6 +16,16 @@ def new_id() -> str:
     return str(ObjectId())
 
 
+def _sanitize_for_mongo(obj: Any) -> Any:
+    if isinstance(obj, datetime.date) and not isinstance(obj, datetime.datetime):
+        return datetime.datetime(obj.year, obj.month, obj.day, 0, 0, 0)
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_mongo(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_for_mongo(item) for item in obj]
+    return obj
+
+
 class MongoModel(BaseModel):
     """Shared base model for all MongoDB documents."""
 
@@ -33,11 +43,23 @@ class MongoModel(BaseModel):
     def serialize_datetime(self, dt: datetime.datetime) -> str:
         return dt.isoformat()
 
-    def to_mongo(self) -> dict[str, Any]:
+    def to_mongo(self, exclude_id: bool = False) -> dict[str, Any]:
         """Convert model to dict suitable for PyMongo insertion/update."""
         data: dict[str, Any] = self.model_dump(by_alias=True)
-        # Ensure _id is stored properly
-        return data
+        if exclude_id:
+            data.pop("_id", None)
+        return _sanitize_for_mongo(data)
+
+    def to_mongo_set(self) -> dict[str, Any]:
+        """Convert model to dict suitable for PyMongo $set, excluding _id."""
+        return self.to_mongo(exclude_id=True)
+
+    def to_mongo_upsert(self) -> dict[str, Any]:
+        """Convert model for safe upsert: $set without _id, $setOnInsert with _id."""
+        return {
+            "$set": self.to_mongo(exclude_id=True),
+            "$setOnInsert": {"_id": self.id},
+        }
 
 
 class LocalizedText(BaseModel):

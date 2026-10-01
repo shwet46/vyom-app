@@ -44,8 +44,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-paper/95 backdrop-blur-md border-b border-soft-line px-3 sm:px-6 py-2.5 transition-all">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-30 bg-paper/95 backdrop-blur-md border-b border-soft-line px-3.5 sm:px-6 h-[57px] flex items-center transition-all">
+      <div className="w-full max-w-[1480px] mx-auto flex items-center justify-between gap-2">
         {/* Left: Brand & Shop Identity */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-2xl bg-blue flex items-center justify-center text-white font-google font-black shadow-button flex-shrink-0 tracking-tight text-lg">

@@ -12,6 +12,8 @@ import {
   ChevronRight,
   Clock,
   Calendar,
+  Store,
+  MessageSquare,
 } from '../components/icons';
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
 import { Language, Opportunity } from '../types';
@@ -67,7 +69,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const t = translations[lang] || translations.hinglish;
 
   const recoveredTarget = metrics?.recoveredThisMonth ?? 18640;
-  const animatedRecovered = useCountUp(recoveredTarget, 1200);
+  const animatedRecovered = useCountUp(recoveredTarget, 1000);
 
   const todaySalesVal = metrics?.todaySales ?? 7420;
   const yesterdaySalesVal = metrics?.yesterdaySales ?? 6880;
@@ -78,331 +80,412 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const campaignSpendVal = metrics?.campaignSpend ?? 1150;
 
   const chartData = hourlySalesData && hourlySalesData.length > 0 ? hourlySalesData : todaySalesHourly;
-
-  // Active new opportunities
   const activeOpportunities = opportunities.filter((o) => o.status === 'new');
 
   return (
     <div className="space-y-5 pb-8 animate-in fade-in duration-150">
-      {/* Merchant Greeting & Shop header */}
-      <div className="pt-2">
-        <h1 className="text-2xl sm:text-3xl font-google font-black text-obsidian tracking-tight leading-tight">
-          {t.greeting}
-        </h1>
-        <p className="text-xs text-charcoal mt-1 font-lora italic">
-          Vyom 24/7 silent loss track kar raha hai • Sharma Kirana Store (Pune)
-        </p>
+      {/* 1. Merchant Greeting & Live Status Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-google font-black text-obsidian tracking-tight">
+              {t.greeting}
+            </h1>
+            <span className="text-lg">👋</span>
+          </div>
+          <div className="flex items-center gap-2 mt-1 text-xs text-charcoal">
+            <span className="font-semibold text-ink">Sharma Kirana Store</span>
+            <span>•</span>
+            <span className="text-slate">Pune</span>
+            <span>•</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Paytm Synced
+            </span>
+          </div>
+        </div>
+
+        {/* Quiet Hours & Protection Pill */}
+        <div className="inline-flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-xl bg-cloud border border-soft-line text-xs font-medium text-charcoal">
+          <ShieldCheck className="w-3.5 h-3.5 text-blue" />
+          <span>Silent Leak Protection: <strong className="text-emerald-700 font-bold">Active 24/7</strong></span>
+        </div>
       </div>
 
-      {/* Festival Alert Banner if active or upcoming */}
+      {/* 2. Festival Signal Banner (Compact & Non-intrusive) */}
       {festivalBanner && (
         <div
           onClick={() => onNavigateToTab('festivals')}
-          className="p-4 rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50/60 border border-amber-200/80 shadow-xs flex items-center justify-between gap-3 cursor-pointer hover:border-amber-400 transition"
+          className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent border border-amber-300/60 shadow-xs flex items-center justify-between gap-3 cursor-pointer hover:border-amber-400 transition"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
-              <Calendar className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
+              <Calendar className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-google font-black uppercase tracking-wider bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-google font-black uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">
                   {festivalBanner.phase || 'Festival Signal'}
                 </span>
                 {festivalBanner.daysToStart !== undefined && (
-                  <span className="text-[11px] text-amber-800 font-semibold">
+                  <span className="text-xs text-amber-800 font-bold">
                     {festivalBanner.daysToStart} din bache hain
                   </span>
                 )}
               </div>
-              <p className="text-xs font-bold text-obsidian mt-1 truncate">
+              <p className="text-xs font-semibold text-obsidian mt-0.5 truncate">
                 {festivalBanner.headline}
               </p>
             </div>
           </div>
-          <button className="text-xs font-google font-bold text-amber-900 flex items-center gap-1 shrink-0 bg-white/80 px-2.5 py-1.5 rounded-xl border border-amber-200">
+          <button className="text-xs font-google font-bold text-amber-900 flex items-center gap-1 shrink-0 bg-white/90 px-3 py-1.5 rounded-xl border border-amber-200/80 hover:bg-white shadow-xs">
             <span>{festivalBanner.actionLabel || 'Stock Check'}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3 h-3" />
           </button>
         </div>
       )}
 
-      {/* Hero Card: Recovered Revenue Count-Up */}
-      <div className="relative rounded-3xl bg-gradient-to-b from-sky/40 via-cloud to-paper p-5 sm:p-7 border border-line shadow-feature overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-48 h-48 rounded-full bg-blue/15 blur-2xl pointer-events-none" />
-
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-blue" />
-            {t.heroCardTitle}
-          </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-google font-bold bg-emerald-100/90 text-emerald-800 shadow-xs">
-            <TrendingUp className="w-3.5 h-3.5" />
-            {t.deltaText}
-          </span>
-        </div>
-
-        {/* Giant ₹ count */}
-        <div className="mt-3 mb-5">
-          <div className="text-4xl sm:text-6xl font-black text-obsidian tracking-tight font-google">
-            {formatRupee(animatedRecovered)}
-          </div>
-          <div className="text-xs text-charcoal font-medium mt-1 font-sans">
-            Pehle yeh paisa bina pata chale chhoot raha tha • Paytm Soundbox Synced
-          </div>
-        </div>
-
-        {/* 3 Mini Stats Underneath */}
-        <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-soft-line">
-          <div className="p-3 rounded-2xl bg-white/90 border border-soft-line text-left shadow-xs">
-            <div className="text-[11px] text-slate font-medium truncate flex items-center gap-1">
-              <Users className="w-3 h-3 text-blue" /> Won Back
+      {/* 3. Sleek AI Voice Copilot Bar (Modern conversational pill replacing bulky orb) */}
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-sky/60 via-paper to-cloud border border-blue/20 shadow-feature">
+        <div className="flex items-center justify-between gap-3">
+          <div
+            onClick={onOpenVoice}
+            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue/15 text-blue flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Sparkles className="w-5 h-5 text-blue animate-pulse" />
             </div>
-            <div className="text-base sm:text-lg font-google font-black text-obsidian mt-0.5">
-              {wonBackVal}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-google font-black text-obsidian">Vyom Copilot</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] text-emerald-700 font-medium">Ready</span>
+              </div>
+              <p className="text-xs text-charcoal font-sans truncate mt-0.5 group-hover:text-blue transition-colors">
+                Bolke poochhein: <span className="italic font-medium text-ink">"Aaj dhanda kaisa hai?" ya "Kiska udhaar overdue hai?"</span>
+              </p>
             </div>
-            <div className="text-[10px] text-charcoal truncate">customers wapas</div>
           </div>
 
-          <div className="p-3 rounded-2xl bg-white/90 border border-soft-line text-left shadow-xs">
-            <div className="text-[11px] text-slate font-medium truncate flex items-center gap-1">
-              <IndianRupee className="w-3 h-3 text-emerald-600" /> {t.udhaarCollected}
-            </div>
-            <div className="text-base sm:text-lg font-google font-black text-emerald-700 mt-0.5">
-              {formatRupee(udhaarCollectedVal)}
-            </div>
-            <div className="text-[10px] text-charcoal truncate">vasool hua</div>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white/90 border border-soft-line text-left shadow-xs">
-            <div className="text-[11px] text-slate font-medium truncate flex items-center gap-1">
-              <Zap className="w-3 h-3 text-purple-600" /> {t.campaignSpend}
-            </div>
-            <div className="text-base sm:text-lg font-google font-black text-obsidian mt-0.5">
-              {formatRupee(campaignSpendVal)}
-            </div>
-            <div className="text-[10px] text-charcoal truncate">WhatsApp kharch</div>
-          </div>
-        </div>
-      </div>
-
-      {/* CENTRAL VOICE ORB (Prominent) */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-sky/20 to-cloud border border-line shadow-feature text-center flex flex-col items-center relative overflow-hidden">
-        <div className="relative mb-3 flex items-center justify-center">
-          {/* Concentric pulsing rings */}
-          <div className="absolute w-24 h-24 rounded-full border border-blue/40 animate-voice-ring-1 pointer-events-none" />
-          <div className="absolute w-32 h-32 rounded-full border border-sky animate-voice-ring-2 pointer-events-none" />
-
-          {/* Central Blue Mic Button */}
           <button
             onClick={onOpenVoice}
-            className="w-20 h-20 rounded-full bg-blue hover:bg-[#1a85b9] text-white flex items-center justify-center shadow-feature transition-transform transform active:scale-95 cursor-pointer relative z-10 shadow-glow-blue"
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-blue hover:bg-blue-dark text-white flex items-center justify-center shadow-button shadow-glow-blue transition-all transform active:scale-95 flex-shrink-0 cursor-pointer"
             aria-label="Bolke poochhein"
+            title="Open Voice Assistant"
           >
-            <Mic className="w-9 h-9" />
+            <Mic className="w-5 h-5" />
           </button>
         </div>
 
-        <h3 className="text-base font-google font-black text-obsidian tracking-tight">
-          {t.voiceOrbCaption}
-        </h3>
-        <p className="text-xs text-charcoal mt-1 max-w-xs font-sans">
-          Type karne ki zaroorat nahi — seedha Hindi, Marathi ya Hinglish mein bolein
-        </p>
-
-        {/* Live Audio Assistant pill */}
-        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-line text-[11px] font-google font-bold text-blue shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Vyom Copilot Engine Online</span>
+        {/* Quick Suggestion Pills */}
+        <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-soft-line overflow-x-auto no-scrollbar">
+          <span className="text-[11px] font-bold text-slate whitespace-nowrap font-google">Poochhein:</span>
+          {[
+            { label: '📊 Aaj Ki Bikri', query: 'Aaj ki bikri kitni hui?' },
+            { label: '⚠️ Overdue Udhaar', query: 'Kiska udhaar 30 din se overdue hai?' },
+            { label: '🎉 Navratri Stock', query: 'Navratri ke liye kya stock karna chahiye?' },
+            { label: '💡 Naye Mauke', query: 'Vyom ne naye kya mauke dhoonde hain?' },
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              onClick={onOpenVoice}
+              className="px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white text-[11px] font-medium text-charcoal hover:text-blue border border-soft-line whitespace-nowrap transition cursor-pointer shadow-xs"
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* "Vyom ne kuch dhoonda hai" (Opportunities to Approve) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
+      {/* 4. Unified KPI Business Performance Grid (4 Balanced Cards) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Card 1: Silent Leak Recovered */}
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
           <div>
-            <h2 className="text-base sm:text-lg font-google font-black text-obsidian tracking-tight flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-blue" />
-              {t.opportunitiesTitle}
-            </h2>
-            <p className="text-xs text-charcoal font-sans">{t.opportunitiesSubtitle}</p>
+            <div className="flex items-center justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+                <Sparkles className="w-3 h-3 text-blue shrink-0" />
+                <span className="truncate">Recovered</span>
+              </span>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100 shrink-0">
+                12.8x ROI
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-obsidian tracking-tight font-google mt-2 truncate">
+              {formatRupee(animatedRecovered)}
+            </div>
           </div>
-          <button
-            onClick={() => onNavigateToTab('opportunities')}
-            className="text-xs font-google font-bold text-blue hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>Sabhi ({activeOpportunities.length})</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="text-[11px] text-charcoal mt-2 pt-2 border-t border-soft-line flex items-center justify-between gap-1">
+            <span className="flex items-center gap-1 text-blue font-semibold truncate">
+              <Users className="w-3 h-3 shrink-0" /> <span className="truncate">{wonBackVal} Won Back</span>
+            </span>
+            <span className="text-slate text-[10px] shrink-0">30 din</span>
+          </div>
         </div>
 
-        {/* Horizontally swipeable cards */}
-        {activeOpportunities.length > 0 ? (
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
-            {activeOpportunities.map((opp) => (
-              <div
-                key={opp.id}
-                className="w-72 sm:w-80 flex-shrink-0 bg-white rounded-3xl p-4 sm:p-5 border border-line shadow-feature flex flex-col justify-between hover:border-blue transition-all"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-[10px] font-google font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky text-blue">
-                      {opp.type === 'winback'
-                        ? 'Win-back'
-                        : opp.type === 'deadhours'
-                        ? 'Dead hours'
-                        : opp.type === 'festival'
-                        ? 'Festival'
-                        : 'Sales drop'}
-                    </span>
-                    <div className="text-right">
-                      <div className="text-[10px] text-slate font-medium">Bikri Mauka</div>
-                      <div className="text-base sm:text-lg font-google font-black text-blue">
-                        {formatRupee(opp.potentialRevenue)}
+        {/* Card 2: Today's Sales */}
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+          <div>
+            <div className="flex items-center justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+                <TrendingUp className="w-3 h-3 text-emerald-600 shrink-0" />
+                <span className="truncate">{t.todaySales}</span>
+              </span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${
+                salesDelta >= 0
+                  ? 'text-emerald-800 bg-emerald-50 border-emerald-100'
+                  : 'text-amber-800 bg-amber-50 border-amber-100'
+              }`}>
+                {salesDelta >= 0 ? `+${formatRupee(salesDelta)}` : formatRupee(salesDelta)}
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-obsidian tracking-tight font-google mt-2 truncate">
+              {formatRupee(todaySalesVal)}
+            </div>
+          </div>
+          <div className="text-[11px] text-charcoal mt-2 pt-2 border-t border-soft-line flex items-center justify-between gap-1">
+            <span className="text-slate font-medium truncate">Kal: {formatRupee(yesterdaySalesVal)}</span>
+            <span className="text-emerald-700 font-bold text-[10px] shrink-0">{metrics?.todayOrders ?? 24} Orders</span>
+          </div>
+        </div>
+
+        {/* Card 3: Udhaar Collected */}
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+          <div>
+            <div className="flex items-center justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+                <IndianRupee className="w-3 h-3 text-blue shrink-0" />
+                <span className="truncate">{t.udhaarCollected}</span>
+              </span>
+              <span className="text-[10px] font-bold text-blue bg-sky px-1.5 py-0.5 rounded-full shrink-0">
+                Soundbox ✓
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight font-google mt-2 truncate">
+              {formatRupee(udhaarCollectedVal)}
+            </div>
+          </div>
+          <div className="text-[11px] text-charcoal mt-2 pt-2 border-t border-soft-line flex items-center justify-between gap-1">
+            <span className="text-charcoal font-medium truncate">Vasool hua</span>
+            <span className="text-amber-700 font-bold text-[10px] shrink-0">
+              {udhaarStrip?.overdueCount ?? 2} Overdue
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Marketing & Campaign ROI */}
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+          <div>
+            <div className="flex items-center justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+                <Zap className="w-3 h-3 text-purple-600 shrink-0" />
+                <span className="truncate">{t.campaignSpend}</span>
+              </span>
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-full border border-purple-100 shrink-0">
+                WhatsApp
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-obsidian tracking-tight font-google mt-2 truncate">
+              {formatRupee(campaignSpendVal)}
+            </div>
+          </div>
+          <div className="text-[11px] text-charcoal mt-2 pt-2 border-t border-soft-line flex items-center justify-between gap-1">
+            <span className="text-slate font-medium truncate">Kharch</span>
+            <span className="text-purple-700 font-bold text-[10px] shrink-0">₹14.2k return</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Main Dashboard Content (Balanced 2-Column Grid on Desktop) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left Column (7 cols): Opportunities Action Radar */}
+        <div className="lg:col-span-7 space-y-3.5 min-w-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-google font-black text-obsidian tracking-tight flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-blue" />
+                {t.opportunitiesTitle}
+              </h2>
+              <p className="text-xs text-charcoal font-sans">{t.opportunitiesSubtitle}</p>
+            </div>
+            <button
+              onClick={() => onNavigateToTab('opportunities')}
+              className="text-xs font-google font-bold text-blue hover:underline flex items-center gap-0.5 cursor-pointer"
+            >
+              <span>Sabhi Dekhein ({activeOpportunities.length})</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {activeOpportunities.length > 0 ? (
+            <div className="space-y-3">
+              {activeOpportunities.slice(0, 3).map((opp) => (
+                <div
+                  key={opp.id}
+                  className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature hover:border-blue/50 transition-all flex flex-col justify-between gap-3 group"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <span className="text-[10px] font-google font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky text-blue">
+                        {opp.type === 'winback'
+                          ? 'Win-back'
+                          : opp.type === 'deadhours'
+                          ? 'Dead hours'
+                          : opp.type === 'festival'
+                          ? 'Festival'
+                          : 'Sales drop'}
+                      </span>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate font-medium">Potential: </span>
+                        <span className="text-sm sm:text-base font-google font-black text-blue">
+                          {formatRupee(opp.potentialRevenue)}
+                        </span>
                       </div>
                     </div>
+
+                    <h3
+                      onClick={() => onSelectOpportunity(opp)}
+                      className="font-google font-extrabold text-sm sm:text-base text-obsidian leading-snug cursor-pointer group-hover:text-blue transition-colors"
+                    >
+                      {opp.title[lang] || opp.title.hinglish}
+                    </h3>
+
+                    <p className="text-xs text-charcoal mt-1 line-clamp-2 leading-relaxed font-sans">
+                      {opp.description[lang] || opp.description.hinglish}
+                    </p>
                   </div>
 
-                  <h3
-                    onClick={() => onSelectOpportunity(opp)}
-                    className="font-google font-extrabold text-sm sm:text-base text-obsidian leading-snug line-clamp-2 cursor-pointer hover:text-blue transition-colors"
-                  >
-                    {opp.title[lang] || opp.title.hinglish}
-                  </h3>
+                  {/* Card Action Row */}
+                  <div className="pt-3 border-t border-soft-line flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => onSelectOpportunity(opp)}
+                      className="py-2 px-3 rounded-xl border border-line/80 text-xs font-google font-bold text-charcoal hover:bg-cloud transition cursor-pointer"
+                    >
+                      {t.laterBtn}
+                    </button>
 
-                  <p className="text-xs text-charcoal mt-1 line-clamp-2 leading-relaxed font-sans">
-                    {opp.description[lang] || opp.description.hinglish}
-                  </p>
+                    <button
+                      onClick={() => onQuickApproveOpportunity(opp)}
+                      className="py-2 px-3.5 rounded-xl bg-blue hover:bg-blue-dark text-white text-xs font-google font-black shadow-button flex items-center justify-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{t.approveBtn}</span>
+                    </button>
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 rounded-2xl bg-cloud border border-line/60 text-center text-xs text-charcoal font-sans">
+              Sabhi mauke approve ho chuke hain! Naye transactions aate hi Vyom naye mauke dhoondega.
+            </div>
+          )}
+        </div>
 
-                {/* Card Action Buttons: Big "Haan ✓" and "Baad mein" */}
-                <div className="mt-4 pt-3 border-t border-soft-line flex items-center gap-2">
-                  <button
-                    onClick={() => onSelectOpportunity(opp)}
-                    className="flex-1 py-2.5 px-2 rounded-xl border border-line text-xs font-google font-bold text-charcoal hover:bg-cloud transition cursor-pointer text-center"
-                  >
-                    {t.laterBtn}
-                  </button>
-
-                  <button
-                    onClick={() => onQuickApproveOpportunity(opp)}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-blue hover:bg-blue/90 text-white text-xs font-google font-black shadow-button flex items-center justify-center gap-1 transition cursor-pointer"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>{t.approveBtn}</span>
-                  </button>
+        {/* Right Column (5 cols): Velocity Chart & Udhaar Quick Strip */}
+        <div className="lg:col-span-5 space-y-4 min-w-0">
+          {/* Today's Sales Velocity Hourly Chart */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-charcoal uppercase tracking-wider font-google">
+                  Hourly Sales Velocity
+                </div>
+                <div className="text-lg font-black text-obsidian tracking-tight font-google mt-0.5">
+                  {formatRupee(todaySalesVal)}
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-6 rounded-3xl bg-cloud border border-line text-center text-xs text-charcoal font-sans">
-            Sabhi mauke approve ho chuke hain! Naye transactions aate hi Vyom naye mauke dhoondega.
-          </div>
-        )}
-      </div>
+              <div className="text-right">
+                <span className="text-[10px] text-blue font-bold bg-sky px-2 py-0.5 rounded-full font-google">
+                  Peak 6 PM – 8 PM
+                </span>
+              </div>
+            </div>
 
-      {/* Autonomous Udhaar Auto-Pilot Strip */}
-      <div
-        onClick={() => onNavigateToTab('udhaar')}
-        className="p-4 rounded-3xl bg-sky/30 border border-sky/70 hover:border-blue transition cursor-pointer flex items-center justify-between gap-3 shadow-xs"
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-white border border-sky flex items-center justify-center text-blue font-bold flex-shrink-0">
-            <ShieldCheck className="w-5 h-5 text-blue" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xs text-obsidian truncate">
-                {udhaarStrip?.recommendedAction || t.autonomousStrip}
+            {/* Hourly Area Chart */}
+            <div className="h-32 w-full pt-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="todayGradHome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2597d0" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#2597d0" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="hour" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
+                    contentStyle={{
+                      backgroundColor: '#09090b',
+                      borderRadius: '10px',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      border: 'none',
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="today"
+                    stroke="#2597d0"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#todayGradHome)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="yesterday"
+                    stroke="#94a3b8"
+                    strokeWidth={1.5}
+                    strokeDasharray="3 3"
+                    fill="none"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] text-slate pt-2 border-t border-soft-line">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-0.5 bg-blue rounded-full" /> Aaj (Solid)
               </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-0.5 bg-slate rounded-full border-dashed" /> Kal (Dashed)
+              </span>
+              <span className="text-emerald-700 font-semibold">{salesDelta >= 0 ? `+${formatRupee(salesDelta)}` : ''}</span>
+            </div>
+          </div>
+
+          {/* Autonomous Udhaar Auto-Pilot Card */}
+          <div
+            onClick={() => onNavigateToTab('udhaar')}
+            className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-sky/40 via-paper to-white border border-blue/20 hover:border-blue shadow-feature transition cursor-pointer flex flex-col justify-between gap-3 group"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-white border border-sky flex items-center justify-center text-blue font-bold flex-shrink-0 shadow-xs">
+                  <ShieldCheck className="w-4 h-4 text-blue" />
+                </div>
+                <div className="min-w-0">
+                  <span className="font-bold text-xs text-obsidian block truncate font-google">
+                    {udhaarStrip?.recommendedAction || t.autonomousStrip}
+                  </span>
+                  <span className="text-[11px] text-charcoal font-medium">
+                    {udhaarStrip ? `${formatRupee(udhaarStrip.totalOutstanding)} baaki hisaab` : 'Paytm Soundbox Synced'}
+                  </span>
+                </div>
+              </div>
+
               {udhaarStrip && udhaarStrip.overdueCount > 0 && (
-                <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded-full">
+                <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full shrink-0">
                   {udhaarStrip.overdueCount} Overdue
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-charcoal mt-0.5">
-              <span className="font-semibold text-blue">{t.autonomousTag}</span> • {udhaarStrip ? `${formatRupee(udhaarStrip.totalOutstanding)} baaki hisaab` : 'WhatsApp link through Paytm'}
+
+            <div className="pt-2 border-t border-soft-line flex items-center justify-between text-xs font-google font-bold text-blue group-hover:underline">
+              <span>Khata Dekhein & Takada Bhejein</span>
+              <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
-        </div>
-        <ArrowRight className="w-4 h-4 text-blue flex-shrink-0" />
-      </div>
-
-      {/* Today's Sales Mini Sparkline vs Yesterday */}
-      <div className="p-4 rounded-3xl bg-white border border-line shadow-feature space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-charcoal uppercase tracking-wider">
-              {t.todaySales}
-            </div>
-            <div className="flex items-baseline gap-2 mt-0.5">
-              <span className="text-2xl font-black text-obsidian tracking-tight">
-                {formatRupee(todaySalesVal)}
-              </span>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                {salesDelta >= 0 ? `+${formatRupee(salesDelta)} zyada` : t.salesComparison}
-              </span>
-            </div>
-          </div>
-          <div className="text-right text-xs text-slate">
-            <div>Kal: {formatRupee(yesterdaySalesVal)}</div>
-            <div className="text-[10px] text-emerald-600 font-semibold">
-              {metrics ? `${metrics.todayOrders} Orders Total` : '+₹540 zyada'}
-            </div>
-          </div>
-        </div>
-
-        {/* Mini hourly area chart */}
-        <div className="h-28 w-full pt-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="todayGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2597d0" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2597d0" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#8b8b8b' }} axisLine={false} tickLine={false} />
-              <Tooltip
-                formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
-                contentStyle={{
-                  backgroundColor: '#070709',
-                  borderRadius: '12px',
-                  color: '#ffffff',
-                  fontSize: '11px',
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="today"
-                stroke="#2597d0"
-                strokeWidth={2.5}
-                fillOpacity={1}
-                fill="url(#todayGrad)"
-              />
-              <Area
-                type="monotone"
-                dataKey="yesterday"
-                stroke="#8b8b8b"
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                fill="none"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] text-slate pt-1 border-t border-soft-line">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 bg-blue rounded-full" /> Aaj (Solid)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 bg-slate rounded-full border-dashed" /> Kal (Dashed)
-          </span>
-          <span className="text-blue font-semibold">Peak 6 PM – 8 PM</span>
         </div>
       </div>
     </div>

@@ -58,7 +58,7 @@ async def get_udhaar_summary(merchant: CurrentMerchant, db: DatabaseDep) -> Udha
 
             due = doc.get("due_date")
             if due:
-                due_d = due if isinstance(due, datetime.date) else due.date()
+                due_d = due.date() if isinstance(due, datetime.datetime) else due
                 if due_d < today_date:
                     overdue_paise += balance
                     overdue_count += 1
@@ -79,16 +79,35 @@ async def list_khata_entries(
     db: DatabaseDep,
     status: str | None = Query(None),
     customer_id: str | None = Query(None),
-) -> list[KhataEntry]:
-    """List khata entries with optional status or customer filters."""
+) -> list[dict[str, Any]]:
+    """List khata entries enriched with customer information and overdue days."""
     query: dict[str, Any] = {"merchant_id": merchant.id}
     if status:
         query["status"] = status
     if customer_id:
         query["customer_id"] = customer_id
 
+    today_date = Clock.today()
+    customers_map = {
+        c["_id"]: c async for c in db.customers.find({"merchant_id": merchant.id})
+    }
+
     cursor = db.khata_entries.find(query).sort("due_date", 1)
-    return [KhataEntry.model_validate(e) async for e in cursor]
+    results: list[dict[str, Any]] = []
+    async for doc in cursor:
+        entry = KhataEntry.model_validate(doc)
+        item = entry.model_dump()
+        cust = customers_map.get(entry.customer_id, {})
+        item["customer_name"] = cust.get("name", "Grahak")
+        item["customer_phone"] = cust.get("phone_e164", "")
+        item["customer_language"] = cust.get("language", "hinglish")
+        
+        due_d = entry.due_date
+        item["days_overdue"] = max(0, (today_date - due_d).days) if due_d < today_date else 0
+        item["balance_paise"] = max(0, entry.amount_total_paise - entry.amount_paid_paise)
+        results.append(item)
+
+    return results
 
 
 @router.get("/entries/{entry_id}")
@@ -110,7 +129,18 @@ async def create_khata_entry(
     merchant: CurrentMerchant,
     db: DatabaseDep,
 ) -> KhataEntry:
-    """Manually record a new credit entry."""
+    """Manually record a new credit entry, auto-creating customer record if needed."""
+    cust_doc = await db.customers.find_one({"_id": payload.customer_id, "merchant_id": merchant.id})
+    if not cust_doc:
+        from vyom.models.customer import Customer
+        new_cust = Customer(
+            id=payload.customer_id,
+            merchant_id=merchant.id,
+            name=payload.customer_id.replace("cust-", "Grahak ").title(),
+            phone_e164="+919822000000",
+        )
+        await db.customers.insert_one(new_cust.to_mongo())
+
     entry = KhataEntry(
         merchant_id=merchant.id,
         customer_id=payload.customer_id,
@@ -137,18 +167,22 @@ async def mark_entry_paid(
     db: DatabaseDep,
     amount_paid_paise: int | None = None,
 ) -> dict[str, str]:
-    """Record payment for a khata entry."""
-    doc = await db.khata_entries.find_one({"_id": entry_id, "merchant_id": merchant.id})
+    """Record payment for a khata entry (accepts entry_id or customer_id)."""
+    doc = await db.khata_entries.find_one({
+        "$or": [{"_id": entry_id}, {"customer_id": entry_id}],
+        "merchant_id": merchant.id,
+    })
     if not doc:
         raise NotFoundError("Khata entry not found")
 
+    real_entry_id = doc["_id"]
     total = doc["amount_total_paise"]
     paid = amount_paid_paise if amount_paid_paise is not None else total
     new_status = KhataStatus.PAID if paid >= total else KhataStatus.OPEN
 
     now_dt = Clock.now()
     await db.khata_entries.update_one(
-        {"_id": entry_id},
+        {"_id": real_entry_id},
         {
             "$set": {
                 "amount_paid_paise": paid,
@@ -161,7 +195,7 @@ async def mark_entry_paid(
     await sse_hub.broadcast(
         merchant.id,
         "khata.paid",
-        {"entry_id": entry_id, "amount_paid_paise": paid, "status": new_status.value},
+        {"entry_id": real_entry_id, "amount_paid_paise": paid, "status": new_status.value},
     )
     return {"status": "updated", "khata_status": new_status.value}
 
@@ -172,8 +206,11 @@ async def send_reminder_now(
     merchant: CurrentMerchant,
     db: DatabaseDep,
 ) -> dict[str, Any]:
-    """Trigger an immediate, polite payment reminder via Telegram or simulated gateway."""
-    doc = await db.khata_entries.find_one({"_id": entry_id, "merchant_id": merchant.id})
+    """Trigger an immediate, polite payment reminder (accepts entry_id or customer_id)."""
+    doc = await db.khata_entries.find_one({
+        "$or": [{"_id": entry_id}, {"customer_id": entry_id}],
+        "merchant_id": merchant.id,
+    })
     if not doc:
         raise NotFoundError("Khata entry not found")
 

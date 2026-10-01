@@ -54,21 +54,21 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
   ];
 
   return (
-    <div className="space-y-5 pb-8 animate-in fade-in duration-150">
+    <div className="space-y-4 pb-8 animate-in fade-in duration-150">
       {/* Profile Overview */}
-      <div className="p-5 rounded-3xl bg-gradient-to-r from-sky/40 to-cloud border border-line shadow-feature">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky/40 via-cloud to-paper border border-line/70 shadow-feature">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white border border-line text-blue font-extrabold text-xl flex items-center justify-center shadow-button">
+          <div className="w-11 h-11 rounded-xl bg-white border border-line/80 text-blue font-extrabold text-lg flex items-center justify-center shadow-xs font-google">
             SK
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black text-obsidian tracking-tight">Sharma Kirana Store</h1>
-              <span className="text-[10px] font-bold text-blue bg-sky px-2 py-0.5 rounded-full uppercase">
+              <h1 className="text-lg sm:text-xl font-black text-obsidian tracking-tight font-google">Sharma Kirana Store</h1>
+              <span className="text-[10px] font-bold text-blue bg-sky px-2 py-0.5 rounded-full uppercase font-google">
                 Pune
               </span>
             </div>
-            <p className="text-xs text-charcoal mt-0.5">
+            <p className="text-xs text-charcoal mt-0.5 font-sans">
               Paytm POS Terminal #982344 • 480 Monthly Active Kirana Shoppers
             </p>
           </div>
@@ -76,241 +76,235 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
       </div>
 
       {/* 3 Key Store Metrics */}
-      <div className="grid grid-cols-3 gap-2.5">
-        <div className="p-3.5 rounded-2xl bg-white border border-line shadow-xs">
-          <div className="text-[11px] text-slate font-medium">Avg Ticket Size</div>
-          <div className="text-xl font-black text-obsidian tracking-tight mt-0.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature">
+          <div className="text-[11px] text-slate font-medium font-google">Avg Ticket Size</div>
+          <div className="text-xl sm:text-2xl font-black text-obsidian tracking-tight font-google mt-0.5">
             {formatRupee(340)}
           </div>
-          <div className="text-[10px] text-emerald-600 font-semibold">+₹32 vs city avg</div>
+          <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">+₹32 vs city avg</div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white border border-line shadow-xs">
-          <div className="text-[11px] text-slate font-medium">Repeat Grahak %</div>
-          <div className="text-xl font-black text-blue tracking-tight mt-0.5">
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature">
+          <div className="text-[11px] text-slate font-medium font-google">Repeat Grahak %</div>
+          <div className="text-xl sm:text-2xl font-black text-blue tracking-tight font-google mt-0.5">
             68%
           </div>
-          <div className="text-[10px] text-charcoal">High loyalty store</div>
+          <div className="text-[10px] text-charcoal mt-0.5">High loyalty store</div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-sky/50 border border-blue shadow-xs">
-          <div className="text-[11px] text-blue font-bold">Dead Hours Alert</div>
-          <div className="text-base font-black text-obsidian tracking-tight mt-0.5">
+        <div className="p-4 rounded-2xl bg-sky/40 border border-blue/20 shadow-feature">
+          <div className="text-[11px] text-blue font-bold font-google">Dead Hours Alert</div>
+          <div className="text-base sm:text-lg font-black text-obsidian tracking-tight font-google mt-0.5">
             2 PM – 4 PM
           </div>
-          <div className="text-[10px] text-blue font-medium">82% footfall drop</div>
+          <div className="text-[10px] text-blue font-medium mt-0.5">82% footfall drop</div>
         </div>
       </div>
 
-      {/* Local Signals (Pune Festivals & Events) */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue" />
-            <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
-              Aaspas Ke Signals (Pune Local Events)
-            </h3>
-          </div>
-          <span className="text-[10px] text-slate font-medium">Auto-detected by Vyom</span>
-        </div>
-
-        <p className="text-xs text-charcoal leading-relaxed">
-          Vyom ne aaspas ke 3 bade events detect kiye hain jinse dukaan par demand badh sakti hai:
-        </p>
-
-        <div className="space-y-2">
-          <div
-            onClick={() => onNavigateToTab('opportunities')}
-            className="p-3 rounded-2xl bg-sky/30 border border-sky/70 hover:border-blue transition cursor-pointer flex items-center justify-between gap-2"
-          >
-            <div>
-              <div className="font-bold text-xs text-obsidian">
-                🐘 Ganesh Chaturthi (4 Din Baki)
-              </div>
-              <div className="text-[11px] text-charcoal mt-0.5">
-                Modak peeth, elaichi aur shuddh ghee ki demand 3x badhne wali hai
+      {/* 2-Column Responsive Dashboard on Desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Left Column: 7-Day Trend + Local Signals */}
+        <div className="space-y-4">
+          {/* Sales Trend Line Chart with Annotation */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
+                  7-Day Sales Trend & Churn Signal
+                </h3>
+                <p className="text-[11px] text-charcoal font-sans">
+                  Vyom detected dip on Day 4–5 and triggered win-back
+                </p>
               </div>
             </div>
-            <span className="text-xs font-bold text-blue flex items-center gap-1 flex-shrink-0">
-              <span>Offer Banayein</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </span>
+
+            <div className="h-36 w-full pt-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
+                    contentStyle={{
+                      backgroundColor: '#09090b',
+                      borderRadius: '10px',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      border: 'none',
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="sales"
+                    stroke="#2597d0"
+                    strokeWidth={2.5}
+                    dot={{ fill: '#2597d0', r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center gap-2 text-[11px] text-amber-900">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+              <span>
+                <strong>AI Note:</strong> Win-back offer launch hone ke baad Day 7 tak bikri ₹7,420 wapas pahunch gayi!
+              </span>
+            </div>
           </div>
 
-          <div className="p-3 rounded-2xl bg-cloud border border-soft-line flex items-center justify-between gap-2">
-            <div>
-              <div className="font-bold text-xs text-obsidian">
-                🥦 Shukrawar Peth Local Market Day (Kal)
+          {/* Local Signals (Pune Festivals & Events) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue" />
+                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
+                  Aaspas Ke Signals (Pune Events)
+                </h3>
               </div>
-              <div className="text-[11px] text-charcoal mt-0.5">
-                Bahar se log aate hain — shaam ko cold drinks aur packaged snacks bikte hain
+              <span className="text-[10px] text-slate font-medium">Auto-detected</span>
+            </div>
+
+            <div className="space-y-2">
+              <div
+                onClick={() => onNavigateToTab('opportunities')}
+                className="p-2.5 rounded-xl bg-sky/30 border border-sky/70 hover:border-blue transition cursor-pointer flex items-center justify-between gap-2"
+              >
+                <div>
+                  <div className="font-bold text-xs text-obsidian">
+                    🐘 Ganesh Chaturthi (4 Din Baki)
+                  </div>
+                  <div className="text-[11px] text-charcoal mt-0.5">
+                    Modak rava, jaggery aur pooja samagri demand +45% expected
+                  </div>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />
+              </div>
+
+              <div
+                onClick={() => onNavigateToTab('opportunities')}
+                className="p-2.5 rounded-xl bg-sky/30 border border-sky/70 hover:border-blue transition cursor-pointer flex items-center justify-between gap-2"
+              >
+                <div>
+                  <div className="font-bold text-xs text-obsidian">
+                    🌦️ Monsoon Chai Spike (Heavy Rain)
+                  </div>
+                  <div className="text-[11px] text-charcoal mt-0.5">
+                    Ginger tea + biscuit combos demand +28% spike
+                  </div>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />
               </div>
             </div>
-            <span className="text-[10px] text-slate font-medium">Auto-optimizing</span>
           </div>
+        </div>
 
-          <div className="p-3 rounded-2xl bg-cloud border border-soft-line flex items-center justify-between gap-2">
-            <div>
-              <div className="font-bold text-xs text-obsidian">
-                🏏 India vs Aus T20 Match (Ravi Shaam)
+        {/* Right Column: Heatmap + Top Selling Products */}
+        <div className="space-y-4">
+          {/* Peak Hours Heatmap */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue" />
+                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
+                  Dukaan Footfall Heatmap (7 Days)
+                </h3>
               </div>
-              <div className="text-[11px] text-charcoal mt-0.5">
-                Chips, namkeen aur cold beverage combo banayein
+              <span className="text-[10px] text-slate font-medium">Paytm Soundbox Times</span>
+            </div>
+
+            <div className="overflow-x-auto no-scrollbar">
+              <div className="min-w-[280px]">
+                {/* Header row */}
+                <div className="grid grid-cols-7 gap-1 text-[9px] font-bold text-slate mb-1">
+                  <div className="text-left">Day</div>
+                  {timeSlots.map((ts, idx) => (
+                    <div key={idx} className="text-center truncate">
+                      {ts.split(' ')[0]}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Day rows */}
+                {days.map((d, dIdx) => (
+                  <div key={dIdx} className="grid grid-cols-7 gap-1 mb-1 items-center">
+                    <div className="text-[10px] font-semibold text-charcoal truncate">{d.split(' ')[0]}</div>
+                    {heatmapData[dIdx].map((intensity, sIdx) => {
+                      let bg = 'bg-cloud border border-soft-line text-slate';
+                      if (intensity === 0) bg = 'bg-rose-50 text-error border border-rose-100 font-bold';
+                      else if (intensity === 1) bg = 'bg-sky/30 border border-sky/50';
+                      else if (intensity === 2) bg = 'bg-sky text-blue font-bold';
+                      else if (intensity === 3) bg = 'bg-[#2597d0] text-white font-bold';
+                      else if (intensity === 4) bg = 'bg-[#0f6896] text-white font-black';
+
+                      return (
+                        <div
+                          key={sIdx}
+                          className={`h-6 rounded-md flex items-center justify-center text-[9px] ${bg}`}
+                          title={`${d} at ${timeSlots[sIdx]}`}
+                        >
+                          {intensity === 0 ? 'Dead' : intensity >= 3 ? 'Peak' : 'Norm'}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
-            <span className="text-[10px] text-slate font-medium">Scheduled</span>
-          </div>
-        </div>
-      </div>
 
-      {/* Peak Hours Heatmap Grid */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue" />
-            <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
-              Dukaan Ka Peak Hours Heatmap (7 Din × Ghante)
-            </h3>
+            <div className="flex items-center justify-between text-[10px] text-slate pt-2 border-t border-soft-line">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-rose-50 border border-rose-200" />
+                <span>Dead (2-4 PM)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-sky" />
+                <span>Normal</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-blue" />
+                <span>Peak (6-8 PM)</span>
+              </div>
+            </div>
           </div>
-          <span className="text-[10px] text-charcoal font-medium">Paytm Footfall Data</span>
-        </div>
 
-        <div className="overflow-x-auto no-scrollbar">
-          <div className="min-w-[420px]">
-            {/* Header row of time slots */}
-            <div className="grid grid-cols-7 gap-1 text-[10px] font-bold text-slate mb-1">
-              <div className="text-left">Day</div>
-              {timeSlots.map((ts, idx) => (
-                <div key={idx} className="text-center truncate">
-                  {ts.split(' ')[0]}
+          {/* Top Selling Items Table */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-blue" />
+                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
+                  Top Selling Products
+                </h3>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              {topItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-2.5 rounded-xl bg-cloud border border-soft-line flex items-center justify-between gap-2"
+                >
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs text-obsidian truncate">{item.name}</div>
+                    <div className="text-[10px] text-slate mt-0.5">
+                      {item.soldCount} units sold
+                    </div>
+                  </div>
+
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-black text-xs text-ink font-google">{formatRupee(item.revenue)}</div>
+                    {item.alert && (
+                      <span className="text-[9px] font-bold text-error bg-rose-100 px-1 py-0.2 rounded">
+                        {item.alert}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-
-            {/* Day rows */}
-            {days.map((d, dIdx) => (
-              <div key={dIdx} className="grid grid-cols-7 gap-1 mb-1 items-center">
-                <div className="text-[11px] font-semibold text-charcoal truncate">{d.split(' ')[0]}</div>
-                {heatmapData[dIdx].map((intensity, sIdx) => {
-                  let bg = 'bg-cloud border border-soft-line text-slate';
-                  if (intensity === 0) bg = 'bg-rose-50 text-error border border-rose-100 font-bold'; // Dead hours
-                  else if (intensity === 1) bg = 'bg-sky/30 border border-sky/50';
-                  else if (intensity === 2) bg = 'bg-sky text-blue font-bold';
-                  else if (intensity === 3) bg = 'bg-[#2597d0] text-white font-bold';
-                  else if (intensity === 4) bg = 'bg-[#0f6896] text-white font-black'; // Super peak
-
-                  return (
-                    <div
-                      key={sIdx}
-                      className={`h-7 rounded-lg flex items-center justify-center text-[10px] ${bg}`}
-                      title={`${d} at ${timeSlots[sIdx]}`}
-                    >
-                      {intensity === 0 ? 'Dead' : intensity >= 3 ? 'Peak' : 'Norm'}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
           </div>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] text-slate pt-2 border-t border-soft-line">
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-rose-50 border border-rose-200" />
-            <span>Dead (2-4 PM)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-sky" />
-            <span>Normal</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-blue" />
-            <span>Peak (6-8 PM)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Sales Trend Line Chart with "Falling Sales" Annotation */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
-              7-Day Sales Trend & Churn Signal
-            </h3>
-            <p className="text-[11px] text-charcoal">
-              Vyom detected a temporary dip on Day 4–5 and triggered recovery
-            </p>
-          </div>
-        </div>
-
-        <div className="h-40 w-full pt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#8b8b8b' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#8b8b8b' }} axisLine={false} tickLine={false} />
-              <Tooltip
-                formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
-                contentStyle={{
-                  backgroundColor: '#070709',
-                  borderRadius: '12px',
-                  color: '#ffffff',
-                  fontSize: '11px',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="sales"
-                stroke="#2597d0"
-                strokeWidth={3}
-                dot={{ r: 4, fill: '#2597d0' }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center gap-2 text-xs text-amber-900">
-          <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-          <span>
-            <strong>AI Note:</strong> Day 4 par bikri 12% giri thi. Vyom ki win-back offer launch hone ke baad Day 7 tak bikri ₹7,420 par wapas aa gayi!
-          </span>
-        </div>
-      </div>
-
-      {/* Top Selling Items Table */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-blue" />
-            <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
-              Top Selling Products (Dukaan Ke Anchor Items)
-            </h3>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {topItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-3 rounded-2xl bg-cloud border border-soft-line flex items-center justify-between gap-2"
-            >
-              <div className="min-w-0">
-                <div className="font-bold text-xs text-obsidian truncate">{item.name}</div>
-                <div className="text-[10px] text-slate mt-0.5">
-                  {item.soldCount} units sold this month
-                </div>
-              </div>
-
-              <div className="text-right flex-shrink-0">
-                <div className="font-black text-xs text-ink">{formatRupee(item.revenue)}</div>
-                {item.alert && (
-                  <span className="text-[10px] font-bold text-error bg-rose-100 px-1.5 py-0.2 rounded">
-                    {item.alert}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

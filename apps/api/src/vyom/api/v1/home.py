@@ -85,7 +85,7 @@ async def get_home_dashboard(merchant: CurrentMerchant, db: DatabaseDep) -> Home
             total_udhaar += balance
             due = entry.get("due_date")
             if due:
-                due_d = due if isinstance(due, datetime.date) else due.date()
+                due_d = due.date() if isinstance(due, datetime.datetime) else due
                 if due_d < today_date:
                     overdue_count += 1
                 if earliest_due is None or due_d < earliest_due:

@@ -525,7 +525,7 @@ async def seed_festivals(db: Any | None = None) -> None:
     for pb in PLAYBOOKS:
         await db.festival_playbooks.update_one(
             {"key": pb.key},
-            {"$set": pb.to_mongo()},
+            pb.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_festival_playbooks", count=len(PLAYBOOKS))
@@ -534,7 +534,7 @@ async def seed_festivals(db: Any | None = None) -> None:
     for cal in CALENDAR_ENTRIES:
         await db.festival_calendar.update_one(
             {"key": cal.key, "year": cal.year},
-            {"$set": cal.to_mongo()},
+            cal.to_mongo_upsert(),
             upsert=True,
         )
     logger.info("seeded_festival_calendar", count=len(CALENDAR_ENTRIES))

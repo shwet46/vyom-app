@@ -124,7 +124,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
   return (
     <div className="space-y-4 pb-24 animate-in fade-in duration-150 relative">
       {/* Clean Modern Header Banner */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-white border border-line shadow-feature relative overflow-hidden">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="text-[11px] font-google font-bold text-slate uppercase tracking-wider">
@@ -141,7 +141,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onOpenKhataScan}
-              className="py-2 px-3 rounded-2xl bg-cloud border border-line text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center gap-1.5 transition cursor-pointer"
+              className="py-2 px-3 rounded-xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center gap-1.5 transition cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5 text-blue" />
               <span>{t.khataScanBtn}</span>
@@ -152,7 +152,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 setEntryType('udhaar');
                 setShowAddEntryModal(true);
               }}
-              className="py-2 px-3 rounded-2xl bg-rose-600 text-white font-google font-extrabold text-xs shadow-button hover:bg-rose-700 flex items-center gap-1.5 transition cursor-pointer"
+              className="py-2 px-3 rounded-xl bg-rose-600 text-white font-google font-extrabold text-xs shadow-button hover:bg-rose-700 flex items-center gap-1.5 transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>{t.addUdhaarBtn}</span>
@@ -163,7 +163,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 setEntryType('jama');
                 setShowAddEntryModal(true);
               }}
-              className="py-2 px-3 rounded-2xl bg-emerald-700 text-white font-google font-extrabold text-xs shadow-button hover:bg-emerald-800 flex items-center gap-1.5 transition cursor-pointer"
+              className="py-2 px-3 rounded-xl bg-emerald-700 text-white font-google font-extrabold text-xs shadow-button hover:bg-emerald-800 flex items-center gap-1.5 transition cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
               <span>{t.recordJamaBtn}</span>
@@ -173,8 +173,8 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
       </div>
 
       {/* Financial Health Summary: 3 Pillars of Kirana Khata */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        <div className="p-4 rounded-3xl bg-white border border-line shadow-feature space-y-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate uppercase tracking-wider font-google">
               {t.totalOutstanding}
@@ -191,12 +191,12 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           </div>
         </div>
 
-        <div className="p-4 rounded-3xl bg-rose-50/80 border border-rose-200/90 shadow-feature space-y-1">
+        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 shadow-feature space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-error uppercase tracking-wider font-google">
               {t.overdueAmount}
             </span>
-            <span className="text-[10px] font-bold text-white bg-error px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-white bg-error px-2 py-0.5 rounded-full font-google">
               Urgent Risk
             </span>
           </div>
@@ -208,12 +208,12 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           </div>
         </div>
 
-        <div className="p-4 rounded-3xl bg-emerald-50/80 border border-emerald-200/90 shadow-feature space-y-1">
+        <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-feature space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider font-google">
               {t.collectedThisWeek}
             </span>
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-google">
               Soundbox ✓
             </span>
           </div>
@@ -227,9 +227,9 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
       </div>
 
       {/* Autonomous Reminders ON Toggle Banner */}
-      <div className="p-4 rounded-3xl bg-sky/30 border border-sky/70 shadow-xs flex items-center justify-between gap-3">
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-sky/40 border border-blue/20 shadow-xs flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-white border border-sky flex items-center justify-center text-blue flex-shrink-0 shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-white border border-sky flex items-center justify-center text-blue flex-shrink-0 shadow-xs">
             <ShieldCheck className="w-5 h-5 text-blue" />
           </div>
           <div className="min-w-0">
@@ -327,7 +327,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
 
       {/* VIEW MODE 1: MODERN DIGITAL KHATA CARDS */}
       {viewMode === 'cards' && (
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {filteredCustomers.length > 0 ? (
             filteredCustomers.map((cust) => {
               const isOverdue = cust.daysOverdue >= 30 && cust.status !== 'paid' && cust.amount > 0;
@@ -337,7 +337,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 <div
                   key={cust.id}
                   onClick={() => onSelectCustomer(cust)}
-                  className="p-4 rounded-3xl bg-white border border-line shadow-feature hover:border-blue transition-all cursor-pointer space-y-3"
+                  className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature hover:border-blue/50 transition-all cursor-pointer space-y-3 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-3">
                     {/* Left: Customer Initials + Trust Score + Details */}

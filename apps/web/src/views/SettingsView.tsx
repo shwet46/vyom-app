@@ -47,23 +47,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="space-y-5 pb-12 animate-in fade-in duration-150">
+    <div className="space-y-4 pb-12 animate-in fade-in duration-150">
       {/* Header Banner */}
-      <div className="p-5 rounded-3xl bg-gradient-to-r from-sky/40 to-cloud border border-line shadow-feature">
-        <div className="flex items-center gap-2 text-xs font-bold text-blue uppercase tracking-wider">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky/40 to-cloud border border-line/70 shadow-feature">
+        <div className="flex items-center gap-2 text-[11px] font-bold text-blue uppercase tracking-wider font-google">
           <ShieldCheck className="w-4 h-4" />
           Meri Limits & Guardrails
         </div>
-        <h1 className="text-xl sm:text-2xl font-black text-obsidian tracking-tight mt-1">
+        <h1 className="text-xl sm:text-2xl font-black text-obsidian tracking-tight mt-0.5 font-google">
           Dukaan Ke Suraksha Niyam
         </h1>
-        <p className="text-xs text-charcoal mt-1 leading-relaxed">
+        <p className="text-xs text-charcoal mt-1 leading-relaxed font-sans">
           "Vyom in limits ke bahar kuch nahi karega. Har offer se pehle aapki 'haan' zaroori hai."
         </p>
       </div>
 
       {/* Main Limits Config Card */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-4">
         {/* Weekly Budget Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -189,20 +189,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Connected Paytm Account Info */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-[#002e6e]" />
-            <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
+            <Smartphone className="w-4 h-4 text-blue" />
+            <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
               Connected Paytm Merchant Account
             </h3>
           </div>
-          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full font-google">
             Active Sync
           </span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-cloud border border-soft-line space-y-2 text-xs">
+        <div className="p-3.5 rounded-xl bg-cloud border border-soft-line space-y-2 text-xs">
           <div className="flex justify-between text-charcoal">
             <span>Merchant Name:</span>
             <span className="font-bold text-ink">Sharma Kirana Store (Pune)</span>
@@ -223,10 +223,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Language Preferences */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-blue" />
-          <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
+          <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
             App Ki Bhasha (Language)
           </h3>
         </div>
@@ -241,10 +241,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <button
               key={item.id}
               onClick={() => onLanguageChange(item.id)}
-              className={`p-3 rounded-2xl border text-xs font-bold text-left transition cursor-pointer ${
+              className={`p-3 rounded-xl border text-xs font-bold text-left transition cursor-pointer font-google ${
                 lang === item.id
                   ? 'bg-sky/60 border-blue text-blue'
-                  : 'bg-cloud border-line text-charcoal hover:bg-slate-100'
+                  : 'bg-cloud border-line/70 text-charcoal hover:bg-slate-100'
               }`}
             >
               {item.label}
@@ -254,8 +254,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* App & Demo Controls */}
-      <div className="p-5 rounded-3xl bg-white border border-line shadow-feature space-y-3">
-        <h3 className="font-extrabold text-sm text-obsidian tracking-tight">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
+        <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
           Demo & System Actions
         </h3>
 
