@@ -51,17 +51,32 @@ def get_khata_action_keyboard(
     pay_token: str,
     amount_rupees: float,
     pay_url: str | None = None,
+    upi_intent: str | None = None,
 ) -> InlineKeyboardMarkup:
-    """Action keyboard for viewing bill, paying via Paytm link/QR, or setting payment deadline."""
-    url = pay_url or f"https://paytm.me/pay?token={pay_token}"
+    """Action keyboard for viewing bill, paying via Paytm link/QR, or setting payment deadline.
+
+    Note: Telegram only allows http/https URLs in inline buttons (rejects localhost AND upi://).
+    When ``pay_url`` is a localhost address (dev mode), the Pay button is rendered as a
+    callback button that responds with UPI details as text.
+    """
+    raw_url = pay_url or f"https://paytm.me/pay?token={pay_token}"
+    is_localhost = raw_url.startswith(("http://localhost", "http://127.", "https://localhost"))
+
+    if is_localhost:
+        # Dev mode: can't use localhost or upi:// URLs — use a callback button instead
+        pay_button = InlineKeyboardButton(
+            text=f"💳 Pay ₹{amount_rupees:.0f} — UPI Details",
+            callback_data=f"khata:pay_info:{pay_token}:{amount_rupees:.0f}",
+        )
+    else:
+        pay_button = InlineKeyboardButton(
+            text=f"💳 Pay ₹{amount_rupees:.0f} — Paytm / UPI",
+            url=raw_url,
+        )
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text=f"💳 Pay ₹{amount_rupees:.0f} — Paytm / UPI Link",
-                    url=url,
-                ),
-            ],
+            [pay_button],
             [
                 InlineKeyboardButton(
                     text="📲 QR Code Dekhein & Scan Karein",
@@ -188,18 +203,21 @@ def get_festival_kit_keyboard(kit_key: str, price_rupees: float) -> InlineKeyboa
     )
 
 
-def get_escalation_keyboard(phone: str = "+919876543210") -> InlineKeyboardMarkup:
+def get_escalation_keyboard(phone: str = "+919167586024") -> InlineKeyboardMarkup:
     """Inline keyboard when a query is escalated to the merchant."""
     clean_phone = phone.replace("+", "").replace(" ", "").replace("-", "")
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text=f"📞 Call Store ({phone})", url=f"tel:{phone.replace(' ', '')}"),
-            ],
-            [
                 InlineKeyboardButton(
                     text="💬 WhatsApp Store",
                     url=f"https://wa.me/{clean_phone}",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=f"📞 Call Store ({phone})",
+                    callback_data="contact:call_info",
                 ),
             ],
             [

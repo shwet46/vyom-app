@@ -60,7 +60,7 @@ class Merchant(MongoModel):
     timings: list[str] = Field(default_factory=lambda: ["08:00 - 22:00"])
     todays_special: str | None = None
     store_description: str | None = None
-    contact_phone: str = "+919876543210"
+    contact_phone: str = "+919167586024"
     festival_prefs: FestivalPrefs = Field(default_factory=FestivalPrefs)
     settings: MerchantSettings = Field(default_factory=MerchantSettings)
     onboarding_state: OnboardingState = OnboardingState.COMPLETED

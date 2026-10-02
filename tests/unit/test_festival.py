@@ -31,7 +31,7 @@ def sample_merchant() -> Merchant:
     return Merchant(
         name="Sharma Kirana Store",
         owner_name="Ramesh Sharma",
-        phone_e164="+919876543210",
+        phone_e164="+919167586024",
         shop_code="SHARMA01",
         region_profile=RegionProfile(
             state="Maharashtra",

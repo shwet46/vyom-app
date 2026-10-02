@@ -60,7 +60,7 @@ async def handle_start(message: Message) -> None:
         merchant_doc = await db.merchants.find_one({"_id": "merchant_sharma_01"})
     merchant_id = merchant_doc.get("_id", "merchant_sharma_01") if merchant_doc else "merchant_sharma_01"
     store_name = merchant_doc.get("name", "Sharma Kirana Store") if merchant_doc else "Sharma Kirana Store"
-    store_phone = merchant_doc.get("phone_e164", "+91 98765 43210") if merchant_doc else "+91 98765 43210"
+    store_phone = merchant_doc.get("phone_e164", "+91 91675 86024") if merchant_doc else "+91 91675 86024"
 
     # Find or register customer
     customer_doc = await db.customers.find_one({

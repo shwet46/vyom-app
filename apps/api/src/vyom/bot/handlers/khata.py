@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 import datetime
+import io
 from urllib.parse import quote
 
+import qrcode
 import structlog
 from aiogram import F, Router
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    BufferedInputFile,
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from vyom.bot.keyboards import (
     get_deadline_selection_keyboard,
@@ -21,6 +29,23 @@ from vyom.db import get_db
 
 logger = structlog.get_logger()
 router = Router(name="khata")
+
+
+def _generate_qr_input_file(upi_intent: str) -> BufferedInputFile:
+    """Generate in-memory QR code PNG as BufferedInputFile for direct upload to Telegram."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(upi_intent)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="#002266", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return BufferedInputFile(buf.getvalue(), filename="udhaar_qr.png")
 
 # ─── Demo Data ─────────────────────────────────────────────────────────────────
 _DEMO_ITEMS = [
@@ -236,10 +261,14 @@ async def handle_my_khata(message: Message) -> None:
     await db.payments.update_one({"pay_token": pay_token}, {"$set": payment_doc}, upsert=True)
 
     text = _build_bill_text(summary)
+    upi_intent = (
+        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+    )
     await message.answer(
         text,
         reply_markup=get_khata_action_keyboard(
-            pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url
+            pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
         ),
         parse_mode="Markdown",
     )
@@ -248,11 +277,193 @@ async def handle_my_khata(message: Message) -> None:
 @router.callback_query(F.data == "khata:check")
 async def handle_khata_callback(query: CallbackQuery) -> None:
     """Handle check khata inline callback."""
-    if not query.from_user:
+    if not query.from_user or not query.message or not isinstance(query.message, Message):
         return
+
     await query.answer()
-    if query.message and isinstance(query.message, Message):
-        await handle_my_khata(query.message)
+
+    # query.message.from_user is None (bot-sent message); use query.from_user.id instead.
+    chat_id = query.from_user.id
+    summary = await _get_customer_khata_summary(chat_id)
+    rem_balance = summary["remaining_balance_rupees"]
+    customer_id = summary["customer_id"]
+
+    if rem_balance <= 0:
+        await query.message.answer(
+            f"\u2705 *Badhaai Ho!*\n\n"
+            f"Aapka Sharma Kirana Store par koi bhi udhaar baaki nahi hai.\n"
+            f"Aapka account bilkul clean hai! Dhanyawad \U0001f64f",
+            reply_markup=get_main_menu_keyboard(),
+            parse_mode="Markdown",
+        )
+        return
+
+    settings = get_settings()
+    pay_token = f"pay_khata_{customer_id[:10]}_{int(Clock.now().timestamp())}"
+    pay_url = f"{settings.public_api_url}/api/v1/pay/{pay_token}/view"
+
+    db = get_db()
+    payment_doc = {
+        "_id": f"pay_{pay_token}",
+        "merchant_id": summary["merchant_id"],
+        "customer_id": customer_id,
+        "amount_paise": summary["remaining_balance_paise"],
+        "purpose": "udhaar",
+        "pay_token": pay_token,
+        "status": "created",
+        "upi_intent": (
+            f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+            f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+        ),
+        "created_at": Clock.now(),
+    }
+    await db.payments.update_one({"pay_token": pay_token}, {"$set": payment_doc}, upsert=True)
+
+    text = _build_bill_text(summary)
+    upi_intent_str = (
+        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+    )
+    await query.message.answer(
+        text,
+        reply_markup=get_khata_action_keyboard(
+            pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent_str
+        ),
+        parse_mode="Markdown",
+    )
+
+
+@router.callback_query(F.data.startswith("khata:pay_info:"))
+async def handle_pay_info_callback(query: CallbackQuery) -> None:
+    """Show UPI payment details as text and provide test settlement option."""
+    if not query.message or not isinstance(query.message, Message):
+        return
+
+    # Parse amount from callback data: "khata:pay_info:..."
+    parts = (query.data or "").split(":")
+    amount_str = parts[-1] if len(parts) >= 3 else "1350"
+
+    await query.answer()
+
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="⚡ Test Payment (Instant Settle)",
+                    callback_data=f"khata:mock_settle:{amount_str}",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="📲 QR Code Dekhein",
+                    callback_data="khata:pay_now",
+                ),
+                InlineKeyboardButton(
+                    text="🏠 Main Menu",
+                    callback_data="help:menu",
+                ),
+            ],
+        ]
+    )
+
+    await query.message.answer(
+        f"💳 *UPI Payment Details*\n\n"
+        f"• 🏪 *UPI ID*: `sharmakirana@paytm`\n"
+        f"• 💰 *Amount*: ₹{amount_str}\n"
+        f"• 📝 *Note*: Udhaar Settlement\n\n"
+        f"*Kaise pay karein:*\n"
+        f"1️⃣ Koi bhi UPI app kholen (Paytm, PhonePe, GPay)\n"
+        f"2️⃣ 'Pay' → UPI ID type karein: `sharmakirana@paytm`\n"
+        f"3️⃣ Amount ₹{amount_str} bharein aur confirm karein\n\n"
+        f"_Neeche diye gaye button se instant test bhuqtan bhi kar sakte hain:_ 👇",
+        reply_markup=markup,
+        parse_mode="Markdown",
+    )
+
+
+@router.callback_query(F.data.startswith("khata:mock_settle:"))
+async def handle_mock_settle_callback(query: CallbackQuery) -> None:
+    """Instantly settle customer's khata in MongoDB for demo/dev purposes."""
+    if not query.from_user or not query.message or not isinstance(query.message, Message):
+        return
+
+    chat_id = query.from_user.id
+    summary = await _get_customer_khata_summary(chat_id)
+    customer_id = summary["customer_id"]
+    customer_name = summary["customer_name"]
+    merchant_id = summary["merchant_id"]
+    now_dt = Clock.now()
+
+    parts = (query.data or "").split(":")
+    try:
+        amount_rupees = float(parts[-1])
+    except (IndexError, ValueError):
+        amount_rupees = summary["remaining_balance_rupees"]
+
+    amount_paise = int(amount_rupees * 100)
+    db = get_db()
+
+    # 1. Settle all open/promised khata entries for this customer
+    await db.khata_entries.update_many(
+        {"customer_id": customer_id, "status": {"$in": ["open", "promised"]}},
+        {
+            "$set": {
+                "status": "paid",
+                "amount_paid_paise": summary["total_purchases_paise"],
+                "updated_at": now_dt,
+            }
+        },
+    )
+
+    # 2. Record Transaction
+    from vyom.models.enums import PaymentMode, TransactionSource
+    from vyom.models.transaction import Transaction
+
+    txn = Transaction(
+        merchant_id=merchant_id,
+        customer_id=customer_id,
+        amount_paise=amount_paise,
+        items=[],
+        payment_mode=PaymentMode.UPI,
+        paid_at=now_dt,
+        source=TransactionSource.PAYTM_SIM,
+    )
+    await db.transactions.insert_one(txn.to_mongo())
+
+    # 3. Real-time SSE alert to merchant web dashboard
+    await sse_hub.broadcast(
+        merchant_id,
+        "khata.paid",
+        {
+            "customer_id": customer_id,
+            "customer_name": customer_name,
+            "amount_paid_paise": amount_paise,
+            "status": "paid",
+        },
+    )
+    await sse_hub.broadcast(
+        merchant_id,
+        "paytm.payment_received",
+        {
+            "order_id": f"ord_tg_{int(now_dt.timestamp())}",
+            "amount_paise": amount_paise,
+            "amount_rupees": amount_rupees,
+            "soundbox_announcement": f"Paytm par {int(amount_rupees)} rupaye prapt hue",
+            "paid_at": now_dt.isoformat(),
+        },
+    )
+
+    await query.answer("✅ Payment successful! Khata settled!")
+    await query.message.answer(
+        f"🎉 *Bhuqtan Safal (Payment Received)!*\n\n"
+        f"• 💰 *Amount*: ₹{amount_rupees:.0f}\n"
+        f"• 💳 *Mode*: Paytm UPI\n"
+        f"• 🏪 *Merchant*: Sharma Kirana Store\n"
+        f"• 🧾 *Status*: ✅ Khata poori tarah se settle ho gaya hai\n\n"
+        f"Aapka ledger balance ab *₹0* hai. Bahut bahut shukriya! 🙏",
+        reply_markup=get_main_menu_keyboard(),
+        parse_mode="Markdown",
+    )
 
 
 # ─── Handle: Pay Now / QR Code ────────────────────────────────────────────────
@@ -266,7 +477,7 @@ async def handle_khata_callback(query: CallbackQuery) -> None:
     "QR Code",
 }))
 async def handle_pay_now_direct(message: Message) -> None:
-    """Directly present QR code and mock payment link to customer."""
+    """Directly present QR code and payment info to customer."""
     if not message.from_user:
         return
 
@@ -309,10 +520,7 @@ async def handle_pay_now_direct(message: Message) -> None:
         upsert=True,
     )
 
-    qr_url = (
-        f"https://api.qrserver.com/v1/create-qr-code/"
-        f"?size=400x400&data={quote(upi_intent)}&bgcolor=ffffff&color=002266&margin=15"
-    )
+    is_localhost = pay_url.startswith(("http://localhost", "http://127.", "https://localhost"))
 
     caption = (
         f"📲 *QR Code — Sharma Kirana Store*\n\n"
@@ -322,17 +530,18 @@ async def handle_pay_now_direct(message: Message) -> None:
         f"*QR Code kaise use karein:*\n"
         f"1️⃣ Koi bhi UPI app kholen (Paytm, PhonePe, GPay)\n"
         f"2️⃣ QR Scanner se is code ko scan karein\n"
-        f"3️⃣ ₹{rem_balance:.0f} auto-fill ho jayega — confirm karein\n\n"
-        f"📱 Ya seedha Paytm payment link kholein:\n"
-        f"🔗 [Paytm se ₹{rem_balance:.0f} Pay Karein]({pay_url})"
+        f"3️⃣ ₹{rem_balance:.0f} auto-fill ho jayega — confirm karein"
     )
+    if not is_localhost:
+        caption += f"\n\n📱 Ya seedha Paytm payment link kholein:\n🔗 [Paytm se ₹{rem_balance:.0f} Pay Karein]({pay_url})"
 
     try:
+        photo_file = _generate_qr_input_file(upi_intent)
         await message.answer_photo(
-            photo=qr_url,
+            photo=photo_file,
             caption=caption,
             reply_markup=get_khata_action_keyboard(
-                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url
+                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
             ),
             parse_mode="Markdown",
         )
@@ -341,7 +550,7 @@ async def handle_pay_now_direct(message: Message) -> None:
         await message.answer(
             caption,
             reply_markup=get_khata_action_keyboard(
-                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url
+                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
             ),
             parse_mode="Markdown",
         )
@@ -354,7 +563,82 @@ async def handle_qr_callback(query: CallbackQuery) -> None:
         return
 
     await query.answer("📲 QR Code taiyar kiya ja raha hai...")
-    await handle_pay_now_direct(query.message)
+
+    # query.message.from_user is always None (it's the bot's own message).
+    # Use query.from_user.id (the customer who clicked) instead.
+    chat_id = query.from_user.id
+    summary = await _get_customer_khata_summary(chat_id)
+    rem_balance = summary["remaining_balance_rupees"]
+    customer_id = summary["customer_id"]
+
+    if rem_balance <= 0:
+        await query.message.answer(
+            "✅ *Aapka koi hisaab baaki nahi hai.*\n\nBhuqtan karne ki avashyakta nahi. Dhanyawad! 🙏",
+            parse_mode="Markdown",
+        )
+        return
+
+    settings = get_settings()
+    pay_token = f"pay_qr_{customer_id[:10]}_{int(Clock.now().timestamp())}"
+    pay_url = f"{settings.public_api_url}/api/v1/pay/{pay_token}/view"
+
+    db = get_db()
+    upi_intent = (
+        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Bill"
+    )
+    await db.payments.update_one(
+        {"pay_token": pay_token},
+        {
+            "$set": {
+                "_id": f"pay_{pay_token}",
+                "merchant_id": summary["merchant_id"],
+                "customer_id": customer_id,
+                "amount_paise": summary["remaining_balance_paise"],
+                "purpose": "udhaar",
+                "pay_token": pay_token,
+                "status": "created",
+                "upi_intent": upi_intent,
+                "created_at": Clock.now(),
+            }
+        },
+        upsert=True,
+    )
+
+    is_localhost = pay_url.startswith(("http://localhost", "http://127.", "https://localhost"))
+
+    caption = (
+        f"📲 *QR Code — Sharma Kirana Store*\n\n"
+        f"• 💰 *Bhuqtan Rashi*: *₹{rem_balance:.0f}*\n"
+        f"• 🏪 *Payee UPI ID*: `sharmakirana@paytm`\n"
+        f"• 🧾 *Bill Ref*: `{pay_token[:18]}`\n\n"
+        f"*QR Code kaise use karein:*\n"
+        f"1️⃣ Koi bhi UPI app kholen (Paytm, PhonePe, GPay)\n"
+        f"2️⃣ QR Scanner se is code ko scan karein\n"
+        f"3️⃣ ₹{rem_balance:.0f} auto-fill ho jayega — confirm karein"
+    )
+    if not is_localhost:
+        caption += f"\n\n📱 Ya seedha Paytm payment link kholein:\n🔗 [Paytm se ₹{rem_balance:.0f} Pay Karein]({pay_url})"
+
+    try:
+        photo_file = _generate_qr_input_file(upi_intent)
+        await query.message.answer_photo(
+            photo=photo_file,
+            caption=caption,
+            reply_markup=get_khata_action_keyboard(
+                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
+            ),
+            parse_mode="Markdown",
+        )
+    except Exception as exc:
+        logger.warning("qr_photo_send_failed_fallback_text", error=str(exc))
+        await query.message.answer(
+            caption,
+            reply_markup=get_khata_action_keyboard(
+                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
+            ),
+            parse_mode="Markdown",
+        )
 
 
 # ─── Handle: Payment Deadline ──────────────────────────────────────────────────
@@ -387,7 +671,20 @@ async def handle_set_deadline_callback(query: CallbackQuery) -> None:
         return
 
     await query.answer()
-    await handle_deadline_menu(query.message)
+
+    # query.message.from_user is None (bot-sent message); use query.from_user.id instead.
+    chat_id = query.from_user.id
+    summary = await _get_customer_khata_summary(chat_id)
+    rem_balance = summary["remaining_balance_rupees"]
+
+    text = (
+        f"\U0001f4c5 *Payment Deadline (Wada Tarikh) Set Karein*\n\n"
+        f"Aapka kul baaki balance: *\u20b9{rem_balance:.0f}*\n\n"
+        f"Aap yeh rashi kab tak chuka payenge?\n"
+        f"Kripya ek suvidhajanak vikalp chunein:\n\n"
+        f"_\\(Aapka wada dukaandar Sharma Kirana Store ko turant notify ho jayega\\)_"
+    )
+    await query.message.answer(text, reply_markup=get_deadline_selection_keyboard(), parse_mode="Markdown")
 
 
 @router.callback_query(F.data.startswith("deadline:"))
@@ -480,10 +777,14 @@ async def handle_deadline_selection(query: CallbackQuery) -> None:
 
     await query.answer("✅ Payment deadline set ho gayi!")
     if query.message and isinstance(query.message, Message):
+        deadline_upi = (
+            f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+            f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Deadline"
+        )
         await query.message.answer(
             confirmation_text,
             reply_markup=get_khata_action_keyboard(
-                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url
+                pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=deadline_upi
             ),
             parse_mode="Markdown",
         )

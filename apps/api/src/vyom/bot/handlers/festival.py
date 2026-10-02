@@ -42,12 +42,12 @@ async def handle_store_sales_and_discounts(message: Message) -> None:
         )
 
     text = (
-        "🏷️ *Sharma Kirana Store — Chal Rahe Offers & Discounts*\n\n"
+        "🏷️ *Sharma Kirana Store — Ongoing Sales & Discounts (Chal Rahe Offers)*\n\n"
         f"{flash_note}"
         "━━━━━━━━━━━━━━━━━━━━\n\n"
         "1️⃣ 🌸 *Navratri Shuddh Vrat Combo Kit*\n"
         "   Sabudana + Singhara Atta + Pure Gir Cow Ghee + Sendha Namak + Makhana\n"
-        "   💰 *Offer: ₹450* ~~(₹510)~~ — *Save 12%!*\n\n"
+        "   💰 *Offer: ₹450* ~~(₹510)~~ — *Save 12% OFF!*\n\n"
         "2️⃣ ⚡ *Dopahar Flash Hours* (2:00 PM – 4:00 PM, Mon–Sat)\n"
         "   Sab Daalein, Atta, Khane Tel par *Flat 8% Instant Chhoot!*\n\n"
         "3️⃣ 📦 *Monthly Ration Saving Deal*\n"

@@ -148,7 +148,7 @@ class MockDatabase:
                 "_id": "merchant_sharma_01",
                 "name": "Sharma Kirana Store",
                 "owner_name": "Ramesh Sharma",
-                "phone_e164": "+919876543210",
+                "phone_e164": "+919167586024",
                 "shop_code": "SHARMA01",
                 "city": "Pune",
                 "state": "Maharashtra",
@@ -362,7 +362,7 @@ async def test_auth_flow(test_app: Any) -> None:
         # 1. Request OTP
         req_resp = await client.post(
             "/api/v1/auth/otp/request",
-            json={"phone_e164": "+919876543210"},
+            json={"phone_e164": "+919167586024"},
         )
         assert req_resp.status_code == 200
         assert req_resp.json()["status"] == "sent"
@@ -370,7 +370,7 @@ async def test_auth_flow(test_app: Any) -> None:
         # 2. Verify OTP
         verify_resp = await client.post(
             "/api/v1/auth/otp/verify",
-            json={"phone_e164": "+919876543210", "code": "123456"},
+            json={"phone_e164": "+919167586024", "code": "123456"},
         )
         assert verify_resp.status_code == 200
         data = verify_resp.json()

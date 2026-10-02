@@ -25,7 +25,7 @@ def test_merchant_model() -> None:
     merchant = Merchant(
         name="Laxmi Kirana Store",
         owner_name="Ramesh Gupta",
-        phone_e164="+919876543210",
+        phone_e164="+919167586024",
         shop_code="LX01",
     )
     assert merchant.name == "Laxmi Kirana Store"
@@ -35,7 +35,7 @@ def test_merchant_model() -> None:
 
     mongo_dict = merchant.to_mongo()
     assert "_id" in mongo_dict
-    assert mongo_dict["phone_e164"] == "+919876543210"
+    assert mongo_dict["phone_e164"] == "+919167586024"
 
 
 def test_customer_model() -> None:

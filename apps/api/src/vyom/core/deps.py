@@ -60,7 +60,7 @@ async def get_current_merchant(
             id="merchant_sharma_01",
             name="Sharma Kirana Store",
             owner_name="Ramesh Sharma",
-            phone_e164="+919876543210",
+            phone_e164="+919167586024",
             shop_code="SHARMA01",
         )
 

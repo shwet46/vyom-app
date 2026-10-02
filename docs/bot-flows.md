@@ -71,6 +71,6 @@ The Vyom Telegram Bot is built on **aiogram v3** and serves as the merchant's cu
 1. **Trigger**: Customer asks any other question or doubt (e.g. stock queries, delivery times, store policies).
 2. **Escalation Protocol**:
    - Bot politely replies: *"Kshama karein, main is sawaal ka seedha uttar nahi de sakta. Maine aapki query dukaan ke owner (Ramesh Sharma ji) ko forward kar di hai."*
-   - Displays merchant direct contact details (Phone/WhatsApp `+91 98765 43210`, address, timings).
+   - Displays merchant direct contact details (Phone/WhatsApp `+91 91675 86024`, address, timings).
    - Inserts escalation ticket into `db.support_escalations`.
    - Dispatches real-time SSE alert `customer.query_escalated` to the merchant live dashboard.

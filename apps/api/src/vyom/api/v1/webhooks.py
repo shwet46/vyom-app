@@ -95,6 +95,99 @@ async def paytm_webhook(
                                 "status": new_status,
                             },
                         )
+                else:
+                    # Udhaar repayment across customer's open/promised khata entries
+                    target_cust_id = payment.customer_id or payload.customer_id or "cust_sharma_001"
+                    rem_pay = payload.amount_paise
+                    cursor = db.khata_entries.find({
+                        "customer_id": target_cust_id,
+                        "status": {"$in": ["open", "promised"]},
+                    }).sort("due_date", 1)
+                    async for entry in cursor:
+                        if rem_pay <= 0:
+                            break
+                        tot = entry.get("amount_total_paise", 0)
+                        cur_paid = entry.get("amount_paid_paise", 0)
+                        unpaid = max(0, tot - cur_paid)
+                        apply_amt = min(rem_pay, unpaid)
+                        new_entry_paid = cur_paid + apply_amt
+                        new_status = "paid" if new_entry_paid >= tot else "open"
+                        await db.khata_entries.update_one(
+                            {"_id": entry["_id"]},
+                            {
+                                "$set": {
+                                    "amount_paid_paise": new_entry_paid,
+                                    "status": new_status,
+                                    "updated_at": now_dt,
+                                }
+                            },
+                        )
+                        rem_pay -= apply_amt
+                        await sse_hub.broadcast(
+                            payload.merchant_id,
+                            "khata.paid",
+                            {
+                                "entry_id": entry["_id"],
+                                "amount_paid_paise": apply_amt,
+                                "status": new_status,
+                            },
+                        )
+
+                    # Send Telegram payment confirmation if customer is linked
+                    cust_doc = await db.customers.find_one({"_id": target_cust_id})
+                    chat_id = cust_doc.get("telegram", {}).get("chat_id") if cust_doc else None
+                    if chat_id:
+                        try:
+                            from vyom.bot.app import bot
+                            if bot:
+                                await bot.send_message(
+                                    chat_id=chat_id,
+                                    text=(
+                                        f"✅ *Bhuqtan Safalta-purvak Prapt Hua!*\n\n"
+                                        f"Aapka *₹{payload.amount_paise / 100:.0f}* ka Paytm UPI bhuqtan Sharma Kirana Store ko prapt ho gaya hai.\n\n"
+                                        f"Aapka Udhaar Khata ledger update ho gaya hai. Dhanyawad! 🙏"
+                                    ),
+                                    parse_mode="Markdown",
+                                )
+                        except Exception as bot_err:
+                            logger.warning("payment_telegram_notify_failed", error=str(bot_err))
+        else:
+            # Fallback settlement for demo customer when pay_token not in DB
+            target_cust_id = payload.customer_id or "cust_sharma_001"
+            rem_pay = payload.amount_paise
+            cursor = db.khata_entries.find({
+                "customer_id": target_cust_id,
+                "status": {"$in": ["open", "promised"]},
+            }).sort("due_date", 1)
+            async for entry in cursor:
+                if rem_pay <= 0:
+                    break
+                tot = entry.get("amount_total_paise", 0)
+                cur_paid = entry.get("amount_paid_paise", 0)
+                unpaid = max(0, tot - cur_paid)
+                apply_amt = min(rem_pay, unpaid)
+                new_entry_paid = cur_paid + apply_amt
+                new_status = "paid" if new_entry_paid >= tot else "open"
+                await db.khata_entries.update_one(
+                    {"_id": entry["_id"]},
+                    {
+                        "$set": {
+                            "amount_paid_paise": new_entry_paid,
+                            "status": new_status,
+                            "updated_at": now_dt,
+                        }
+                    },
+                )
+                rem_pay -= apply_amt
+                await sse_hub.broadcast(
+                    payload.merchant_id,
+                    "khata.paid",
+                    {
+                        "entry_id": entry["_id"],
+                        "amount_paid_paise": apply_amt,
+                        "status": new_status,
+                    },
+                )
 
         # 2. Record sale transaction in database
         txn = Transaction(

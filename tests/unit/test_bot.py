@@ -60,9 +60,12 @@ def test_bot_keyboards() -> None:
     kit_kb = get_festival_kit_keyboard("navratri_kit", 450.0)
     assert any("kit_order:navratri_kit" in btn.callback_data for row in kit_kb.inline_keyboard for btn in row if btn.callback_data)
 
-    # Khata action keyboard
-    khata_kb = get_khata_action_keyboard("token123", 1350.0, "http://localhost:8000/pay/token123")
+    # Khata action keyboard with public URL
+    khata_kb = get_khata_action_keyboard("token123", 1350.0, "https://paytm.me/pay?token=token123")
     assert any("token123" in (btn.url or "") for row in khata_kb.inline_keyboard for btn in row)
+    # Khata action keyboard with localhost (dev mode fallback to callback)
+    khata_kb_dev = get_khata_action_keyboard("token123", 1350.0, "http://localhost:8000/pay/token123")
+    assert any("khata:pay_info:" in (btn.callback_data or "") for row in khata_kb_dev.inline_keyboard for btn in row)
 
     # Deadline keyboard
     deadline_kb = get_deadline_selection_keyboard()
@@ -76,8 +79,9 @@ def test_bot_keyboards() -> None:
     assert len(offers_kb.inline_keyboard) >= 2
 
     # Escalation keyboard
-    esc_kb = get_escalation_keyboard("+91 98765 43210")
-    assert any("tel:" in (btn.url or "") for row in esc_kb.inline_keyboard for btn in row)
+    esc_kb = get_escalation_keyboard("+91 91675 86024")
+    assert any("contact:call_info" in (btn.callback_data or "") for row in esc_kb.inline_keyboard for btn in row)
+    assert any("wa.me" in (btn.url or "") for row in esc_kb.inline_keyboard for btn in row)
 
 
 def test_create_bot_and_dispatcher() -> None:
@@ -283,7 +287,7 @@ async def test_pay_now_qr_and_link(monkeypatch: pytest.MonkeyPatch) -> None:
     await handle_pay_now_direct(message)
     mock_photo.assert_called_once()
     kwargs = mock_photo.call_args.kwargs
-    assert "api.qrserver.com" in kwargs.get("photo", "")
+    assert kwargs.get("photo") is not None
     assert "₹1350" in kwargs.get("caption", "")
 
 
@@ -299,6 +303,7 @@ async def test_deadline_setting(monkeypatch: pytest.MonkeyPatch) -> None:
 
     mock_db.customers = mock_customers
     mock_db.khata_entries = mock_khata
+    mock_db.payments = MagicMock(update_one=AsyncMock())
     monkeypatch.setattr("vyom.bot.handlers.khata.get_db", lambda: mock_db)
 
     mock_cb_answer = AsyncMock()
@@ -327,7 +332,7 @@ async def test_unrecognized_query_escalation(monkeypatch: pytest.MonkeyPatch) ->
     """Verify random user questions are politely escalated to merchant."""
     mock_db = MagicMock()
     mock_merchants = MagicMock()
-    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "name": "Sharma Kirana Store", "phone_e164": "+91 98765 43210", "owner_name": "Ramesh Sharma"})
+    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "name": "Sharma Kirana Store", "phone_e164": "+91 91675 86024", "owner_name": "Ramesh Sharma"})
     mock_customers = MagicMock()
     mock_customers.find_one = AsyncMock(return_value={"_id": "cust_sharma_001"})
     mock_escalations = MagicMock()
@@ -355,7 +360,7 @@ async def test_unrecognized_query_escalation(monkeypatch: pytest.MonkeyPatch) ->
     args, _ = mock_answer.call_args
     assert "Kshama karein" in args[0]
     assert "Ramesh Sharma" in args[0]
-    assert "+91 98765 43210" in args[0]
+    assert "+91 91675 86024" in args[0]
 
 
 @pytest.mark.asyncio
@@ -363,12 +368,14 @@ async def test_contact_store_handler(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify contact store handler displays merchant info."""
     mock_db = MagicMock()
     mock_merchants = MagicMock()
-    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "phone_e164": "+91 98765 43210", "owner_name": "Ramesh Sharma"})
+    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "phone_e164": "+91 91675 86024", "owner_name": "Ramesh Sharma"})
     mock_db.merchants = mock_merchants
     monkeypatch.setattr("vyom.bot.handlers.catalog.get_db", lambda: mock_db)
 
     mock_answer = AsyncMock()
     monkeypatch.setattr(Message, "answer", mock_answer)
+    mock_contact = AsyncMock()
+    monkeypatch.setattr(Message, "answer_contact", mock_contact)
 
     message = Message(
         message_id=40,
@@ -380,9 +387,46 @@ async def test_contact_store_handler(monkeypatch: pytest.MonkeyPatch) -> None:
 
     await handle_contact_store(message)
     mock_answer.assert_called_once()
+    mock_contact.assert_called_once()
+    contact_kwargs = mock_contact.call_args.kwargs
+    assert contact_kwargs.get("phone_number") == "+919167586024"
+    assert "Ramesh Sharma" in contact_kwargs.get("first_name", "")
     args, _ = mock_answer.call_args
     assert "Ramesh Sharma" in args[0]
-    assert "+91 98765 43210" in args[0]
+    assert "+91 91675 86024" in args[0]
+
+
+@pytest.mark.asyncio
+async def test_call_info_shares_contact_component(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify selecting call store sends native Telegram Contact component."""
+    from vyom.bot.handlers.catalog import handle_call_info
+
+    mock_db = MagicMock()
+    mock_merchants = MagicMock()
+    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "phone_e164": "+91 91675 86024", "owner_name": "Ramesh Sharma"})
+    mock_db.merchants = mock_merchants
+    monkeypatch.setattr("vyom.bot.handlers.catalog.get_db", lambda: mock_db)
+
+    mock_cb_answer = AsyncMock()
+    monkeypatch.setattr(CallbackQuery, "answer", mock_cb_answer)
+    mock_contact = AsyncMock()
+    monkeypatch.setattr(Message, "answer_contact", mock_contact)
+
+    dummy_msg = Message(message_id=50, date=datetime.datetime.now(), chat=Chat(id=1, type="private"), text="Contact")
+    query = CallbackQuery(
+        id="cb_call",
+        from_user=User(id=1, is_bot=False, first_name="Customer"),
+        chat_instance="inst_call",
+        data="contact:call_info",
+        message=dummy_msg,
+    )
+
+    await handle_call_info(query)
+    mock_contact.assert_called_once()
+    contact_kwargs = mock_contact.call_args.kwargs
+    assert contact_kwargs.get("phone_number") == "+919167586024"
+    assert "Ramesh Sharma" in contact_kwargs.get("first_name", "")
+    assert contact_kwargs.get("vcard") is not None
 
 
 @pytest.mark.asyncio

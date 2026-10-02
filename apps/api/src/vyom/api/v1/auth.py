@@ -18,11 +18,11 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 class OTPRequest(BaseModel):
-    phone_e164: str = Field(..., examples=["+919876543210"])
+    phone_e164: str = Field(..., examples=["+919167586024"])
 
 
 class OTPVerifyRequest(BaseModel):
-    phone_e164: str = Field(..., examples=["+919876543210"])
+    phone_e164: str = Field(..., examples=["+919167586024"])
     code: str = Field(..., examples=["123456"])
 
 
