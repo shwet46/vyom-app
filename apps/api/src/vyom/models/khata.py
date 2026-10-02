@@ -44,6 +44,8 @@ class KhataEntry(MongoModel):
     due_date: datetime.date
     status: KhataStatus = KhataStatus.OPEN
     promise_date: datetime.date | None = None
+    items: list[str] = Field(default_factory=list)
+    items_summary: str | None = None
     reminders: list[KhataReminder] = Field(default_factory=list)
     source: KhataEntrySource = KhataEntrySource.MANUAL
     scan_id: str | None = None
@@ -75,6 +77,8 @@ class ScanRow(BaseModel):
     row_id: str
     page: int
     name_raw: str
+    phone: str | None = None
+    items_summary: str | None = None
     matched_customer_id: str | None = None
     match_score: float | None = None
     amount_paise: int

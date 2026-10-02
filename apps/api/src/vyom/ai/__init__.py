@@ -9,7 +9,14 @@ from vyom.ai.llm import (
     SarvamLLMClient,
     get_llm_client,
 )
-from vyom.ai.ocr import BaseOCRClient, MockOCRClient, SarvamDocOCRClient, get_ocr_client
+from vyom.ai.ocr import (
+    BaseOCRClient,
+    GeminiVisionOCRClient,
+    MockOCRClient,
+    SarvamDocOCRClient,
+    UnifiedOCRClient,
+    get_ocr_client,
+)
 from vyom.ai.stt import BaseSTTClient, MockSTTClient, SarvamSTTClient, get_stt_client
 from vyom.ai.translate import (
     BaseTranslateClient,
@@ -26,6 +33,7 @@ __all__ = [
     "BaseTTSClient",
     "BaseTranslateClient",
     "GeminiLLMClient",
+    "GeminiVisionOCRClient",
     "MockLLMClient",
     "MockOCRClient",
     "MockSTTClient",
@@ -36,6 +44,7 @@ __all__ = [
     "SarvamSTTClient",
     "SarvamTTSClient",
     "SarvamTranslateClient",
+    "UnifiedOCRClient",
     "get_llm_client",
     "get_ocr_client",
     "get_stt_client",

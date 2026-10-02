@@ -505,8 +505,7 @@ async def test_khata_photo_upload_ocr(monkeypatch: pytest.MonkeyPatch) -> None:
         date=datetime.datetime.now(),
         chat=Chat(id=111, type="private"),
         photo=[photo_size],
-    )
-    message.bot = mock_bot
+    ).as_(mock_bot)
 
     await handle_khata_photo_upload(message)
 
@@ -560,8 +559,7 @@ async def test_khata_document_upload_ocr(monkeypatch: pytest.MonkeyPatch) -> Non
         date=datetime.datetime.now(),
         chat=Chat(id=111, type="private"),
         document=doc,
-    )
-    message.bot = mock_bot
+    ).as_(mock_bot)
 
     await handle_khata_document_upload(message)
 

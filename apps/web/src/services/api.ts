@@ -332,7 +332,7 @@ export async function uploadKhataScan(file: File, createdVia: string = 'upload')
   formData.append('created_via', createdVia);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000);
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
     const res = await fetch(`${API_BASE}/khata/scans`, {

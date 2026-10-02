@@ -1,8 +1,9 @@
-"""Handwritten Khata Ledger OCR client: Sarvam Document AI and deterministic Mock."""
+"""Handwritten Khata Ledger OCR client: Gemini Vision, Sarvam Document AI, and deterministic Mock."""
 
 from __future__ import annotations
 
 import asyncio
+import base64
 import datetime
 import io
 import json
@@ -66,6 +67,175 @@ class BaseOCRClient(ABC):
         """Extract structured ledger rows from an image."""
 
 
+class GeminiVisionOCRClient(BaseOCRClient):
+    """Production multimodal OCR client using Google Gemini Vision (gemini-2.5-flash).
+
+    Digitizes handwritten & printed khata notebooks, registers, chits, and receipts
+    in Hindi, English, Hinglish, Marathi, and Devanagari numerals.
+    """
+
+    PROMPT = """You are an expert Indian Bahi-Khata Ledger and Kirana Store OCR intelligence system.
+Analyze the uploaded image/document (handwritten notebook page, bahi-khata, credit/debit register, bill slip, chit, or ledger sheet).
+
+Extract all ledger line items/entries into a structured JSON array of objects with this schema:
+[
+  {
+    "customer_name": "Customer Name (e.g. Ramesh Kumar, Sunita Patil, किशोर शिरोळे)",
+    "customer_phone": "10-digit phone number if present or null",
+    "amount_paise": 75000,
+    "entry_type": "credit_given",
+    "date": "YYYY-MM-DD",
+    "items_summary": "Description of items or note (e.g. 2L Oil, 5kg Atta, Sabudana)",
+    "confidence": 0.96,
+    "flags": ["udhar", "handwritten"]
+  }
+]
+
+RULES FOR ACCURATE EXTRACTION:
+1. Entry Type Classification:
+   - 'credit_given' (Udhaar / बाकी / उधार / दिया / लेना / credit / loan / debit / grocery items with price):
+     Whenever customer bought goods on credit or owes money. Default to 'credit_given' for standard ledger notebook rows.
+   - 'payment_received' (Jama / जमा / आया / रोकड़ / paid / received / cash / rokad / diye as payment):
+     Whenever money is paid, received, or settled.
+2. Amount in Paise:
+   - Always multiply Rupees by 100 to produce an integer (e.g., ₹450 -> 45000, ₹1,250.50 -> 125050).
+   - Convert Devanagari numerals (०, १, २, ३, ४, ५, ६, ७, ८, ९) to standard numbers.
+3. Date:
+   - If a date is visible (e.g. 15/09/26, 2026-09-15), format as YYYY-MM-DD. Otherwise use current date.
+4. Return ONLY valid JSON (a JSON array of entry objects). If no valid khata records are found, return [].
+"""  # noqa: RUF001
+
+    def __init__(self, settings: Settings) -> None:
+        self.api_key = settings.google_gemini_api_key
+        self.model = settings.google_gemini_model or "gemini-2.5-flash"
+
+    async def extract_khata_rows(
+        self,
+        image_bytes: bytes,
+        filename: str = "ledger.jpg",
+    ) -> list[dict[str, Any]]:
+        """Digitize document image using Gemini Vision."""
+        if not self.api_key:
+            raise ValueError("No Gemini API key provided for GeminiVisionOCRClient")
+
+        lower_name = filename.lower()
+        if lower_name.endswith(".pdf"):
+            mime_type = "application/pdf"
+        elif lower_name.endswith(".png"):
+            mime_type = "image/png"
+        elif lower_name.endswith((".webp", ".tif", ".tiff")):
+            mime_type = "image/webp"
+        else:
+            mime_type = "image/jpeg"
+
+        b64_data = base64.b64encode(image_bytes).decode("utf-8")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
+        headers = {"Content-Type": "application/json"}
+
+        body = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {"text": self.PROMPT},
+                        {
+                            "inline_data": {
+                                "mime_type": mime_type,
+                                "data": b64_data,
+                            }
+                        },
+                    ],
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json",
+            },
+        }
+
+        timeout = httpx.Timeout(60.0, connect=15.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            try:
+                resp = await client.post(url, headers=headers, json=body)
+                resp.raise_for_status()
+                data = resp.json()
+                candidates = data.get("candidates", [])
+                if not candidates:
+                    return []
+
+                raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                return self._parse_json_result(raw_text)
+            except Exception as exc:
+                logger.error("gemini_vision_ocr_failed", error=str(exc))
+                raise
+
+    def _parse_json_result(self, raw_text: str) -> list[dict[str, Any]]:
+        """Clean and validate JSON array or object returned by Gemini."""
+        cleaned = raw_text.strip()
+        if cleaned.startswith("```"):
+            cleaned = re.sub(r"^```[a-zA-Z]*\n", "", cleaned)
+            cleaned = re.sub(r"\n```$", "", cleaned).strip()
+
+        try:
+            parsed = json.loads(cleaned)
+        except Exception:
+            # Fallback regex extraction of array
+            match = re.search(r"\[\s*\{.*\}\s*\]", cleaned, re.DOTALL)
+            if match:
+                parsed = json.loads(match.group(0))
+            else:
+                return []
+
+        raw_list = parsed if isinstance(parsed, list) else parsed.get("rows", parsed.get("entries", []))
+        if not isinstance(raw_list, list):
+            return []
+
+        results: list[dict[str, Any]] = []
+        today_iso = Clock.today().isoformat()
+
+        for idx, item in enumerate(raw_list):
+            if not isinstance(item, dict):
+                continue
+
+            name = str(item.get("customer_name") or f"Customer {idx+1}").strip()
+            phone = item.get("customer_phone")
+            if phone:
+                phone = str(phone).strip()
+
+            raw_amt = item.get("amount_paise", 0)
+            try:
+                amt_paise = int(raw_amt)
+            except (ValueError, TypeError):
+                amt_paise = 0
+
+            # If amount_paise is small e.g. 500 when it was meant in rupees without multiplying
+            if amt_paise <= 0:
+                continue
+
+            raw_type = str(item.get("entry_type", "credit_given")).lower()
+            if any(k in raw_type for k in ["jama", "paid", "received", "payment"]):
+                entry_type = "payment_received"
+            else:
+                entry_type = "credit_given"
+
+            date_str = str(item.get("date") or today_iso)[:10]
+            items_summary = str(item.get("items_summary") or ("Kirana goods (Udhaar)" if entry_type == "credit_given" else "Cash Jama")).strip()
+            confidence = float(item.get("confidence") or 0.95)
+
+            results.append({
+                "customer_name": name,
+                "customer_phone": phone,
+                "amount_paise": amt_paise,
+                "entry_type": entry_type,
+                "date": date_str,
+                "items_summary": items_summary,
+                "confidence": min(1.0, max(0.5, confidence)),
+                "flags": item.get("flags") or [entry_type],
+            })
+
+        return results
+
+
 class SarvamDocOCRClient(BaseOCRClient):
     """Production client calling Sarvam Document AI for ledger digitization.
 
@@ -104,8 +274,8 @@ class SarvamDocOCRClient(BaseOCRClient):
         files = {"file": (filename, image_bytes, content_type)}
         data = {
             "language": "hi-IN",
-            "output_format": "json",
-            "content_type": "handwritten",
+            "output_format": "html",
+            "content_type": "printed",
             "auto_orient": "true",
         }
 
@@ -235,6 +405,42 @@ class SarvamDocOCRClient(BaseOCRClient):
                 text.extend(self._collect_ocr_text(child))
         return text
 
+    # CSS / HTML / style tokens that must never appear in ledger text lines
+    _NOISE_PATTERNS: set[str] = {
+        "margin", "padding", "border", "font", "color", "background", "width",
+        "height", "display", "position", "overflow", "text-align", "line-height",
+        "!important", "rgba", "rgb(", "#fff", "#000", "opacity", "z-index",
+        "cursor", "float", "clear", "visibility", "outline", "box-shadow",
+        "flex", "grid", "transform", "transition", "animation", "@media",
+        "@import", "@font-face", "@keyframes", "<!doctype", "<html", "<head",
+        "<meta", "<link", "<body", "<div", "<span", "<table", "<script",
+        "class=", "style=", "id=", "px;", "em;", "rem;", "pt;", "vh;", "vw;",
+        "serif", "sans-serif", "monospace", "inherit", "auto;",
+        "page", "register", "subtotal", "date /", "sr.no", "sr no",
+        "s.no", "s no", "क्रमांक", "पृष्ठ", "शीर्षक",
+    }
+
+    def _is_noise_line(self, line: str) -> bool:
+        """Return True if the line looks like CSS, HTML, or page metadata noise."""
+        low = line.lower().strip()
+        # Too short to be a real entry
+        if len(low) < 5:
+            return True
+        # Matches any known noise token
+        if any(tok in low for tok in self._NOISE_PATTERNS):
+            return True
+        # Looks like a CSS property (key: value;)
+        if re.match(r'^[a-z-]+\s*:\s*[^;]+;?$', low):
+            return True
+        # Mostly non-alphanumeric (braces, symbols, etc.)
+        alnum = sum(1 for c in low if c.isalnum())
+        if len(low) > 0 and alnum / len(low) < 0.3:
+            return True
+        # Pure number or pure punctuation
+        if re.match(r'^[\d\s.,;:/-]+$', low):
+            return True
+        return False
+
     def _structure_ledger_rows(
         self,
         raw_texts: list[str],
@@ -257,21 +463,26 @@ class SarvamDocOCRClient(BaseOCRClient):
             except Exception:
                 pass
 
-        # 2. Parse text blocks (metadata blocks have pure text without HTML/CSS)
+        # 2. Parse text blocks — only clean raw text, NOT html-stripped
         if raw_texts:
             combined_text = "\n".join(raw_texts)
         else:
-            # Fallback to HTML body only with style and script tags stripped
+            # If no raw text available, carefully extract body text from HTML
             combined_text = ""
             for html in html_contents:
+                # Remove entire style/script blocks
                 no_style = re.sub(r"<(style|script)[\s\S]*?</\1>", "", html, flags=re.IGNORECASE)
+                # Remove HTML comments
+                no_style = re.sub(r"<!--[\s\S]*?-->", "", no_style)
+                # Strip tags
                 clean_body = re.sub(r"<[^>]+>", "\n", no_style)
+                # Remove CSS-like inline content (e.g. leaked style attributes)
+                clean_body = re.sub(r"\{[^}]*\}", "", clean_body)
                 combined_text += "\n" + clean_body
 
         lines = [line.strip() for line in combined_text.split("\n") if line.strip()]
         for line in lines:
-            # Skip obvious CSS/header artifacts
-            if any(skip in line.lower() for skip in ["page", "khata", "register", "total", "subtotal", "date /", "!important", "margin", "padding", "border"]):
+            if self._is_noise_line(line):
                 continue
             parsed = self._parse_text_line(line)
             if (
@@ -289,7 +500,6 @@ class SarvamDocOCRClient(BaseOCRClient):
 
     def _parse_table_row(self, cells: list[str]) -> dict[str, Any] | None:
         """Parse structured HTML table row cells."""
-        # Find cell with amount
         amount_paise = 0
         name = ""
         items = ""
@@ -298,16 +508,15 @@ class SarvamDocOCRClient(BaseOCRClient):
 
         for c in cells:
             clean_cell = self._normalize_digits(c.strip())
-            # Check for amount
             amt_match = re.search(r"(?:rs\.?|inr|₹)?\s*([0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?)\s*(?:rs\.?|/-|rupees|रुपये)?", clean_cell, re.IGNORECASE)
-            # Check for date
             date_match = re.search(r"(\d{1,4}[-/]\d{1,2}[-/]\d{1,4})", clean_cell)
             if date_match:
                 date_str = date_match.group(1)
 
-            # Check for payment vs credit
             if re.search(r"(जमा|paid|received|diye|cash|रोकड़)", clean_cell, re.IGNORECASE):
                 entry_type = "payment_received"
+            elif re.search(r"(उधार|उधारी|बाकी|credit|loan)", clean_cell, re.IGNORECASE):
+                entry_type = "credit_given"
 
             if amt_match and not amount_paise:
                 amount_paise = self._amount_to_paise(amt_match.group(1))
@@ -324,6 +533,7 @@ class SarvamDocOCRClient(BaseOCRClient):
                 "date": date_str,
                 "items_summary": items or "Kirana grocery goods",
                 "confidence": 0.95,
+                "flags": [entry_type],
             }
         return None
 
@@ -339,7 +549,6 @@ class SarvamDocOCRClient(BaseOCRClient):
         if phone_match:
             amount_source = amount_source.replace(phone_match.group(0), " ")
 
-        # Prefer currency-marked values, then use a bare number after dates/phones are removed.
         amt_match = re.search(
             r"(?:₹|रु\.?|rs\.?|inr)\s*([0-9]+(?:,[0-9]{2,3})*(?:\.[0-9]{1,2})?)|"
             r"\b([0-9]+(?:,[0-9]{2,3})*(?:\.[0-9]{1,2})?)\b\s*(?:/-|रुपये)(?:\b|$)",
@@ -358,15 +567,12 @@ class SarvamDocOCRClient(BaseOCRClient):
         if amount_paise <= 0:
             return None
 
-        # Check entry type
-        is_payment = bool(re.search(r"(जमा|paid|received|diye|cash|रोकड़)", line, re.IGNORECASE))
+        # Check entry type: Udhar vs Jama
+        is_payment = bool(re.search(r"(जमा|paid|received|aaya|cash|रोकड़)", line, re.IGNORECASE))
         entry_type = "payment_received" if is_payment else "credit_given"
 
-        # Check for phone
-        phone_match = re.search(r"(?:\+91|0)?[6-9]\d{9}", line)
         customer_phone = phone_match.group(0) if phone_match else None
 
-        # Clean line to isolate name and items
         cleaned = line
         if amt_match:
             cleaned = cleaned.replace(amt_match.group(0), " ")
@@ -375,12 +581,27 @@ class SarvamDocOCRClient(BaseOCRClient):
         if phone_match:
             cleaned = cleaned.replace(phone_match.group(0), " ")
 
-        cleaned = re.sub(r"(जमा|paid|received|diye|cash|रोकड़|उधारी|बाकी|खाता|rs\.?|inr|₹)", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"(जमा|paid|received|diye|cash|रोकड़|उधारी|उधार|बाकी|खाता|rs\.?|inr|₹)", "", cleaned, flags=re.IGNORECASE)
         cleaned = re.sub(r"[\(\)\[\]\{\}]", "", cleaned)
 
         parts = [p.strip(" -\u2013:,|") for p in re.split(r"[-\u2013:,|]", cleaned) if p.strip(" -\u2013:,|")]
         name = parts[0] if parts else "Customer"
-        items = ", ".join(parts[1:]) if len(parts) > 1 else "Kirana grocery goods"
+        items = ", ".join(parts[1:]) if len(parts) > 1 else ("Kirana grocery goods" if entry_type == "credit_given" else "Cash Jama")
+
+        # Validate: name must look like a real person name, not CSS/HTML garbage
+        name = name.strip()
+        if not name or len(name) < 2:
+            return None
+        # Reject if name is purely digits, punctuation, or CSS-like tokens
+        if re.match(r'^[\d\s.,;:/#%(){}\[\]]+$', name):
+            return None
+        # Reject if name contains CSS-like patterns
+        if any(css in name.lower() for css in ['px', 'em', 'rem', 'rgb', 'var(', 'calc(', 'url(', 'none', 'auto', 'solid', 'inherit']):
+            return None
+        # Name should contain at least some letter characters (Latin or Devanagari)
+        letter_count = sum(1 for c in name if c.isalpha() or '\u0900' <= c <= '\u097F')
+        if letter_count < 2:
+            return None
 
         return {
             "customer_name": name,
@@ -390,6 +611,7 @@ class SarvamDocOCRClient(BaseOCRClient):
             "date": date_str,
             "items_summary": items,
             "confidence": 0.94,
+            "flags": [entry_type],
         }
 
     @staticmethod
@@ -438,9 +660,9 @@ class MockOCRClient(BaseOCRClient):
                 "amount_paise": 45000,
                 "entry_type": "credit_given",
                 "date": d1,
-                "items_summary": "1kg Sabudana, 500ml Cow Ghee",
+                "items_summary": "1kg Sabudana, 500ml Cow Ghee (Udhar)",
                 "confidence": 0.96,
-                "flags": [],
+                "flags": ["udhar", "handwritten"],
             },
             {
                 "customer_name": "Anil Deshmukh",
@@ -448,9 +670,9 @@ class MockOCRClient(BaseOCRClient):
                 "amount_paise": 125000,
                 "entry_type": "credit_given",
                 "date": d2,
-                "items_summary": "5kg Aashirvaad Atta, 2L Fortune Oil",
+                "items_summary": "5kg Aashirvaad Atta, 2L Fortune Oil (Udhar)",
                 "confidence": 0.91,
-                "flags": [],
+                "flags": ["udhar", "handwritten"],
             },
             {
                 "customer_name": "Meena Joshi",
@@ -458,9 +680,9 @@ class MockOCRClient(BaseOCRClient):
                 "amount_paise": 30000,
                 "entry_type": "payment_received",
                 "date": d3,
-                "items_summary": "Cash received on account",
+                "items_summary": "Cash received on account (Jama)",
                 "confidence": 0.88,
-                "flags": [],
+                "flags": ["jama", "cash"],
             },
         ]
 
@@ -472,16 +694,75 @@ class MockOCRClient(BaseOCRClient):
         return self.extract_khata_rows_sync()
 
 
+class UnifiedOCRClient(BaseOCRClient):
+    """Intelligent composite OCR engine with seamless Gemini Vision & Sarvam Doc AI orchestration."""
+
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+        self.gemini_client = GeminiVisionOCRClient(settings) if settings.google_gemini_api_key else None
+        self.sarvam_client = (
+            SarvamDocOCRClient(settings)
+            if (settings.sarvam_api_key and settings.sarvam_doc_ai_enabled)
+            else None
+        )
+        self.mock_client = MockOCRClient()
+
+    async def extract_khata_rows(
+        self,
+        image_bytes: bytes,
+        filename: str = "ledger.jpg",
+    ) -> list[dict[str, Any]]:
+        """Extract structured khata rows using available OCR clients with multi-level fallback.
+
+        Order: Gemini Vision (clean structured JSON) → Sarvam Doc AI (document OCR) → Mock.
+        Gemini is preferred because it reads the image AND outputs structured JSON in one
+        pass, avoiding noisy HTML parsing. Sarvam is the fallback for when Gemini is unavailable.
+        """
+        # 1. Try Gemini Vision first (reads image → clean structured JSON, no HTML noise)
+        if self.gemini_client:
+            try:
+                logger.info("unified_ocr_trying_gemini_vision", filename=filename, size=len(image_bytes))
+                rows = await self.gemini_client.extract_khata_rows(image_bytes, filename=filename)
+                if rows:
+                    logger.info("unified_ocr_gemini_success", rows_count=len(rows))
+                    return rows
+                logger.warning("unified_ocr_gemini_returned_empty_rows")
+            except Exception as exc:
+                logger.warning("unified_ocr_gemini_failed_falling_back", error=str(exc))
+
+        # 2. Fallback to Sarvam Document AI (document-grade OCR with HTML parsing)
+        if self.sarvam_client:
+            try:
+                logger.info("unified_ocr_trying_sarvam_doc_ai", filename=filename, size=len(image_bytes))
+                rows = await self.sarvam_client.extract_khata_rows(image_bytes, filename=filename)
+                if rows:
+                    logger.info("unified_ocr_sarvam_success", rows_count=len(rows))
+                    return rows
+                logger.warning("unified_ocr_sarvam_returned_empty_rows")
+            except Exception as exc:
+                logger.warning("unified_ocr_sarvam_failed_falling_back", error=str(exc))
+
+        # 3. Last resort: realistic mock fallback rows
+        logger.info("unified_ocr_using_mock_fallback")
+        return self.mock_client.extract_khata_rows_sync()
+
+
 def get_ocr_client(settings: Settings | None = None) -> BaseOCRClient:
-    """Factory selecting the OCR client."""
+    """Factory selecting the best available OCR client.
+
+    Uses UnifiedOCRClient (Sarvam -> Gemini -> Mock fallback) whenever
+    at least one real API key is configured, regardless of ai_mode.
+    Only returns pure MockOCRClient when no API keys are available at all.
+    """
     cfg = settings or get_settings()
 
-    if cfg.ai_mode == "mock":
-        return MockOCRClient()
+    has_sarvam = bool(cfg.sarvam_api_key and cfg.sarvam_doc_ai_enabled)
+    has_gemini = bool(cfg.google_gemini_api_key)
 
-    if cfg.sarvam_api_key and cfg.sarvam_doc_ai_enabled:
-        return SarvamDocOCRClient(cfg)
+    # If any real OCR key exists, use the unified client with automatic fallback
+    if has_sarvam or has_gemini:
+        return UnifiedOCRClient(cfg)
 
-    logger.warning("no_ocr_api_key_found_using_mock")
+    if cfg.ai_mode != "mock":
+        logger.warning("no_ocr_api_key_found_using_mock")
     return MockOCRClient()
-

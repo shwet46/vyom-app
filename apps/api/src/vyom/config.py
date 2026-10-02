@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -39,7 +40,10 @@ class Settings(BaseSettings):
 
     # ── Sarvam AI ─────────────────────────────────────────────────────────────
     # Auth header: api-subscription-key
-    sarvam_api_key: str = ""
+    sarvam_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("sarvam_api_key", "SARVAM_API_KEY"),
+    )
     sarvam_base_url: str = "https://api.sarvam.ai"
 
     # LLM: sarvam-105b via POST /v1/chat/completions (OpenAI-compatible)
@@ -67,8 +71,19 @@ class Settings(BaseSettings):
     stt_realtime: bool = False
 
     # ── Google Cloud / Gemini ─────────────────────────────────────────────────
-    google_translate_api_key: str = ""
-    google_gemini_api_key: str = ""
+    google_translate_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("google_translate_api_key", "GOOGLE_TRANSLATE_API_KEY"),
+    )
+    google_gemini_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "google_gemini_api_key",
+            "gemini_api_key",
+            "GOOGLE_GEMINI_API_KEY",
+            "GEMINI_API_KEY",
+        ),
+    )
     google_gemini_model: str = "gemini-2.5-flash"
 
     # ── Web / CORS ────────────────────────────────────────────────────────────

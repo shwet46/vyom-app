@@ -54,6 +54,7 @@ export {
   FiFastForward as FastForward,
   FiPackage as Package,
   FiFileText as FileText,
+  FiTrash2 as Trash2,
 } from 'react-icons/fi';
 
 export {

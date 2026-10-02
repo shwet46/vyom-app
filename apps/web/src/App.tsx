@@ -686,18 +686,20 @@ export default function App() {
       setUdhaarCustomers((prev) => [...newEntries, ...prev]);
     }
 
+    const count = newEntries.length > 0 ? newEntries.length : (persistedEntries.length > 0 ? persistedEntries.length : 1);
+
     setActivityFeed((prev) => [
       {
         id: `act-${Date.now()}`,
         timestamp: 'Abhi-abhi',
         iconType: 'insight',
-        title: 'Handwritten Khata Digitize Hua',
-        detail: `${newEntries.length} naye grahak bahi-khata scan se shamil hue`,
+        title: 'Bahi-Khata OCR Digitize Hua',
+        detail: `${count} grahak bahi-khata scan se safalta-purvak shamil hue`,
       },
       ...prev,
     ]);
 
-    showToast(`${newEntries.length} grahak khate mein safalta-purvak jud gaye! ✓`);
+    showToast(`${count} grahak bahi-khate mein safalta-purvak jud gaye! ✓`);
   };
 
   // Add new Udhaar or Jama entry to Khata
@@ -1065,7 +1067,7 @@ export default function App() {
                 custName.toLowerCase().includes(c.name.toLowerCase())
             ) || udhaarCustomers[0];
           if (matchingCustomer) {
-            handleSendReminder(matchingCustomer.id, 'gentle');
+            handleSendManualReminder(matchingCustomer.id, 'soft');
           } else {
             showToast(`${custName} ko WhatsApp aur Telegram takada reminder bhej diya gaya! ✓`);
           }

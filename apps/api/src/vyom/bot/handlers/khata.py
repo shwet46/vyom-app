@@ -1,13 +1,13 @@
 """Telegram bot handlers for customer credit balance, bill details, partial payments, QR codes, and payment deadlines."""
 
-from __future__ import annotations
-
+import asyncio
+import contextlib
 import datetime
 import io
 
 import qrcode
 import structlog
-from aiogram import Bot, F, Router
+from aiogram import F, Router
 from aiogram.types import (
     BufferedInputFile,
     CallbackQuery,
@@ -892,7 +892,7 @@ async def handle_khata_photo_upload(message: Message) -> None:
 
         ocr_client = get_ocr_client()
         ocr_result = await ocr_client.extract_khata_rows(file_bytes)
-        rows = ocr_result.get("rows", [])
+        rows = ocr_result if isinstance(ocr_result, list) else ocr_result.get("rows", [])
 
         if not rows:
             await status_msg.edit_text(
@@ -906,16 +906,87 @@ async def handle_khata_photo_upload(message: Message) -> None:
         db = get_db()
         now_dt = Clock.now()
         scan_id = f"scan_tg_{int(now_dt.timestamp())}"
+        merchant_id = "merchant_sharma_01"
 
         scan_doc = {
             "_id": scan_id,
-            "merchant_id": "merchant_sharma_01",
+            "merchant_id": merchant_id,
             "status": "confirmed",
             "created_via": "telegram",
             "created_at": now_dt,
             "rows": rows,
         }
         await db.khata_scans.insert_one(scan_doc)
+
+        # Create khata_entries in DB for each row
+        created_count = 0
+        for idx, r in enumerate(rows):
+            name = r.get("customer_name") or f"Grahak {idx+1}"
+            phone = r.get("customer_phone")
+            amt = int(r.get("amount_paise", 0))
+            if amt <= 0:
+                continue
+
+            entry_type = str(r.get("entry_type", "credit_given")).lower()
+            is_payment = any(k in entry_type for k in ["jama", "paid", "received", "payment"])
+
+            cust_id = f"cust_tg_{int(now_dt.timestamp())}_{idx+1}"
+            if hasattr(db, "customers") and hasattr(db.customers, "find_one"):
+                try:
+                    res = db.customers.find_one({"merchant_id": merchant_id, "name": name})
+                    cust = await res if asyncio.iscoroutine(res) else None
+                    if not cust:
+                        cust_doc = {
+                            "_id": cust_id,
+                            "merchant_id": merchant_id,
+                            "name": name,
+                            "phone_e164": phone or f"+9198220{idx+10000}",
+                            "language": "hinglish",
+                            "created_at": now_dt,
+                        }
+                        if hasattr(db.customers, "insert_one"):
+                            ins = db.customers.insert_one(cust_doc)
+                            if asyncio.iscoroutine(ins):
+                                await ins
+                    else:
+                        cust_id = cust.get("_id", cust_id)
+                except Exception:
+                    pass
+
+            items_text = r.get("items_summary") or ("Kirana goods (Udhar)" if not is_payment else "Cash Jama")
+            due_date = now_dt.date() + datetime.timedelta(days=14) if not is_payment else now_dt.date()
+
+            if hasattr(db, "khata_entries") and hasattr(db.khata_entries, "insert_one"):
+                try:
+                    entry_doc = {
+                        "_id": f"entry_tg_{int(now_dt.timestamp())}_{idx+1}",
+                        "merchant_id": merchant_id,
+                        "customer_id": cust_id,
+                        "amount_total_paise": amt,
+                        "amount_paid_paise": amt if is_payment else 0,
+                        "opened_at": now_dt,
+                        "due_date": datetime.datetime.combine(due_date, datetime.time.min),
+                        "status": "paid" if is_payment else "open",
+                        "items": [items_text],
+                        "items_summary": items_text,
+                        "source": "ocr",
+                        "scan_id": scan_id,
+                        "ocr": {"confidence": float(r.get("confidence", 0.94)), "row_id": f"row_{idx+1}"},
+                        "version": 1,
+                    }
+                    e_ins = db.khata_entries.insert_one(entry_doc)
+                    if asyncio.iscoroutine(e_ins):
+                        await e_ins
+                    created_count += 1
+                except Exception:
+                    pass
+
+        with contextlib.suppress(Exception):
+            await sse_hub.broadcast(
+                merchant_id,
+                "khata.created",
+                {"scan_id": scan_id, "count": created_count},
+            )
 
         total_paise = sum(r.get("amount_paise", 0) for r in rows)
         total_rs = total_paise / 100.0
@@ -928,11 +999,12 @@ async def handle_khata_photo_upload(message: Message) -> None:
             amt = r.get("amount_paise", 0) / 100.0
             name = r.get("customer_name", "Grahak")
             items = r.get("items_summary", "Kirana items")
-            typ = "Udhaar" if r.get("entry_type") == "credit_given" else "Jama"
+            e_type = str(r.get("entry_type", "credit_given")).lower()
+            typ = "Jama (जमा)" if any(k in e_type for k in ["jama", "paid", "received"]) else "Udhaar (उधार)"
             lines.append(f"• *{name}*: ₹{amt:.0f} ({items}) [{typ}]")
 
-        lines.append(f"\n💰 *Kul Rashi (Total): ₹{total_rs:.0f}*")
-        lines.append("\n✅ Yeh entries Sharma Kirana digital bahi-khate me safalta-purvak jud gayi hain!")
+        lines.append(f"\n💰 *Kul Rashi (Total): ₹{total_rs:,.0f}*")
+        lines.append("\n✅ Yeh entries Sharma Kirana digital bahi-khate me jud gayi hain!")
 
         await status_msg.edit_text("\n".join(lines), parse_mode="Markdown")
 
@@ -957,7 +1029,7 @@ async def handle_khata_document_upload(message: Message) -> None:
 
     status_msg = await message.answer(
         "📄 *Document Prapt Hua!*\n\n"
-        "⏳ *Sarvam Document Intelligence (hi-IN) OCR* se document process kar rahe hain...\n"
+        "⏳ *Document Intelligence OCR* se document process kar rahe hain...\n"
         "_Kripya thoda intezaar karein..._",
         parse_mode="Markdown",
     )
@@ -978,7 +1050,7 @@ async def handle_khata_document_upload(message: Message) -> None:
 
         ocr_client = get_ocr_client()
         ocr_result = await ocr_client.extract_khata_rows(file_bytes)
-        rows = ocr_result.get("rows", [])
+        rows = ocr_result if isinstance(ocr_result, list) else ocr_result.get("rows", [])
 
         if not rows:
             await status_msg.edit_text(
@@ -991,16 +1063,86 @@ async def handle_khata_document_upload(message: Message) -> None:
         db = get_db()
         now_dt = Clock.now()
         scan_id = f"scan_tg_doc_{int(now_dt.timestamp())}"
+        merchant_id = "merchant_sharma_01"
 
         scan_doc = {
             "_id": scan_id,
-            "merchant_id": "merchant_sharma_01",
+            "merchant_id": merchant_id,
             "status": "confirmed",
             "created_via": "telegram",
             "created_at": now_dt,
             "rows": rows,
         }
         await db.khata_scans.insert_one(scan_doc)
+
+        created_count = 0
+        for idx, r in enumerate(rows):
+            name = r.get("customer_name") or f"Grahak {idx+1}"
+            phone = r.get("customer_phone")
+            amt = int(r.get("amount_paise", 0))
+            if amt <= 0:
+                continue
+
+            entry_type = str(r.get("entry_type", "credit_given")).lower()
+            is_payment = any(k in entry_type for k in ["jama", "paid", "received", "payment"])
+
+            cust_id = f"cust_tg_doc_{int(now_dt.timestamp())}_{idx+1}"
+            if hasattr(db, "customers") and hasattr(db.customers, "find_one"):
+                try:
+                    res = db.customers.find_one({"merchant_id": merchant_id, "name": name})
+                    cust = await res if asyncio.iscoroutine(res) else None
+                    if not cust:
+                        cust_doc = {
+                            "_id": cust_id,
+                            "merchant_id": merchant_id,
+                            "name": name,
+                            "phone_e164": phone or f"+9198220{idx+20000}",
+                            "language": "hinglish",
+                            "created_at": now_dt,
+                        }
+                        if hasattr(db.customers, "insert_one"):
+                            ins = db.customers.insert_one(cust_doc)
+                            if asyncio.iscoroutine(ins):
+                                await ins
+                    else:
+                        cust_id = cust.get("_id", cust_id)
+                except Exception:
+                    pass
+
+            items_text = r.get("items_summary") or ("Kirana goods (Udhar)" if not is_payment else "Cash Jama")
+            due_date = now_dt.date() + datetime.timedelta(days=14) if not is_payment else now_dt.date()
+
+            if hasattr(db, "khata_entries") and hasattr(db.khata_entries, "insert_one"):
+                try:
+                    entry_doc = {
+                        "_id": f"entry_tg_doc_{int(now_dt.timestamp())}_{idx+1}",
+                        "merchant_id": merchant_id,
+                        "customer_id": cust_id,
+                        "amount_total_paise": amt,
+                        "amount_paid_paise": amt if is_payment else 0,
+                        "opened_at": now_dt,
+                        "due_date": datetime.datetime.combine(due_date, datetime.time.min),
+                        "status": "paid" if is_payment else "open",
+                        "items": [items_text],
+                        "items_summary": items_text,
+                        "source": "ocr",
+                        "scan_id": scan_id,
+                        "ocr": {"confidence": float(r.get("confidence", 0.94)), "row_id": f"row_{idx+1}"},
+                        "version": 1,
+                    }
+                    e_ins = db.khata_entries.insert_one(entry_doc)
+                    if asyncio.iscoroutine(e_ins):
+                        await e_ins
+                    created_count += 1
+                except Exception:
+                    pass
+
+        with contextlib.suppress(Exception):
+            await sse_hub.broadcast(
+                merchant_id,
+                "khata.created",
+                {"scan_id": scan_id, "count": created_count},
+            )
 
         total_paise = sum(r.get("amount_paise", 0) for r in rows)
         total_rs = total_paise / 100.0
@@ -1013,11 +1155,12 @@ async def handle_khata_document_upload(message: Message) -> None:
             amt = r.get("amount_paise", 0) / 100.0
             name = r.get("customer_name", "Grahak")
             items = r.get("items_summary", "Kirana items")
-            typ = "Udhaar" if r.get("entry_type") == "credit_given" else "Jama"
+            e_type = str(r.get("entry_type", "credit_given")).lower()
+            typ = "Jama (जमा)" if any(k in e_type for k in ["jama", "paid", "received"]) else "Udhaar (उधार)"
             lines.append(f"• *{name}*: ₹{amt:.0f} ({items}) [{typ}]")
 
-        lines.append(f"\n💰 *Kul Rashi (Total): ₹{total_rs:.0f}*")
-        lines.append("\n✅ Yeh entries Sharma Kirana digital bahi-khate me safalta-purvak jud gayi hain!")
+        lines.append(f"\n💰 *Kul Rashi (Total): ₹{total_rs:,.0f}*")
+        lines.append("\n✅ Yeh entries Sharma Kirana digital bahi-khate me jud gayi hain!")
 
         await status_msg.edit_text("\n".join(lines), parse_mode="Markdown")
 

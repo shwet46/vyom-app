@@ -141,7 +141,7 @@ async def test_json_repair_clean_and_fenced() -> None:
 
 def test_ai_factories() -> None:
     """Verify AI factory switches to Mock in mock mode and handles configurations."""
-    mock_settings = Settings(ai_mode="mock", sarvam_api_key="")
+    mock_settings = Settings(ai_mode="mock", sarvam_api_key="", google_gemini_api_key="")
     llm = get_llm_client(mock_settings)
     assert isinstance(llm, MockLLMClient)
 
@@ -157,11 +157,11 @@ def test_ai_factories() -> None:
     tr = get_translate_client(mock_settings)
     assert isinstance(tr, MockTranslateClient)
 
-    # Sarvam Doc AI factory
-    sarvam_settings = Settings(ai_mode="live", sarvam_api_key="test_key", sarvam_doc_ai_enabled=True)
+    # Sarvam Doc AI factory — returns UnifiedOCRClient with Sarvam as primary
+    sarvam_settings = Settings(ai_mode="live", sarvam_api_key="test_key", sarvam_doc_ai_enabled=True, google_gemini_api_key="")
     sarvam_ocr = get_ocr_client(sarvam_settings)
-    from vyom.ai.ocr import SarvamDocOCRClient
-    assert isinstance(sarvam_ocr, SarvamDocOCRClient)
+    from vyom.ai.ocr import UnifiedOCRClient
+    assert isinstance(sarvam_ocr, UnifiedOCRClient)
 
 
 def test_sarvam_doc_ocr_structuring() -> None:

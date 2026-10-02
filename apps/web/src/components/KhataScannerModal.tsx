@@ -11,6 +11,7 @@ import {
   Plus,
   AlertCircle,
   FileText,
+  Trash2,
 } from './icons';
 import { ScannedLedgerRow, UdhaarCustomer } from '../types';
 import { sampleScannedRows } from '../data/mockData';
@@ -35,7 +36,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [scanId, setScanId] = useState<string | null>(null);
   const [serverRows, setServerRows] = useState<any[]>([]);
-  const [scanStatusMsg, setScanStatusMsg] = useState('Vyom Handwriting Padh Raha Hai...');
+  const [scanStatusMsg, setScanStatusMsg] = useState('AI Vision Khata Padh Raha Hai...');
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -100,19 +101,23 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
     }
   };
 
-  // Perform OCR using Sarvam Document Intelligence
+  // Perform OCR using Multimodal Vision & Document AI
   const executeScan = async (fileToScan?: File) => {
     setStep('scanning');
     setErrorMsg(null);
-    setScanStatusMsg('Sarvam Document Intelligence API se connect ho raha hai...');
+    setScanStatusMsg('AI Vision & OCR Engine connect ho raha hai...');
 
     const timer1 = setTimeout(() => {
-      setScanStatusMsg('Sarvam Doc AI (hi-IN) haath se likhi bahi-khata padh raha hai...');
+      setScanStatusMsg('Handwritten bahi-khata, Devanagari akshar aur ank padhe ja rahe hain...');
     }, 1200);
 
     const timer2 = setTimeout(() => {
-      setScanStatusMsg('Grahak naam, items aur udhari raashi extract ho rahi hai...');
+      setScanStatusMsg('Grahak naam, items, udhari aur jama rashi extract ho rahi hai...');
     }, 2800);
+
+    const timer3 = setTimeout(() => {
+      setScanStatusMsg('Sarvam Doc AI processing... Thoda aur wait karein...');
+    }, 8000);
 
     try {
       const file = fileToScan || selectedFile;
@@ -120,18 +125,22 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
         const res = await uploadKhataScan(file, 'upload');
         clearTimeout(timer1);
         clearTimeout(timer2);
+        clearTimeout(timer3);
 
         if (res && res.rows && res.rows.length > 0) {
-          const rows: ScannedLedgerRow[] = res.rows.map((r: any, idx: number) => ({
-            id: r.row_id || `scanned-row-${Date.now()}-${idx}`,
-            name: r.name_raw || 'Customer',
-            amount: r.amount_paise ? Math.round(r.amount_paise / 100) : 0,
-            date: r.date ? String(r.date) : new Date().toISOString().split('T')[0],
-            confidence: r.confidence ? Math.round(r.confidence * 100) : 94,
-            selected: true,
-            items: r.flags?.length ? r.flags.join(', ') : 'Kirana grocery goods',
-            entryType: r.entry_type === 'payment_received' ? 'jama' : 'udhaar',
-          }));
+          const rows: ScannedLedgerRow[] = res.rows.map((r: any, idx: number) => {
+            const isPayment = r.entry_type === 'payment_received' || String(r.entry_type).toLowerCase().includes('jama');
+            return {
+              id: r.row_id || `scanned-row-${Date.now()}-${idx}`,
+              name: r.name_raw || 'Customer',
+              amount: r.amount_paise ? Math.round(r.amount_paise / 100) : 0,
+              date: r.date ? String(r.date).slice(0, 10) : new Date().toISOString().split('T')[0],
+              confidence: r.confidence ? Math.round(r.confidence * 100) : 95,
+              selected: true,
+              items: r.items_summary || (r.flags?.length ? r.flags.join(', ') : (isPayment ? 'Cash Jama' : 'Kirana grocery goods')),
+              entryType: isPayment ? 'jama' : 'udhaar',
+            };
+          });
           setScannedRows(rows);
           setServerRows(res.rows);
           if (res.id) setScanId(res.id);
@@ -145,12 +154,14 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
       // If no file was provided (Demo mode) or no rows returned, use rich sample extracted entries
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(timer3);
       await new Promise((resolve) => setTimeout(resolve, 800));
       setScannedRows(sampleScannedRows);
       setStep('results');
     } catch (err: any) {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(timer3);
       console.warn('OCR scan failed:', err);
       setErrorMsg(err?.message || 'OCR scan failed. Please try another image.');
       setStep('capture');
@@ -169,9 +180,20 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
     );
   };
 
+  const handleToggleEntryType = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setScannedRows((prev) =>
+      prev.map((row) =>
+        row.id === id
+          ? { ...row, entryType: row.entryType === 'jama' ? 'udhaar' : 'jama' }
+          : row
+      )
+    );
+  };
+
   const handleUpdateAmount = (id: string, newAmt: number) => {
     setScannedRows((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, amount: newAmt } : row))
+      prev.map((row) => (row.id === id ? { ...row, amount: Math.max(0, newAmt) } : row))
     );
   };
 
@@ -179,6 +201,17 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
     setScannedRows((prev) =>
       prev.map((row) => (row.id === id ? { ...row, name: newName } : row))
     );
+  };
+
+  const handleUpdateItems = (id: string, newItems: string) => {
+    setScannedRows((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, items: newItems } : row))
+    );
+  };
+
+  const handleRemoveRow = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setScannedRows((prev) => prev.filter((row) => row.id !== id));
   };
 
   const handleAddCustomRow = () => {
@@ -189,7 +222,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
       date: new Date().toISOString().split('T')[0],
       confidence: 100,
       selected: true,
-      items: 'Direct Entry',
+      items: 'Direct Entry (Udhar)',
       entryType: 'udhaar',
     };
     setScannedRows((prev) => [...prev, newRow]);
@@ -198,6 +231,35 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   const handleConfirmSave = async () => {
     setIsSaving(true);
     const selectedRows = scannedRows.filter((r) => r.selected);
+
+    const newCustomers: UdhaarCustomer[] = selectedRows.map((r, idx) => ({
+      id: `scanned-${Date.now()}-${idx}`,
+      name: r.name,
+      initials: r.name
+        .split(' ')
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'GK',
+      phone: '+91 9822' + Math.floor(10000 + Math.random() * 90000),
+      amount: r.entryType === 'jama' ? 0 : r.amount,
+      daysOverdue: 0,
+      status: r.entryType === 'jama' ? 'paid' : 'reminder_sent',
+      tone: 'soft',
+      language: 'hinglish',
+      lastReminderDate: 'Just added via OCR',
+      totalUdhaarEver: r.entryType === 'udhaar' ? r.amount : 0,
+      totalJamaEver: r.entryType === 'jama' ? r.amount : 0,
+      timeline: [
+        {
+          date: r.date,
+          title: r.entryType === 'jama' ? 'Khata Jama (OCR)' : 'Khata Udhaar (OCR)',
+          note: `₹${r.amount} ledger scan se jud gaya (${r.items || (r.entryType === 'jama' ? 'Cash Jama' : 'Kirana items')})`,
+          type: r.entryType === 'jama' ? 'payment' : 'reminder',
+        },
+      ],
+    }));
 
     // If we have an active backend scan session, confirm it in MongoDB
     if (scanId) {
@@ -209,6 +271,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
             row_id: row.id,
             page: original?.page || 1,
             name_raw: row.name,
+            items_summary: row.items,
             amount_paise: Math.round(row.amount * 100),
             date: row.date,
             entry_type: row.entryType === 'jama' ? 'payment_received' : 'credit_given',
@@ -218,7 +281,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
         });
         await updateKhataScanRows(scanId, editedRows);
         await confirmKhataScan(scanId);
-        await onSaveToLedger([]);
+        await onSaveToLedger(newCustomers);
         setIsSaving(false);
         handleClose();
         return;
@@ -229,40 +292,17 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
       }
     }
 
-    const newCustomers: UdhaarCustomer[] = selectedRows.map((r, idx) => ({
-      id: `scanned-${Date.now()}-${idx}`,
-      name: r.name,
-      initials: r.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase(),
-      phone: '+91 9822' + Math.floor(10000 + Math.random() * 90000),
-      amount: r.amount,
-      daysOverdue: Math.floor(5 + Math.random() * 25),
-      status: 'reminder_sent',
-      tone: 'soft',
-      language: 'marathi',
-      lastReminderDate: 'Just added via Sarvam OCR',
-      timeline: [
-        {
-          date: r.date,
-          title: 'Sarvam OCR Khata Import',
-          note: `₹${r.amount} ledger scan se add hua (${r.items || 'Kirana items'})`,
-          type: 'reminder',
-        },
-      ],
-    }));
-
-    onSaveToLedger(newCustomers);
+    await onSaveToLedger(newCustomers);
     setIsSaving(false);
     handleClose();
   };
 
   const selectedCount = scannedRows.filter((r) => r.selected).length;
-  const totalSelectedAmount = scannedRows
-    .filter((r) => r.selected)
+  const totalUdhaarAmount = scannedRows
+    .filter((r) => r.selected && r.entryType !== 'jama')
+    .reduce((sum, r) => sum + r.amount, 0);
+  const totalJamaAmount = scannedRows
+    .filter((r) => r.selected && r.entryType === 'jama')
     .reduce((sum, r) => sum + r.amount, 0);
 
   return (
@@ -287,22 +327,22 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-soft-line bg-paper">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-blue/10 flex items-center justify-center text-blue">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue/10 flex items-center justify-center text-blue shadow-xs">
               <Scan className="w-4 h-4" />
             </div>
             <div>
               <h2 className="font-extrabold text-base text-obsidian tracking-tight">
-                Khata Scanner (Sarvam AI OCR)
+                Khata OCR Scanner (AI Vision)
               </h2>
               <p className="text-[11px] text-charcoal">
-                Upload image, PDF, or capture handwritten register
+                Handwritten register, bill ya chit upload karein aur udhar auto-add karein
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full bg-cloud border border-line flex items-center justify-center text-charcoal hover:text-ink cursor-pointer"
+            className="w-8 h-8 rounded-full bg-cloud border border-line flex items-center justify-center text-charcoal hover:text-ink cursor-pointer transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -318,6 +358,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                   <span>{errorMsg}</span>
                 </div>
               )}
+
               {/* Drag and drop upload zone */}
               <div
                 onDragOver={handleDragOver}
@@ -334,16 +375,16 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                 {selectedFile ? (
                   <div className="w-full space-y-3">
                     {previewUrl ? (
-                      <div className="relative rounded-xl overflow-hidden border border-line max-h-48 flex items-center justify-center bg-black/5">
+                      <div className="relative rounded-xl overflow-hidden border border-line max-h-52 flex items-center justify-center bg-black/5">
                         <img
                           src={previewUrl}
                           alt="Uploaded Khata"
-                          className="max-h-48 object-contain rounded-lg"
+                          className="max-h-52 object-contain rounded-lg shadow-xs"
                         />
                       </div>
                     ) : (
                       <div className="py-6 flex flex-col items-center justify-center gap-2 text-charcoal">
-                        <div className="w-12 h-12 rounded-2xl bg-blue/10 text-blue flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-blue/10 text-blue flex items-center justify-center shadow-xs">
                           <Upload className="w-6 h-6" />
                         </div>
                         <span className="font-bold text-xs text-obsidian">{selectedFile.name}</span>
@@ -373,26 +414,26 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                     <button
                       type="button"
                       onClick={() => executeScan(selectedFile)}
-                      className="w-full py-3.5 px-4 rounded-2xl bg-blue text-white font-extrabold text-xs shadow-button hover:bg-blue/90 flex items-center justify-center gap-2 transition cursor-pointer"
+                      className="w-full py-3 px-4 rounded-2xl bg-blue text-white font-extrabold text-xs shadow-button hover:bg-blue/90 flex items-center justify-center gap-2 transition cursor-pointer"
                     >
                       <Scan className="w-4 h-4 animate-pulse" />
-                      <span>Sarvam Doc AI se Scan Karein</span>
+                      <span>OCR se Khata Scan Karein (Extract Udhar)</span>
                     </button>
                   </div>
                 ) : (
                   <div className="py-4 flex flex-col items-center space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-blue/10 text-blue flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-2xl bg-blue/10 text-blue flex items-center justify-center shadow-xs">
                       <Upload className="w-6 h-6" />
                     </div>
                     <div>
                       <h4 className="font-extrabold text-sm text-obsidian">
-                        Bahi-Khata Document / Image Upload Karein
+                        Bahi-Khata Document / Photo Upload Karein
                       </h4>
                       <p className="text-xs text-charcoal mt-1">
-                        Yahan drag & drop karein ya niche diye buttons se select karein
+                        Yahan photo drag & drop karein ya camera se photo khinchein
                       </p>
                       <p className="text-[10px] text-slate mt-0.5">
-                        JPG, PNG, WEBP, PDF (Handwritten & Printed)
+                        JPG, PNG, WEBP, PDF (Hindi, Marathi & English Handwriting)
                       </p>
                     </div>
 
@@ -403,13 +444,13 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                         className="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl bg-blue text-white font-bold text-xs shadow-xs hover:bg-blue/90 flex items-center justify-center gap-1.5 transition cursor-pointer"
                       >
                         <Upload className="w-3.5 h-3.5" />
-                        <span>Upload File</span>
+                        <span>Upload Photo / PDF</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl bg-white border border-line text-obsidian font-bold text-xs hover:bg-cloud flex items-center justify-center gap-1.5 transition cursor-pointer"
+                        className="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl bg-white border border-line text-obsidian font-bold text-xs hover:bg-cloud flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs"
                       >
                         <Camera className="w-3.5 h-3.5 text-blue" />
                         <span>Camera Photo</span>
@@ -429,22 +470,22 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                       </span>
                     </div>
                     <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                      Sharma Kirana Demo
+                      Instant Demo
                     </span>
                   </div>
 
                   <div className="font-mono text-[11px] text-charcoal/80 space-y-1 bg-white/70 p-2.5 rounded-xl border border-amber-100">
                     <div className="flex justify-between border-b border-dashed border-amber-200 pb-0.5">
-                      <span>Kishore Shirole (Dal, Ghee)</span>
-                      <span className="font-bold text-ink">₹1,250</span>
+                      <span>Ramesh Kumar (2L Oil, 5kg Atta - Udhar)</span>
+                      <span className="font-bold text-rose-700">₹750 [Udhar]</span>
                     </div>
                     <div className="flex justify-between border-b border-dashed border-amber-200 pb-0.5">
-                      <span>Nanda Tai Gaikwad (Poha, Mirchi)</span>
-                      <span className="font-bold text-ink">₹820</span>
+                      <span>Suresh Patil (500g Ghee - Udhar)</span>
+                      <span className="font-bold text-rose-700">₹420 [Udhar]</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Pravin Mandhare (Sugar, Atta bag)</span>
-                      <span className="font-bold text-ink">₹2,400</span>
+                      <span>Anita Sharma (Cash Jama)</span>
+                      <span className="font-bold text-emerald-700">₹500 [Jama]</span>
                     </div>
                   </div>
 
@@ -463,9 +504,9 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               <div className="text-[11px] text-charcoal bg-cloud/60 p-3 rounded-xl border border-soft-line flex items-start gap-2">
                 <span className="text-blue font-bold">💡</span>
                 <span>
-                  <strong>Sarvam Document Intelligence (hi-IN)</strong> haath se likhe Hindi,
-                  Marathi aur English bahi-khate ko scan karke grahak naam, samaan aur udhari raashi
-                  ko 94%+ accuracy se digital ledger me convert karta hai.
+                  <strong>AI Khata OCR:</strong> Haath se likhe Hindi, Marathi aur English
+                  khata-pustak ko scan karke grahak naam, items, udhari raashi aur jama record
+                  ko automatically structured digital udhaar ledger mein jodta hai.
                 </span>
               </div>
             </div>
@@ -500,7 +541,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                   <span>{scanStatusMsg}</span>
                 </div>
                 <p className="text-[11px] text-slate">
-                  Sarvam Doc AI (doc-ai/v1) digitizing handwriting & structuring ledger rows...
+                  Multimodal AI & Sarvam Doc AI digitizing handwriting & structuring ledger rows...
                 </p>
               </div>
             </div>
@@ -509,31 +550,41 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
           {step === 'results' && (
             <div className="space-y-4">
               {/* Success Banner */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div>
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div className="text-xs font-bold text-emerald-950">
-                      {scannedRows.length} Entries Sarvam OCR se Extract Hui!
-                    </div>
-                    <div className="text-[11px] text-emerald-700">
-                      Total: ₹{totalSelectedAmount.toLocaleString('en-IN')} • 94% Avg Confidence
+                      {scannedRows.length} Entries OCR se Safalta-purvak Extract Hui!
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setStep('capture')}
+                    className="text-xs font-bold text-charcoal hover:text-ink underline cursor-pointer"
+                  >
+                    Dusri Photo Upload Karein
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setStep('capture')}
-                  className="text-xs font-bold text-charcoal hover:text-ink underline cursor-pointer"
-                >
-                  Upload Another
-                </button>
+                <div className="flex flex-wrap items-center gap-3 text-[11px] pt-1 border-t border-emerald-200/60">
+                  <span className="font-bold text-rose-800">
+                    🔴 Kul Udhaar: ₹{totalUdhaarAmount.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-charcoal/40">•</span>
+                  <span className="font-bold text-emerald-800">
+                    🟢 Kul Jama: ₹{totalJamaAmount.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-charcoal/40">•</span>
+                  <span className="text-emerald-700">
+                    {selectedCount} Selected
+                  </span>
+                </div>
               </div>
 
               {/* Scanned Entries List */}
               <div className="space-y-2">
                 <div className="text-xs font-bold text-obsidian flex justify-between px-1">
-                  <span>Grahak Naam & Tareekh</span>
+                  <span>Grahak Naam, Items & Type</span>
                   <span>Amount & Status</span>
                 </div>
 
@@ -541,49 +592,82 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                   <div
                     key={row.id}
                     onClick={() => handleToggleRow(row.id)}
-                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 ${
                       row.selected
                         ? 'bg-white border-blue shadow-xs'
                         : 'bg-cloud/60 border-soft-line opacity-60'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div
-                        className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                          row.selected ? 'bg-blue text-white' : 'border border-line bg-white'
-                        }`}
-                      >
-                        {row.selected && <Check className="w-3.5 h-3.5" />}
-                      </div>
-                      <div className="min-w-0 space-y-0.5">
-                        <input
-                          type="text"
-                          value={row.name}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleUpdateName(row.id, e.target.value)}
-                          className="font-bold text-xs text-obsidian bg-transparent border-b border-transparent hover:border-line focus:border-blue focus:outline-none w-full"
-                        />
-                        <div className="text-[10px] text-slate flex items-center gap-2">
-                          <span>{row.date}</span>
-                          {row.items && <span>• {row.items}</span>}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
+                            row.selected ? 'bg-blue text-white' : 'border border-line bg-white'
+                          }`}
+                        >
+                          {row.selected && <Check className="w-3.5 h-3.5" />}
                         </div>
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <input
+                            type="text"
+                            value={row.name}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleUpdateName(row.id, e.target.value)}
+                            placeholder="Grahak Naam"
+                            className="font-bold text-xs text-obsidian bg-transparent border-b border-transparent hover:border-line focus:border-blue focus:outline-none w-full"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right Amount & Type */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* Entry Type Toggle Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleEntryType(row.id, e)}
+                          title="Click to switch between Udhaar and Jama"
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full cursor-pointer transition ${
+                            row.entryType === 'jama'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-rose-100 text-rose-800 border border-rose-300'
+                          }`}
+                        >
+                          {row.entryType === 'jama' ? '🟢 Jama' : '🔴 Udhaar'}
+                        </button>
+
+                        <div className="flex items-center gap-0.5 font-extrabold text-xs text-ink">
+                          <span>₹</span>
+                          <input
+                            type="number"
+                            value={row.amount}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleUpdateAmount(row.id, Number(e.target.value))}
+                            className="w-16 bg-cloud border border-line rounded px-1.5 py-0.5 text-right font-bold text-xs"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => handleRemoveRow(row.id, e)}
+                          title="Delete entry"
+                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded">
-                        {row.confidence}%
-                      </span>
-                      <div className="flex items-center gap-0.5 font-extrabold text-xs text-ink">
-                        <span>₹</span>
-                        <input
-                          type="number"
-                          value={row.amount}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleUpdateAmount(row.id, Number(e.target.value))}
-                          className="w-16 bg-cloud border border-line rounded px-1.5 py-0.5 text-right font-bold text-xs"
-                        />
-                      </div>
+                    {/* Bottom Line: Items description and date */}
+                    <div className="flex items-center justify-between text-[10px] text-slate pl-7 pr-1 gap-2">
+                      <input
+                        type="text"
+                        value={row.items || ''}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => handleUpdateItems(row.id, e.target.value)}
+                        placeholder="Items description (e.g. Atta, Oil, Ghee)"
+                        className="flex-1 bg-transparent border-b border-dashed border-line/60 hover:border-blue focus:border-blue focus:outline-none text-[10px] text-charcoal"
+                      />
+                      <span className="shrink-0 text-slate-400">{row.date} • {row.confidence}% AI</span>
                     </div>
                   </div>
                 ))}
@@ -593,10 +677,10 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddCustomRow}
-                className="w-full py-2 px-3 rounded-xl border border-dashed border-line text-charcoal hover:text-ink hover:border-blue text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-xl border border-dashed border-line text-charcoal hover:text-ink hover:border-blue text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 text-blue" />
-                <span>+ Nayi Entry Jodein</span>
+                <span>+ Nayi Entry Jodein (Manual Entry)</span>
               </button>
             </div>
           )}
@@ -626,7 +710,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Khata Ledger Mein Jodein ({selectedCount})</span>
+                  <span>Khata Ledger Mein Jodein ({selectedCount} Entries)</span>
                 </>
               )}
             </button>

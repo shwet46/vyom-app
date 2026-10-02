@@ -87,9 +87,13 @@ async def upload_khata_scan(
             c_name = item.get("customer_name", "").strip() or f"Customer {row_counter}"
             c_phone = item.get("customer_phone")
             amt = int(item.get("amount_paise", 0))
-            e_type_str = item.get("entry_type", "credit_given")
-            e_type = EntryType.PAYMENT_RECEIVED if e_type_str == "payment_received" else EntryType.CREDIT_GIVEN
+            e_type_str = str(item.get("entry_type", "credit_given")).lower()
+            if any(k in e_type_str for k in ["jama", "paid", "received", "payment"]):
+                e_type = EntryType.PAYMENT_RECEIVED
+            else:
+                e_type = EntryType.CREDIT_GIVEN
             conf = float(item.get("confidence", 0.94))
+            items_summary = item.get("items_summary") or ("Kirana grocery goods (Udhar)" if e_type == EntryType.CREDIT_GIVEN else "Cash Jama")
 
             # Match against existing customers
             matched_id = None
@@ -123,6 +127,8 @@ async def upload_khata_scan(
                 row_id=f"row_{row_counter}",
                 page=idx + 1,
                 name_raw=c_name,
+                phone=c_phone,
+                items_summary=items_summary,
                 matched_customer_id=matched_id,
                 match_score=match_score,
                 amount_paise=amt,
@@ -222,10 +228,13 @@ async def confirm_khata_scan(
             new_cust = Customer(
                 merchant_id=merchant.id,
                 name=r.name_raw,
+                phone_e164=r.phone or "+919822000000",
                 language=Language.HINGLISH,
             )
             await db.customers.insert_one(new_cust.to_mongo())
             target_cust_id = new_cust.id
+
+        items_list = [r.items_summary] if r.items_summary else ["Kirana grocery goods"]
 
         if r.entry_type == EntryType.CREDIT_GIVEN:
             entry = KhataEntry(
@@ -236,6 +245,8 @@ async def confirm_khata_scan(
                 opened_at=now_dt,
                 due_date=r.date + datetime.timedelta(days=14),
                 status=KhataStatus.OPEN,
+                items=items_list,
+                items_summary=r.items_summary or "Kirana grocery goods (Udhar)",
                 source=KhataEntrySource.OCR,
                 scan_id=scan.id,
                 ocr=KhataOCRMeta(confidence=r.confidence, row_id=r.row_id),
@@ -243,7 +254,7 @@ async def confirm_khata_scan(
             created_entries.append(entry)
             await db.khata_entries.insert_one(entry.to_mongo())
         else:
-            # Payment received
+            # Payment received (Jama)
             entry = KhataEntry(
                 merchant_id=merchant.id,
                 customer_id=target_cust_id,
@@ -252,6 +263,8 @@ async def confirm_khata_scan(
                 opened_at=now_dt,
                 due_date=r.date,
                 status=KhataStatus.PAID,
+                items=items_list,
+                items_summary=r.items_summary or "Cash received (Jama)",
                 source=KhataEntrySource.OCR,
                 scan_id=scan.id,
                 ocr=KhataOCRMeta(confidence=r.confidence, row_id=r.row_id),
@@ -270,10 +283,16 @@ async def confirm_khata_scan(
         "khata_scan.confirmed",
         {"scan_id": scan.id, "entries_created": len(created_entries)},
     )
+    await sse_hub.broadcast(
+        merchant.id,
+        "khata.created",
+        {"scan_id": scan.id, "count": len(created_entries)},
+    )
 
     return {
         "status": "confirmed",
         "entries_created": len(created_entries),
+        "scan_id": scan.id,
     }
 
 
