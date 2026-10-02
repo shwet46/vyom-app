@@ -144,7 +144,20 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   if (!isOpen) return null;
 
-  const isEnglish = lang === 'english';
+  const copy = {
+    hinglish: {
+      tagline: 'Aapka AI saathi jo dukaan ka paisa kabhi khone nahi deta', step: `Step ${step} of 5`, chooseLanguage: 'Apni bhasha chunein', languageHint: 'Vyom aapse usi bhasha mein baat karega', shopDetails: 'Dukaan ki jankari', shopHint: 'Iski madad se Vyom aaspas ke patterns samjhega', shopName: 'Dukaan ka naam', city: 'Shahar / Area', category: 'Business Category', aboutShop: 'Apni dukaan ke baare mein batayein', aboutHint: 'Aap kya bechte hain? Chhota sa description bolkar ya type karke dein.', aboutPlaceholder: 'Jaise: Hum daily grocery, snacks aur ghar ka samaan bechte hain...', paytm: 'Paytm Merchant Connect', paytmHint: 'Vyom aapke roz ke transactions ko analyse karke silent churn aur udhaar khojta hai.', connected: 'Paytm Merchant Account Connected ✓', sync: 'Daily Soundbox & QR Sync: Active', connect: 'Connect Paytm Merchant', consent: 'Paytm Data Consent Permission', consentHint: 'Vyom sirf aapke transaction timings aur repeat-customer numbers padhega. Paisa nikaalne ka koi adhikar nahi hota.', cancel: 'Cancel', approve: 'Manzoor Hai', limits: 'Apni Limits Set Karein', limitsHint: "Vyom in limits ke bahar kuch nahi karega. Har offer se pehle aapki 'haan' zaroori hai.", weeklyBudget: 'Max Weekly Budget:', discount: 'Max Discount Limit:', messageControl: 'Spam Control', messageHint: 'Hafte mein max message per customer', messageValue: '1 msg/week', back: 'Peeche', skip: 'Skip Demo', next: 'Aage', start: 'Vyom Shuru Karein (Start)', connecting: 'Connecting...',
+    },
+    hindi: {
+      tagline: 'आपका एआई साथी जो दुकान का पैसा कभी खोने नहीं देता', step: `चरण ${step} / 5`, chooseLanguage: 'अपनी भाषा चुनिए', languageHint: 'व्योम आपसे इसी भाषा में बात करेगा', shopDetails: 'दुकान की जानकारी', shopHint: 'इससे व्योम आपके स्थानीय व्यापार के पैटर्न समझेगा', shopName: 'दुकान का नाम', city: 'शहर / क्षेत्र', category: 'व्यवसाय की श्रेणी', aboutShop: 'अपनी दुकान के बारे में बताइए', aboutHint: 'आप क्या बेचते हैं? छोटा सा विवरण बोलकर या लिखकर दीजिए।', aboutPlaceholder: 'जैसे: हम रोज़मर्रा का राशन, स्नैक्स और घरेलू सामान बेचते हैं...', paytm: 'पेटीएम मर्चेंट कनेक्ट', paytmHint: 'व्योम आपके रोज़ के लेन-देन का विश्लेषण करके ग्राहकों की कमी और उधार खोजता है।', connected: 'पेटीएम मर्चेंट खाता जुड़ा है ✓', sync: 'दैनिक साउंडबॉक्स और क्यूआर सिंक: सक्रिय', connect: 'पेटीएम मर्चेंट जोड़ें', consent: 'पेटीएम डेटा अनुमति', consentHint: 'व्योम केवल लेन-देन का समय और दोबारा आने वाले ग्राहकों की संख्या पढ़ेगा। यह पैसा नहीं निकाल सकता।', cancel: 'रद्द करें', approve: 'अनुमति दें', limits: 'अपनी सीमाएं तय करें', limitsHint: 'व्योम इन सीमाओं के बाहर कुछ नहीं करेगा। हर ऑफर से पहले आपकी अनुमति ज़रूरी है।', weeklyBudget: 'अधिकतम साप्ताहिक बजट:', discount: 'अधिकतम छूट सीमा:', messageControl: 'संदेश नियंत्रण', messageHint: 'हर ग्राहक को प्रति सप्ताह अधिकतम संदेश', messageValue: '1 संदेश/सप्ताह', back: 'पीछे', skip: 'डेमो छोड़ें', next: 'आगे', start: 'व्योम शुरू करें', connecting: 'जोड़ा जा रहा है...',
+    },
+    marathi: {
+      tagline: 'तुमचा एआय साथीदार जो दुकानचे पैसे कधीही वाया जाऊ देत नाही', step: `पायरी ${step} / 5`, chooseLanguage: 'तुमची भाषा निवडा', languageHint: 'व्योम तुमच्याशी याच भाषेत बोलेल', shopDetails: 'दुकानाची माहिती', shopHint: 'यामुळे व्योम तुमच्या स्थानिक व्यवसायाचे नमुने समजून घेईल', shopName: 'दुकानाचे नाव', city: 'शहर / परिसर', category: 'व्यवसायाचा प्रकार', aboutShop: 'तुमच्या दुकानाबद्दल सांगा', aboutHint: 'तुम्ही काय विकता? थोडक्यात बोलून किंवा टाइप करून सांगा.', aboutPlaceholder: 'उदा.: आम्ही रोजचे किराणा सामान, स्नॅक्स आणि घरगुती वस्तू विकतो...', paytm: 'पेटीएम मर्चंट कनेक्ट', paytmHint: 'व्योम तुमच्या रोजच्या व्यवहारांचे विश्लेषण करून ग्राहकांची घट आणि उधारी शोधतो.', connected: 'पेटीएम मर्चंट खाते जोडले आहे ✓', sync: 'दैनिक साउंडबॉक्स आणि क्यूआर सिंक: सक्रिय', connect: 'पेटीएम मर्चंट जोडा', consent: 'पेटीएम डेटा परवानगी', consentHint: 'व्योम फक्त व्यवहाराची वेळ आणि पुन्हा येणाऱ्या ग्राहकांची संख्या वाचेल. पैसे काढण्याचा अधिकार नाही.', cancel: 'रद्द करा', approve: 'परवानगी द्या', limits: 'तुमच्या मर्यादा ठरवा', limitsHint: 'व्योम या मर्यादेबाहेर काहीही करणार नाही. प्रत्येक ऑफरपूर्वी तुमची परवानगी आवश्यक आहे.', weeklyBudget: 'कमाल साप्ताहिक बजेट:', discount: 'कमाल सवलत मर्यादा:', messageControl: 'संदेश नियंत्रण', messageHint: 'प्रति ग्राहक दर आठवड्याला कमाल संदेश', messageValue: '१ संदेश/आठवडा', back: 'मागे', skip: 'डेमो वगळा', next: 'पुढे', start: 'व्योम सुरू करा', connecting: 'जोडत आहे...',
+    },
+    english: {
+      tagline: 'Your AI partner that helps protect your shop earnings', step: `Step ${step} of 5`, chooseLanguage: 'Choose your language', languageHint: 'Vyom will speak with you in this language', shopDetails: 'Shop details', shopHint: 'This helps Vyom understand your local business patterns', shopName: 'Shop name', city: 'City / Area', category: 'Business category', aboutShop: 'Tell us about your shop', aboutHint: 'What do you sell? Give a short description by voice or by typing.', aboutPlaceholder: 'For example: We sell daily groceries, snacks, and household items...', paytm: 'Paytm merchant connection', paytmHint: 'Vyom analyses your daily transactions to find silent churn and pending credit.', connected: 'Paytm merchant account connected ✓', sync: 'Daily Soundbox & QR sync: Active', connect: 'Connect Paytm merchant', consent: 'Paytm data consent permission', consentHint: 'Vyom will only read transaction timings and repeat-customer numbers. It cannot withdraw money.', cancel: 'Cancel', approve: 'Approve', limits: 'Set your limits', limitsHint: 'Vyom will stay within these limits. Your approval is required before every offer.', weeklyBudget: 'Maximum weekly budget:', discount: 'Maximum discount limit:', messageControl: 'Message control', messageHint: 'Maximum messages per customer each week', messageValue: '1 message/week', back: 'Back', skip: 'Skip demo', next: 'Next', start: 'Start Vyom', connecting: 'Connecting...',
+    },
+  }[lang];
 
   const handleClose = () => {
     stopSpeech();
@@ -228,9 +241,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div>
               <div className="font-extrabold text-base text-obsidian tracking-tight">VYOM</div>
               <div className="text-[11px] text-charcoal">
-                {isEnglish
-                  ? 'Your AI partner that helps protect your shop earnings'
-                  : 'Aapka AI saathi jo dukaan ka paisa kabhi khone nahi deta'}
+                {copy.tagline}
               </div>
             </div>
           </div>
@@ -244,7 +255,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
         {/* Step Progress Indicators */}
         <div className="px-5 pt-3 pb-1 flex items-center justify-between text-xs font-semibold text-slate border-b border-soft-line">
-          <span>{isEnglish ? `Step ${step} of 5` : `Step ${step} of 5`}</span>
+          <span>{copy.step}</span>
           <div className="flex items-center gap-1.5">
             {[1, 2, 3, 4, 5].map((s) => (
               <span
@@ -264,10 +275,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="space-y-3">
               <div>
                 <h3 className="text-base font-extrabold text-obsidian">
-                  {isEnglish ? 'Choose your language' : 'Apni bhasha chunein'}
+                  {copy.chooseLanguage}
                 </h3>
                 <p className="text-xs text-charcoal">
-                  {isEnglish ? 'Vyom will speak with you in this language' : 'Vyom aapse usi bhasha mein baat karega'}
+                  {copy.languageHint}
                 </p>
               </div>
 
@@ -300,17 +311,17 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-obsidian">
-                  {isEnglish ? 'Shop details' : 'Dukaan ki jankari'}
+                  {copy.shopDetails}
                 </h3>
                 <p className="text-xs text-charcoal">
-                  {isEnglish ? 'This helps Vyom understand your local business patterns' : 'Iski madad se Vyom aaspas ke patterns samjhega'}
+                  {copy.shopHint}
                 </p>
               </div>
 
               <div className="space-y-3">
                 <div>
                   <label className="text-xs font-bold text-obsidian">
-                    {isEnglish ? 'Shop name' : 'Dukaan ka naam'}
+                    {copy.shopName}
                   </label>
                   <div className="mt-1 flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-line bg-white">
                     <Store className="w-4 h-4 text-slate flex-shrink-0" />
@@ -325,7 +336,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <div>
                   <label className="text-xs font-bold text-obsidian">
-                    {isEnglish ? 'City / Area' : 'Shahar / Area'}
+                    {copy.city}
                   </label>
                   <div className="mt-1 flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-line bg-white">
                     <Building2 className="w-4 h-4 text-slate flex-shrink-0" />
@@ -344,7 +355,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <div>
                   <label className="text-xs font-bold text-obsidian">
-                    {isEnglish ? 'Business category' : 'Business Category'}
+                    {copy.category}
                   </label>
                   <div className="mt-1 flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-line bg-cloud text-charcoal">
                     <span className="text-xs font-semibold">{category}</span>
@@ -359,12 +370,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-obsidian">
-                  {isEnglish ? 'Tell us about your shop' : 'Apni dukaan ke baare mein batayein'}
+                  {copy.aboutShop}
                 </h3>
                 <p className="text-xs text-charcoal">
-                  {isEnglish
-                    ? 'What do you sell? Give a short description by voice or by typing.'
-                    : 'Aap kya bechte hain? Chhota sa description bolkar ya type karke dein.'}
+                  {copy.aboutHint}
                 </p>
               </div>
 
@@ -373,9 +382,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   value={storeDescription}
                   onChange={(e) => setStoreDescription(e.target.value)}
                   placeholder={
-                    isEnglish
-                      ? 'For example: We sell daily groceries, snacks, and household items...'
-                      : 'Jaise: Hum daily grocery, snacks aur ghar ka samaan bechte hain...'
+                    copy.aboutPlaceholder
                   }
                   rows={5}
                   className="w-full resize-none rounded-2xl border border-line bg-white p-3.5 pr-12 text-xs font-medium text-ink focus:border-blue focus:outline-none"
@@ -423,12 +430,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <div>
                 <h3 className="text-base font-extrabold text-obsidian">
-                  {isEnglish ? 'Paytm merchant connection' : 'Paytm Merchant Connect'}
+                  {copy.paytm}
                 </h3>
                 <p className="text-xs text-charcoal max-w-xs mx-auto mt-1 leading-relaxed">
-                  {isEnglish
-                    ? 'Vyom analyses your daily transactions to find silent churn and pending credit.'
-                    : 'Vyom aapke roz ke transactions ko analyse karke silent churn aur udhaar khojta hai.'}
+                  {copy.paytmHint}
                 </p>
               </div>
 
@@ -436,11 +441,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-left space-y-2">
                   <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <span>{isEnglish ? 'Paytm merchant account connected ✓' : 'Paytm Merchant Account Connected ✓'}</span>
+                    <span>{copy.connected}</span>
                   </div>
                   <div className="text-[11px] text-emerald-700 space-y-0.5">
                     <div>Merchant ID: <strong>9823****44 (Sharma Kirana)</strong></div>
-                    <div>{isEnglish ? 'Daily Soundbox & QR sync: Active' : 'Daily Soundbox & QR Sync: Active'}</div>
+                    <div>{copy.sync}</div>
                   </div>
                 </div>
               ) : (
@@ -450,8 +455,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   className="w-full py-3.5 px-4 rounded-2xl bg-[#002e6e] text-white font-extrabold text-xs shadow-button hover:opacity-95 transition cursor-pointer"
                 >
                   {isConnectingPaytm
-                    ? isEnglish ? 'Connecting...' : 'Connecting...'
-                    : isEnglish ? 'Connect Paytm merchant' : 'Connect Paytm Merchant'}
+                    ? copy.connecting
+                    : copy.connect}
                 </button>
               )}
 
@@ -460,25 +465,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-4 rounded-2xl bg-cloud border border-line text-left space-y-3">
                   <div className="text-xs font-bold text-obsidian flex items-center gap-1.5">
                     <Shield className="w-4 h-4 text-blue" />
-                    <span>{isEnglish ? 'Paytm data consent permission' : 'Paytm Data Consent Permission'}</span>
+                    <span>{copy.consent}</span>
                   </div>
                   <p className="text-[11px] text-charcoal leading-relaxed">
-                    {isEnglish
-                      ? 'Vyom will only read transaction timings and repeat-customer numbers. It cannot withdraw money.'
-                      : 'Vyom sirf aapke transaction timings aur repeat-customer numbers padhega. Paisa nikaalne ka koi adhikar nahi hota.'}
+                    {copy.consentHint}
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowConsentSheet(false)}
                       className="flex-1 py-2 rounded-xl border border-line text-xs font-semibold"
                     >
-                      {isEnglish ? 'Cancel' : 'Cancel'}
+                      {copy.cancel}
                     </button>
                     <button
                       onClick={handleApprovePaytmConsent}
                       className="flex-1 py-2 rounded-xl bg-blue text-white text-xs font-bold"
                     >
-                      {isEnglish ? 'Approve' : 'Manzoor Hai'}
+                      {copy.approve}
                     </button>
                   </div>
                 </div>
@@ -491,12 +494,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-obsidian">
-                  {isEnglish ? 'Set your limits' : 'Apni Limits Set Karein'}
+                  {copy.limits}
                 </h3>
                 <p className="text-xs text-charcoal">
-                  {isEnglish
-                    ? "Vyom will stay within these limits. Your approval is required before every offer."
-                    : "Vyom in limits ke bahar kuch nahi karega. Har offer se pehle aapki 'haan' zaroori hai."}
+                  {copy.limitsHint}
                 </p>
               </div>
 
@@ -505,7 +506,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-3.5 rounded-2xl bg-cloud border border-line space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-obsidian">
-                      {isEnglish ? 'Maximum weekly budget:' : 'Max Weekly Budget:'}
+                      {copy.weeklyBudget}
                     </span>
                     <span className="font-extrabold text-blue">{formatRupee(localLimits.maxWeeklyBudget)}</span>
                   </div>
@@ -530,7 +531,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-3.5 rounded-2xl bg-cloud border border-line space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-obsidian">
-                      {isEnglish ? 'Maximum discount limit:' : 'Max Discount Limit:'}
+                      {copy.discount}
                     </span>
                     <span className="font-extrabold text-blue">{localLimits.maxDiscountPercent}%</span>
                   </div>
@@ -555,14 +556,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-3.5 rounded-2xl bg-cloud border border-line flex items-center justify-between">
                   <div>
                     <span className="text-xs font-bold text-obsidian block">
-                      {isEnglish ? 'Message control' : 'Spam Control'}
+                      {copy.messageControl}
                     </span>
                     <span className="text-[11px] text-charcoal">
-                      {isEnglish ? 'Maximum messages per customer each week' : 'Hafte mein max message per customer'}
+                      {copy.messageHint}
                     </span>
                   </div>
                   <span className="text-xs font-extrabold text-ink bg-white px-2.5 py-1 rounded-lg border border-line">
-                    {isEnglish ? '1 message/week' : '1 msg/week'}
+                    {copy.messageValue}
                   </span>
                 </div>
               </div>
@@ -577,14 +578,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               onClick={() => setStep((s) => (s - 1) as any)}
               className="py-2.5 px-4 rounded-xl border border-line text-xs font-bold text-charcoal hover:bg-cloud cursor-pointer"
             >
-              {isEnglish ? 'Back' : 'Peeche'}
+              {copy.back}
             </button>
           ) : (
             <button
               onClick={handleClose}
               className="text-xs font-bold text-slate hover:text-charcoal cursor-pointer"
             >
-              {isEnglish ? 'Skip demo' : 'Skip Demo'}
+              {copy.skip}
             </button>
           )}
 
@@ -593,7 +594,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               onClick={() => setStep((s) => (s + 1) as any)}
               className="py-2.5 px-5 rounded-xl bg-blue text-white text-xs font-bold shadow-button hover:bg-blue/90 flex items-center gap-1.5 transition cursor-pointer"
             >
-              <span>{isEnglish ? 'Next' : 'Aage'}</span>
+              <span>{copy.next}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
@@ -602,7 +603,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               className="py-2.5 px-5 rounded-xl bg-obsidian text-white text-xs font-extrabold shadow-button hover:opacity-90 flex items-center gap-1.5 transition cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-blue" />
-              <span>{isEnglish ? 'Start Vyom' : 'Vyom Shuru Karein (Start)'}</span>
+              <span>{copy.start}</span>
             </button>
           )}
         </div>

@@ -86,6 +86,15 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Actions: Demo Lab, Language Selector, Install PWA, Notifications */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={onOpenOnboarding}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-cloud border border-line text-obsidian hover:bg-slate-100 transition-colors shadow-xs cursor-pointer"
+            title="Open business profile"
+          >
+            <Store className="w-3.5 h-3.5 text-blue" />
+            <span className="hidden sm:inline">Business Profile</span>
+          </button>
+
           {/* Demo Lab Simulation Button */}
           {onOpenDemo && (
             <button
