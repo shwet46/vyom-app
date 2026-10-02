@@ -70,10 +70,16 @@ import { InsightsView } from './views/InsightsView';
 import { SettingsView } from './views/SettingsView';
 import { translations } from './utils/i18n';
 import { BarChart3, Sliders, Check, WifiOff, Mic, Camera, Calendar } from './components/icons';
+import { cityFestivalProfiles, SupportedCity } from './data/cityFestivals';
 
 export default function App() {
   // Global Language state (Default: Hinglish)
   const [lang, setLang] = useState<Language>('hinglish');
+  const [city, setCity] = useState<SupportedCity>(() => {
+    const savedCity = localStorage.getItem('vyom-city');
+    return savedCity === 'Delhi' || savedCity === 'Mumbai' || savedCity === 'Bengaluru' ? savedCity : 'Pune';
+  });
+  const cityProfile = cityFestivalProfiles[city];
 
   // Navigation tab state
   const [currentTab, setCurrentTab] = useState<TabKey>('home');
@@ -122,6 +128,16 @@ export default function App() {
   const [hourlySalesData, setHourlySalesData] = useState<
     { hour: string; today: number; yesterday: number }[]
   >(todaySalesHourly);
+
+  useEffect(() => {
+    localStorage.setItem('vyom-city', city);
+    setFestivalBanner({
+      headline: `${cityProfile.primaryFestival} demand is active in ${city}. Stock ready rakhein.`,
+      actionLabel: 'View Festival Radar',
+      phase: 'UPCOMING',
+      daysToStart: cityProfile.primaryDaysToStart,
+    });
+  }, [city, cityProfile]);
 
   // Network & Server connectivity status
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -194,16 +210,6 @@ export default function App() {
           campaignSpend: 1150,
           todayOrders: m.today_orders || 24,
         });
-
-        if (homeRes.festival_banner) {
-          const fb = homeRes.festival_banner;
-          setFestivalBanner({
-            headline: fb.headline_hinglish || fb.headline_en || 'Festival preparation active',
-            actionLabel: fb.action_label || 'View Details',
-            phase: fb.phase || 'UPCOMING',
-            daysToStart: fb.days_to_start,
-          });
-        }
 
         if (homeRes.udhaar_strip) {
           const us = homeRes.udhaar_strip;
@@ -827,6 +833,7 @@ export default function App() {
       {/* Top Header Bar */}
       <TopBar
         currentLang={lang}
+        city={city}
         onLanguageChange={setLang}
         onOpenNotifications={() => setIsNotificationsOpen(true)}
         unreadCount={activeOppCount + 1}
@@ -854,6 +861,7 @@ export default function App() {
               lang={lang}
               opportunities={opportunities}
               metrics={homeMetrics}
+              city={city}
               festivalBanner={festivalBanner}
               udhaarStrip={udhaarStrip}
               hourlySalesData={hourlySalesData}
@@ -952,12 +960,13 @@ export default function App() {
               </div>
 
               {moreSubTab === 'insights' && (
-                <InsightsView lang={lang} onNavigateToTab={setCurrentTab} />
+                <InsightsView lang={lang} city={city} onNavigateToTab={setCurrentTab} />
               )}
 
               {moreSubTab === 'festivals' && (
                 <FestivalsView
                   lang={lang}
+                  city={city}
                   onNavigateToTab={(tab) => {
                     if (tab === 'festivals') {
                       setMoreSubTab('festivals');
@@ -977,6 +986,8 @@ export default function App() {
                   guardrails={guardrails}
                   onUpdateGuardrails={handleUpdateGuardrails}
                   lang={lang}
+                  city={city}
+                  onCityChange={setCity}
                   onLanguageChange={setLang}
                   memories={memories}
                   onResetDemoData={handleResetDemoData}
@@ -1113,6 +1124,8 @@ export default function App() {
         guardrails={guardrails}
         onUpdateGuardrails={handleUpdateGuardrails}
         onSaveStoreDescription={apiUpdateStoreDescription}
+        city={city}
+        onCityChange={setCity}
       />
 
       {/* Notification Drawer */}

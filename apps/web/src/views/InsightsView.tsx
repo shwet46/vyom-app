@@ -13,13 +13,17 @@ import {
 } from '../components/icons';
 import { Language } from '../types';
 import { formatRupee } from '../utils/formatters';
+import { cityFestivalProfiles, SupportedCity } from '../data/cityFestivals';
 
 interface InsightsViewProps {
   lang: Language;
+  city: SupportedCity;
   onNavigateToTab: (tab: 'home' | 'opportunities' | 'campaigns' | 'udhaar' | 'more') => void;
 }
 
-export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTab }) => {
+export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNavigateToTab }) => {
+  const cityProfile = cityFestivalProfiles[city];
+  const secondaryFestival = cityProfile.festivals[1];
   // Peak hours heatmap grid: 7 days × 6 representative slots
   const days = ['Som (Mon)', 'Mangal', 'Budh', 'Guru', 'Shukra', 'Shani', 'Ravi (Sun)'];
   const timeSlots = ['8–11 AM', '11–2 PM', '2–4 PM (Dead)', '4–6 PM', '6–8 PM (Peak)', '8–10 PM'];
@@ -65,7 +69,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
             <div className="flex items-center gap-2">
               <h1 className="text-lg sm:text-xl font-black text-obsidian tracking-tight font-google">Sharma Kirana Store</h1>
               <span className="text-[10px] font-bold text-blue bg-sky px-2 py-0.5 rounded-full uppercase font-google">
-                Pune
+                {city}
               </span>
             </div>
             <p className="text-xs text-charcoal mt-0.5 font-sans">
@@ -154,13 +158,13 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
             </div>
           </div>
 
-          {/* Local Signals (Pune Festivals & Events) */}
+          {/* Local Signals */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue" />
                 <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
-                  Aaspas Ke Signals (Pune Events)
+                  {cityProfile.localSignalTitle}
                 </h3>
               </div>
               <span className="text-[10px] text-slate font-medium">Auto-detected</span>
@@ -173,10 +177,10 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
               >
                 <div>
                   <div className="font-bold text-xs text-obsidian">
-                    🌙 Navratri (11 Din Baki)
+                    🌙 {cityProfile.primaryFestival} ({cityProfile.primaryDaysToStart} Din Baki)
                   </div>
                   <div className="text-[11px] text-charcoal mt-0.5">
-                    Sabudana, singhara atta aur ghee demand +45% expected
+                    {cityProfile.primaryDemand}
                   </div>
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />
@@ -188,10 +192,10 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
               >
                 <div>
                   <div className="font-bold text-xs text-obsidian">
-                    🌦️ Monsoon Chai Spike (Heavy Rain)
+                    🌦️ {secondaryFestival.name}
                   </div>
                   <div className="text-[11px] text-charcoal mt-0.5">
-                    Ginger tea + biscuit combos demand +28% spike
+                    {secondaryFestival.desc}
                   </div>
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />

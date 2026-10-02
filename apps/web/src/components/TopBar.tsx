@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Bell, Download, Check, Sparkles, Store, ShieldCheck } from './icons';
 import { Language } from '../types';
+import { SupportedCity } from '../data/cityFestivals';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface TopBarProps {
   currentLang: Language;
+  city: SupportedCity;
   onLanguageChange: (lang: Language) => void;
   onOpenNotifications: () => void;
   unreadCount: number;
@@ -15,6 +17,7 @@ interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({
   currentLang,
+  city,
   onLanguageChange,
   onOpenNotifications,
   unreadCount,
@@ -76,7 +79,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             >
               <Store className="w-3 h-3 flex-shrink-0 text-slate" />
               <span className="font-bold text-ink truncate font-google">Sharma Kirana</span>
-              <span className="text-[11px] text-slate hidden xs:inline">• Pune</span>
+              <span className="text-[11px] text-slate hidden xs:inline">• {city}</span>
             </button>
           </div>
         </div>

@@ -14,11 +14,14 @@ import {
 import { Guardrails, Language, MemoryItem } from '../types';
 import { formatRupee } from '../utils/formatters';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { SupportedCity } from '../data/cityFestivals';
 
 interface SettingsViewProps {
   guardrails: Guardrails;
   onUpdateGuardrails: (newLimits: Guardrails) => Promise<boolean>;
   lang: Language;
+  city: SupportedCity;
+  onCityChange: (city: SupportedCity) => void;
   onLanguageChange: (lang: Language) => void;
   memories: MemoryItem[];
   onResetDemoData: () => void;
@@ -30,6 +33,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   guardrails,
   onUpdateGuardrails,
   lang,
+  city,
+  onCityChange,
   onLanguageChange,
   memories,
   onResetDemoData,
@@ -66,6 +71,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <p className="text-xs text-charcoal mt-1 leading-relaxed font-sans">
           "Vyom in limits ke bahar kuch nahi karega. Har offer se pehle aapki 'haan' zaroori hai."
         </p>
+      </div>
+
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2">
+        <label htmlFor="city-select" className="text-xs font-bold text-obsidian block">
+          Dukaan ka shehar
+        </label>
+        <p className="text-[11px] text-charcoal">
+          Festival Radar aur local signals ke liye apna city select karein.
+        </p>
+        <select
+          id="city-select"
+          value={city}
+          onChange={(event) => onCityChange(event.target.value as SupportedCity)}
+          className="w-full rounded-xl border border-line bg-cloud px-3 py-2.5 text-sm font-bold text-ink outline-none focus:border-blue"
+        >
+          <option value="Pune">Pune</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Bengaluru">Bengaluru</option>
+        </select>
       </div>
 
       {/* Main Limits Config Card */}
@@ -211,7 +236,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="p-3.5 rounded-xl bg-cloud border border-soft-line space-y-2 text-xs">
           <div className="flex justify-between text-charcoal">
             <span>Merchant Name:</span>
-            <span className="font-bold text-ink">Sharma Kirana Store (Pune)</span>
+            <span className="font-bold text-ink">Sharma Kirana Store ({city})</span>
           </div>
           <div className="flex justify-between text-charcoal">
             <span>Merchant ID:</span>

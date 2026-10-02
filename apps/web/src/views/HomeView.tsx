@@ -17,6 +17,7 @@ import {
 } from '../components/icons';
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
 import { Language, Opportunity } from '../types';
+import { SupportedCity } from '../data/cityFestivals';
 import { formatRupee } from '../utils/formatters';
 import { translations } from '../utils/i18n';
 import { useCountUp } from '../hooks/useCountUp';
@@ -34,6 +35,7 @@ export interface DynamicHomeMetrics {
 
 interface HomeViewProps {
   lang: Language;
+  city: SupportedCity;
   opportunities: Opportunity[];
   metrics?: DynamicHomeMetrics;
   festivalBanner?: {
@@ -56,6 +58,7 @@ interface HomeViewProps {
 
 export const HomeView: React.FC<HomeViewProps> = ({
   lang,
+  city,
   opportunities,
   metrics,
   festivalBanner,
@@ -96,7 +99,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="flex items-center gap-2 mt-1 text-xs text-charcoal">
             <span className="font-semibold text-ink">Sharma Kirana Store</span>
             <span>•</span>
-            <span className="text-slate">Pune</span>
+            <span className="text-slate">{city}</span>
             <span>•</span>
             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

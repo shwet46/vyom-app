@@ -15,19 +15,23 @@ import { Language } from '../types';
 import { translations } from '../utils/i18n';
 import { formatRupee } from '../utils/formatters';
 import { getFestivalContext, FestivalContextResponse } from '../services/api';
+import { cityFestivalProfiles, SupportedCity } from '../data/cityFestivals';
 
 interface FestivalsViewProps {
   lang: Language;
+  city: SupportedCity;
   onNavigateToTab: (tab: 'home' | 'opportunities' | 'campaigns' | 'udhaar' | 'festivals' | 'more') => void;
   onApproveVratKit?: () => void;
 }
 
 export const FestivalsView: React.FC<FestivalsViewProps> = ({
   lang,
+  city,
   onNavigateToTab,
   onApproveVratKit,
 }) => {
-  const [selectedFestival, setSelectedFestival] = useState('navratri');
+  const cityProfile = cityFestivalProfiles[city];
+  const [selectedFestival, setSelectedFestival] = useState(cityProfile.festivals[0]?.key || '');
   const [generatingKit, setGeneratingKit] = useState(false);
   const [kitGenerated, setKitGenerated] = useState(false);
   const [festivalData, setFestivalData] = useState<FestivalContextResponse | null>(null);
@@ -38,52 +42,8 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
       .catch(() => {});
   }, []);
 
-  const festivals = [
-    {
-      key: 'pitru_paksha',
-      name: 'Pitru Paksha (Shraddha)',
-      dates: '16 Sep – 30 Sep 2026',
-      phase: 'RECENT / ENDING',
-      tone: 'solemn',
-      desc: 'Solemn ancestral period. High demand for pooja samagri (sesame, barley, kheer milk, ghee, banana leaves). Strictly vegetarian.',
-      color: 'bg-slate-100 text-slate-700',
-    },
-    {
-      key: 'navratri',
-      name: 'Shardiya Navratri & Ghatasthapana',
-      dates: '1 Oct – 10 Oct 2026',
-      phase: 'UPCOMING (Starting Today/Tomorrow)',
-      tone: 'devotional',
-      desc: '9 days of fasting (vrat). Huge spikes in Sabudana, Rajgira flour, Sendha namak, Kuttu atta, Makhana, Pure Ghee, and Pooja items.',
-      color: 'bg-amber-100 text-amber-800 border-amber-300',
-    },
-    {
-      key: 'dussehra',
-      name: 'Dussehra / Vijayadashami',
-      dates: '20 Oct 2026',
-      phase: 'UPCOMING (20 days)',
-      tone: 'festive',
-      desc: 'Apta leaves, marigold garlands, sweets (shrikhand, jalebi), vehicle and tool pooja items.',
-      color: 'bg-cloud text-charcoal',
-    },
-    {
-      key: 'diwali',
-      name: 'Diwali Mahotsav Cluster',
-      dates: '5 Nov – 11 Nov 2026',
-      phase: 'UPCOMING (35 days)',
-      tone: 'festive',
-      desc: 'Faral & sweets: rava, maida, besan, poha, cooking oil, ghee, dry fruits, diyas, ubtan.',
-      color: 'bg-cloud text-charcoal',
-    },
-  ];
-
-  const stockItems = [
-    { name: 'Sabudana (500g)', role: 'Vrat Staple', uplift: '+240%', current: 18, suggested: 65, status: 'Low Stock' },
-    { name: 'Rajgira Atta (500g)', role: 'Vrat Flour', uplift: '+180%', current: 8, suggested: 40, status: 'Reorder' },
-    { name: 'Sendha Namak (1kg)', role: 'Fasting Salt', uplift: '+150%', current: 12, suggested: 35, status: 'Low Stock' },
-    { name: 'Pure Cow Ghee (1L)', role: 'Puja & Cooking', uplift: '+95%', current: 14, suggested: 28, status: 'Adequate' },
-    { name: 'Phool Makhana (250g)', role: 'Vrat Snack', uplift: '+210%', current: 6, suggested: 30, status: 'Reorder' },
-  ];
+  const festivals = cityProfile.festivals;
+  const stockItems = cityProfile.stockItems;
 
   const handleCreateVratKit = () => {
     setGeneratingKit(true);
@@ -105,7 +65,7 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
           </span>
         </div>
         <h1 className="font-google font-black text-xl sm:text-2xl text-obsidian tracking-tight">
-          Pune Regional Festival Radar
+          {cityProfile.radarTitle}
         </h1>
         <p className="text-xs text-charcoal max-w-xl leading-relaxed font-sans">
           Drik Panchang verified calendar. Vyom auto-adjusts customer messages with respectful regional tone and stock advisor.
@@ -115,7 +75,7 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
       {/* 2. Festival Timeline Cards */}
       <div className="space-y-2.5">
         <h2 className="font-google font-black text-xs text-obsidian uppercase tracking-wider">
-          Maharashtra / Pune Upcoming Festivals
+          {cityProfile.timelineTitle}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {festivals.map((fest) => {
@@ -150,10 +110,10 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
           <div>
             <h3 className="font-google font-black text-base text-obsidian flex items-center gap-2">
               <Package className="w-5 h-5 text-blue" />
-              AI Stock Advisor • Navratri Fasting (Vrat)
+              {cityProfile.stockAdvisorTitle}
             </h3>
             <p className="text-xs text-charcoal mt-0.5 font-sans">
-              Pune last year sales velocity blended with regional consumption priors.
+              {cityProfile.stockAdvisorSubtitle}
             </p>
           </div>
 

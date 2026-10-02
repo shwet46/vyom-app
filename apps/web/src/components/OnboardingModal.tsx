@@ -13,6 +13,7 @@ import {
   Volume2,
 } from './icons';
 import { Guardrails, Language } from '../types';
+import { SupportedCity } from '../data/cityFestivals';
 import { formatRupee } from '../utils/formatters';
 import { speakWithShubh, stopSpeech } from '../utils/speech';
 import { transcribeVoiceAudio } from '../services/api';
@@ -25,6 +26,8 @@ interface OnboardingModalProps {
   guardrails: Guardrails;
   onUpdateGuardrails: (newGuardrails: Guardrails) => void;
   onSaveStoreDescription?: (description: string) => Promise<void> | void;
+  city: SupportedCity;
+  onCityChange: (city: SupportedCity) => void;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
@@ -35,10 +38,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   guardrails,
   onUpdateGuardrails,
   onSaveStoreDescription,
+  city,
+  onCityChange,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [shopName, setShopName] = useState('Sharma Kirana Store');
-  const [city, setCity] = useState('Pune');
   const [category, setCategory] = useState('Kirana & General Store');
   const [storeDescription, setStoreDescription] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -325,12 +329,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </label>
                   <div className="mt-1 flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-line bg-white">
                     <Building2 className="w-4 h-4 text-slate flex-shrink-0" />
-                    <input
-                      type="text"
+                    <select
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full text-xs font-semibold text-ink focus:outline-none"
-                    />
+                      onChange={(e) => onCityChange(e.target.value as SupportedCity)}
+                      className="w-full text-xs font-semibold text-ink focus:outline-none bg-transparent"
+                    >
+                      <option value="Pune">Pune</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Mumbai">Mumbai</option>
+                      <option value="Bengaluru">Bengaluru</option>
+                    </select>
                   </div>
                 </div>
 
