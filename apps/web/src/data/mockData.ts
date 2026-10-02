@@ -58,7 +58,7 @@ export const initialOpportunities: Opportunity[] = [
     },
     audioScript: {
       hinglish: 'Ramesh bhai, aapke 23 achhe customers pichle ek mahine se nahi aaye. Inhe ek chhota ₹50 ka offer bhejein toh lagbhag 6,900 rupaye ki bikri wapas aa sakti hai.',
-      hindi: 'रमेश भाई, आपके 23 अच्छे ग्राहक पिछले एक महीने से नहीं आए। इन्हें ₹50 का ऑफर भेजने पर करीब 6,900 रुपये की बिक्री वापस आ सकती है।',
+      hindi: 'रमेश भाई, आपके 23 अच्छे ग्राहक पिछले एक महीने से नहीं आए। इन्हें ₹50 का ऑफर भेजने पर करीब 6,900 रुपये की बिक्री वापस मिल सकती है।',
       marathi: 'रमेश भाऊ, तुमचे 23 चांगले ग्राहक एका महिन्यापासून आले नाहीत. त्यांना ₹50 ची ऑफर दिल्यास 6,900 रुपयांची विक्री परत मिळू शकते.',
       english: 'Ramesh ji, 23 of your valuable regulars have not visited this month. Sending this ₹50 voucher can recover approximately ₹6,900.',
     },
@@ -249,7 +249,7 @@ export const initialOpportunities: Opportunity[] = [
     },
     status: 'new',
   },
-];
+].filter((opportunity): opportunity is Opportunity => !['opp-3', 'opp-4'].includes(opportunity.id));
 
 export const initialCampaigns: Campaign[] = [
   {

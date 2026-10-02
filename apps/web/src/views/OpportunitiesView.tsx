@@ -34,7 +34,6 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
     { id: 'winback', label: t.filterWinback },
     { id: 'deadhours', label: t.filterDeadHours },
     { id: 'festival', label: t.filterFestival },
-    { id: 'falling', label: t.filterFalling },
   ];
 
   const activeOpps = opportunities.filter((o) => o.status === 'new');

@@ -37,7 +37,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
 
   const topItems = [
     { name: 'Aashirvaad Shuddh Chakki Atta (10kg)', soldCount: 142, revenue: 63900 },
-    { name: 'Fortune Sunlite Sunflower Oil (1L)', soldCount: 118, revenue: 16520, alert: 'Down 35%' },
+    { name: 'Fortune Sunlite Sunflower Oil (1L)', soldCount: 118, revenue: 16520 },
     { name: 'Amul Butter Pasteurised (500g)', soldCount: 94, revenue: 26320 },
     { name: 'Tata Salt Vacuum Evaporated (1kg)', soldCount: 180, revenue: 5040 },
     { name: 'Wagh Bakri Premium Tea (500g)', soldCount: 76, revenue: 21280 },
@@ -173,10 +173,10 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
               >
                 <div>
                   <div className="font-bold text-xs text-obsidian">
-                    🐘 Ganesh Chaturthi (4 Din Baki)
+                    🌙 Navratri (11 Din Baki)
                   </div>
                   <div className="text-[11px] text-charcoal mt-0.5">
-                    Modak rava, jaggery aur pooja samagri demand +45% expected
+                    Sabudana, singhara atta aur ghee demand +45% expected
                   </div>
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />
@@ -270,7 +270,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
           </div>
 
           {/* Top Selling Items Table */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
+          {/* <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4 text-blue" />
@@ -304,7 +304,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, onNavigateToTa
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

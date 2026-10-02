@@ -91,7 +91,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <h1 className="text-xl sm:text-2xl font-google font-black text-obsidian tracking-tight">
               {t.greeting}
             </h1>
-            <span className="text-lg">👋</span>
+            {/* <span className="text-lg">👋</span> */}
           </div>
           <div className="flex items-center gap-2 mt-1 text-xs text-charcoal">
             <span className="font-semibold text-ink">Sharma Kirana Store</span>

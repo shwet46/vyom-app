@@ -47,14 +47,6 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       type: 'reminder',
       tab: 'udhaar' as const,
     },
-    {
-      id: 'notif-4',
-      title: 'Festival Signal Detected 🪔',
-      detail: 'Pune mein Ganesh Chaturthi ki khareed shuru. Modak combo approve karein.',
-      time: 'Subah 9:30 AM',
-      type: 'signal',
-      tab: 'opportunities' as const,
-    },
   ];
 
   return (

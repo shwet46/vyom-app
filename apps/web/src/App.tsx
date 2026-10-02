@@ -61,7 +61,6 @@ import { UdhaarDetailSheet } from './components/UdhaarDetailSheet';
 import { OnboardingModal } from './components/OnboardingModal';
 import { NotificationDrawer } from './components/NotificationDrawer';
 import { DemoModal } from './components/DemoModal';
-import { InstallPromptBanner } from './components/InstallPromptBanner';
 import { HomeView, DynamicHomeMetrics } from './views/HomeView';
 import { OpportunitiesView } from './views/OpportunitiesView';
 import { CampaignsView } from './views/CampaignsView';
@@ -229,7 +228,9 @@ export default function App() {
       // 2. Fetch Opportunities
       const rawOpps = await getOpportunities();
       if (rawOpps && rawOpps.length > 0) {
-        const mapped = rawOpps.map(mapBackendOpportunityToFrontend);
+        const mapped = rawOpps
+          .filter((opp) => (opp.type || opp.kind) !== 'falling_sales')
+          .map(mapBackendOpportunityToFrontend);
         setOpportunities(mapped);
       }
 
@@ -1129,8 +1130,6 @@ export default function App() {
         onAddToast={showToast}
       />
 
-      {/* PWA Install Banner */}
-      <InstallPromptBanner />
     </div>
   );
 }

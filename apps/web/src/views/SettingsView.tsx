@@ -260,59 +260,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* App & Demo Controls */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
-        <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
-          Demo & System Actions
-        </h3>
-
-        <div className="space-y-2">
-          {/* PWA Install */}
-          {(isInstallable || isIOS) && (
-            <button
-              onClick={install}
-              className="w-full p-3 rounded-2xl bg-sky/50 text-blue font-bold text-xs flex items-center justify-between hover:bg-sky transition cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <Download className="w-4 h-4" /> Phone Screen Par Install Karein
-              </span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
-
-          {/* Interactive Demo Lab */}
-          {onOpenDemoLab && (
-            <button
-              onClick={onOpenDemoLab}
-              className="w-full p-3 rounded-2xl bg-blue/10 text-blue font-bold text-xs flex items-center justify-between hover:bg-blue/15 transition cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-blue" /> Interactive Demo Lab (Store Events & Time Travel)
-              </span>
-              <ArrowRight className="w-4 h-4 text-blue" />
-            </button>
-          )}
-
-          {/* Replay Onboarding */}
-          <button
-            onClick={onReplayOnboarding}
-            className="w-full p-3 rounded-2xl bg-cloud text-ink font-bold text-xs flex items-center justify-between hover:bg-slate-100 transition cursor-pointer"
-          >
-            <span>Onboarding Flow Dobara Dekhein</span>
-            <ArrowRight className="w-4 h-4 text-slate" />
-          </button>
-
-          {/* Reset Demo Data */}
-          <button
-            onClick={onResetDemoData}
-            className="w-full p-3 rounded-2xl border border-line text-charcoal font-semibold text-xs flex items-center justify-between hover:bg-cloud transition cursor-pointer"
-          >
-            <span className="flex items-center gap-2">
-              <RefreshCw className="w-3.5 h-3.5 text-slate" /> Demo Data Reset Karein
-            </span>
-            <span className="text-[10px] text-slate">Restore original state</span>
-          </button>
-        </div>
-      </div>
+     
 
       <div className="text-center text-xs text-slate space-y-1">
         <div>VYOM AI • Version 2.4.0 (PWA Offline Ready)</div>

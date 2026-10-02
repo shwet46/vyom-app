@@ -251,7 +251,6 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
       q.includes('deal') ||
       q.includes('mauka') ||
       q.includes('festival') ||
-      q.includes('ganpati') ||
       q.includes('diwali') ||
       q.includes('combo')
     ) {
@@ -260,27 +259,27 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         sender: 'vyom',
         text:
           lang === 'hindi'
-            ? 'कल के लिए "गणेश चतुर्थी मोदक व पूजा कॉम्बो किट" सबसे उत्तम अवसर है! मोदक आटा (1 किग्रा) + साफ़ घी बंडल पर 12% छूट देकर ₹8,500 की नई बिक्री होगी। नीचे डिस्काउंट स्लाइडर चलाकर ROI चेक करें:'
+            ? 'कल के लिए "नवरात्रि व्रत एसेंशियल्स किट" सबसे उत्तम अवसर है! साबूदाना, सिंघाड़ा आटा और घी के बंडल पर 12% छूट देकर नई बिक्री बढ़ाएं। नीचे डिस्काउंट स्लाइडर चलाकर ROI चेक करें:'
             : lang === 'marathi'
-            ? 'उद्यासाठी "गणेशोत्सव मोदक साहित्य कॉम्बो" सर्वात मोठी संधी आहे! मोदक पीठ + साजूक तूप कॉम्बोवर 12% सवलत देऊन ₹8,500 कमाई होईल. खालील स्लाइडरने सवलत बदलून पहा:'
+            ? 'उद्यासाठी "नवरात्री व्रत एसेंशियल्स किट" सर्वात मोठी संधी आहे! साबुदाणा, शिंगाडा पीठ आणि तुपाच्या कॉम्बोवर 12% सवलत देऊन विक्री वाढवा. खालील स्लाइडरने सवलत बदलून पहा:'
             : lang === 'english'
-            ? 'Ganesh Chaturthi Festive Modak & Pooja Combo is your highest ROI move for tomorrow. Base projected turnover is ₹8,500. Adjust the discount slider below to simulate projected returns:'
-            : 'Kal ke liye Ganesh Chaturthi Modak Combo sabse badiya opportunity hai! ₹8,500 ki guaranteed bikri banegi. Aap niche discount slider badal kar munafa test kar sakte hain:',
+            ? 'Navratri Vrat Essentials Kit is your highest ROI move for tomorrow. Adjust the discount slider below to simulate projected returns:'
+            : 'Kal ke liye Navratri Vrat Essentials Kit sabse badiya opportunity hai! Aap niche discount slider badal kar munafa test kar sakte hain:',
         timestamp: timeNow,
         genUi: {
           type: 'campaign_proposal',
           payload: {
             id: `camp-prop-${Date.now()}`,
-            title: 'Ganesh Festival Modak & Pooja Kit',
+            title: 'Navratri Vrat Essentials Kit',
             baseRevenue: 8500,
             baseCost: 420,
             defaultDiscount: 12,
             customers: 60,
             drafts: {
-              hinglish: 'Ganpati Bappa Special: Sharma Kirana par Modak Peeth 1kg + Pure Ghee combo par 12% Chhoot! Aaj hi visit karein: paytm.me/sharma-kirana 🙏',
-              hindi: 'गणेश चतुर्थी विशेष: शर्मा किराना पर मोदक आटा 1kg + शुद्ध घी कॉम्बो पर 12% की भारी छूट! आज ही पधारें: paytm.me/sharma-kirana 🙏',
-              marathi: 'गणेशोत्सव विशेष: शर्मा किराणामध्ये मोदक पीठ 1kg + साजूक तूप कॉम्बोवर 12% खास सवलत! आजच भेट द्या: paytm.me/sharma-kirana 🙏',
-              english: 'Ganesh Festival Special: Flat 12% OFF on Modak Flour + Pure Ghee Combo at Sharma Kirana! Visit today: paytm.me/sharma-kirana 🙏',
+              hinglish: 'Navratri Special: Sharma Kirana par Sabudana + Singhara Atta + Pure Ghee combo par 12% Chhoot! Aaj hi visit karein: paytm.me/sharma-kirana 🙏',
+              hindi: 'नवरात्रि विशेष: शर्मा किराना पर साबूदाना + सिंघाड़ा आटा + शुद्ध घी कॉम्बो पर 12% की छूट! आज ही पधारें: paytm.me/sharma-kirana 🙏',
+              marathi: 'नवरात्री विशेष: शर्मा किराणामध्ये साबुदाणा + शिंगाडा पीठ + साजूक तूप कॉम्बोवर 12% खास सवलत! आजच भेट द्या: paytm.me/sharma-kirana 🙏',
+              english: 'Navratri Special: Flat 12% OFF on Sabudana + Singhara Atta + Pure Ghee Combo at Sharma Kirana! Visit today: paytm.me/sharma-kirana 🙏',
             },
           },
         },
@@ -1119,7 +1118,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
             t.voiceSuggestion3,
             t.voiceSuggestion4,
             'Bahi khata audit karo',
-            'Ganpati combo offer banao',
+            'Navratri vrat combo offer banao',
           ].map((sug, idx) => (
             <button
               key={idx}
