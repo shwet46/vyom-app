@@ -66,9 +66,15 @@ async def test_mock_stt() -> None:
 
 @pytest.mark.asyncio
 async def test_mock_tts() -> None:
-    """Verify mock TTS produces playable WAV bytes."""
+    """Verify mock TTS produces playable WAV bytes with speaker shubh, pace 1.0, and 22050 sample rate."""
     tts = MockTTSClient()
-    audio_bytes = await tts.synthesize("Namaste Sharma ji", target_language_code="hi-IN")
+    audio_bytes = await tts.synthesize(
+        "Namaste Sharma ji",
+        target_language_code="hi-IN",
+        speaker="shubh",
+        pace=1.0,
+        speech_sample_rate=22050,
+    )
     assert len(audio_bytes) >= 44
     assert audio_bytes.startswith(b"RIFF")
 

@@ -16,6 +16,7 @@ from vyom.worker.jobs import (
     run_campaign_dispatch,
     run_nightly_opportunity_detection,
     run_udhaar_reminder_sweep,
+    send_10min_customer_payment_reminders,
 )
 
 logger = structlog.get_logger()
@@ -47,6 +48,13 @@ class VyomWorker:
                 replace_existing=True,
             )
             self.scheduler.add_job(
+                self._wrap_job(send_10min_customer_payment_reminders),
+                trigger=IntervalTrigger(minutes=10),
+                id="customer_10min_reminders_demo",
+                name="Customer 10-Minute Payment Reminders (Demo)",
+                replace_existing=True,
+            )
+            self.scheduler.add_job(
                 self._wrap_job(run_campaign_dispatch),
                 trigger=IntervalTrigger(seconds=30),
                 id="campaign_dispatch",
@@ -67,6 +75,13 @@ class VyomWorker:
                 trigger=CronTrigger(hour=10, minute=30, timezone="Asia/Kolkata"),
                 id="udhaar_sweep_morning",
                 name="Udhaar Sweep Morning",
+                replace_existing=True,
+            )
+            self.scheduler.add_job(
+                self._wrap_job(send_10min_customer_payment_reminders),
+                trigger=IntervalTrigger(minutes=10),
+                id="customer_10min_reminders",
+                name="Customer 10-Minute Payment Reminders",
                 replace_existing=True,
             )
             self.scheduler.add_job(

@@ -11,29 +11,43 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import CallbackQuery, Chat, Message, User
 
 from vyom.bot import create_bot_and_dispatcher
-from vyom.bot.handlers.catalog import handle_store_info
-from vyom.bot.handlers.festival import handle_kit_preorder
-from vyom.bot.handlers.khata import handle_my_khata
+from vyom.bot.handlers.catalog import (
+    handle_contact_store,
+    handle_unrecognized_query_escalation,
+)
+from vyom.bot.handlers.festival import (
+    handle_kit_preorder,
+    handle_store_sales_and_discounts,
+)
+from vyom.bot.handlers.khata import (
+    handle_deadline_selection,
+    handle_my_khata,
+    handle_pay_now_direct,
+)
 from vyom.bot.handlers.start import handle_start
 from vyom.bot.handlers.voice import handle_voice_message
 from vyom.bot.keyboards import (
+    get_deadline_selection_keyboard,
+    get_escalation_keyboard,
     get_festival_kit_keyboard,
-    get_khata_payment_keyboard,
+    get_khata_action_keyboard,
     get_language_keyboard,
     get_main_menu_keyboard,
+    get_offers_keyboard,
 )
 from vyom.config import Settings
 
 
 def test_bot_keyboards() -> None:
     """Verify markup and callback data for all bot keyboards."""
-    # Main menu
+    # Main menu focused on khata bill, payment/QR, deadline, sales/discounts, and contact
     menu = get_main_menu_keyboard()
     button_texts = [btn.text for row in menu.keyboard for btn in row]
-    assert "🛍️ Store & Specials" in button_texts
-    assert "📦 Festival Kits" in button_texts
-    assert "📒 Mera Khata (Udhaar)" in button_texts
-    assert "🗣️ Voice Order" in button_texts
+    assert "🧾 Mera Khata & Bill (Udhaar)" in button_texts
+    assert "💳 Abhi Pay Karein (Pay Now / QR)" in button_texts
+    assert "📅 Payment Deadline Set Karein" in button_texts
+    assert "🏷️ Dukaan Ke Offers & Sales" in button_texts
+    assert "📞 Dukaan Se Baat Karein (Support)" in button_texts
 
     # Language keyboard
     lang_kb = get_language_keyboard()
@@ -46,9 +60,24 @@ def test_bot_keyboards() -> None:
     kit_kb = get_festival_kit_keyboard("navratri_kit", 450.0)
     assert any("kit_order:navratri_kit" in btn.callback_data for row in kit_kb.inline_keyboard for btn in row if btn.callback_data)
 
-    # Khata keyboard
-    khata_kb = get_khata_payment_keyboard("token123", 450.0)
+    # Khata action keyboard
+    khata_kb = get_khata_action_keyboard("token123", 1350.0, "http://localhost:8000/pay/token123")
     assert any("token123" in (btn.url or "") for row in khata_kb.inline_keyboard for btn in row)
+
+    # Deadline keyboard
+    deadline_kb = get_deadline_selection_keyboard()
+    dl_callbacks = [btn.callback_data for row in deadline_kb.inline_keyboard for btn in row if btn.callback_data]
+    assert "deadline:1_day" in dl_callbacks
+    assert "deadline:3_days" in dl_callbacks
+    assert "deadline:7_days" in dl_callbacks
+
+    # Offers keyboard
+    offers_kb = get_offers_keyboard()
+    assert len(offers_kb.inline_keyboard) >= 2
+
+    # Escalation keyboard
+    esc_kb = get_escalation_keyboard("+91 98765 43210")
+    assert any("tel:" in (btn.url or "") for row in esc_kb.inline_keyboard for btn in row)
 
 
 def test_create_bot_and_dispatcher() -> None:
@@ -94,19 +123,8 @@ async def test_start_handler(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_store_info_handler(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify store and specials information response."""
-    mock_db = MagicMock()
-    mock_merchants = MagicMock()
-    mock_merchants.find_one = AsyncMock(return_value={
-        "_id": "merchant_sharma_01",
-        "name": "Sharma Kirana Store",
-        "address": "Somwar Peth, Pune",
-        "todays_special": "Vrat Sabudana in stock",
-    })
-    mock_db.merchants = mock_merchants
-    monkeypatch.setattr("vyom.bot.handlers.catalog.get_db", lambda: mock_db)
-
+async def test_store_sales_and_discounts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify ongoing sales and discounts handler."""
     mock_answer = AsyncMock()
     monkeypatch.setattr(Message, "answer", mock_answer)
 
@@ -114,14 +132,14 @@ async def test_store_info_handler(monkeypatch: pytest.MonkeyPatch) -> None:
         message_id=2,
         date=datetime.datetime.now(),
         chat=Chat(id=123, type="private"),
-        text="🛍️ Store & Specials",
+        text="🏷️ Dukaan Ke Offers & Sales",
     )
 
-    await handle_store_info(message)
+    await handle_store_sales_and_discounts(message)
     mock_answer.assert_called_once()
     args, _ = mock_answer.call_args
-    assert "Sharma Kirana Store" in args[0]
-    assert "Vrat Sabudana" in args[0]
+    assert "Ongoing Sales & Discounts" in args[0]
+    assert "12% OFF" in args[0]
 
 
 @pytest.mark.asyncio
@@ -164,8 +182,8 @@ async def test_festival_kit_preorder(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_khata_handler(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify khata outstanding balance query."""
+async def test_khata_handler_with_partial_payment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify khata outstanding balance query with partial payment and remaining balance."""
     mock_db = MagicMock()
     mock_customers = MagicMock()
     mock_customers.find_one = AsyncMock(return_value={"_id": "cust_sharma_001", "name": "Sunita Patil"})
@@ -173,9 +191,10 @@ async def test_khata_handler(monkeypatch: pytest.MonkeyPatch) -> None:
     class AsyncEntryCursor:
         def __init__(self) -> None:
             self.docs = [{
-                "amount_total_paise": 45000,
-                "amount_paid_paise": 0,
+                "amount_total_paise": 185000,
+                "amount_paid_paise": 50000,
                 "due_date": datetime.date(2026, 10, 5),
+                "items": "Oil, Atta, Ghee",
             }]
             self.idx = 0
 
@@ -207,14 +226,163 @@ async def test_khata_handler(monkeypatch: pytest.MonkeyPatch) -> None:
         date=datetime.datetime.now(),
         chat=Chat(id=987654321, type="private"),
         from_user=User(id=987654321, is_bot=False, first_name="Sunita"),
-        text="📒 Mera Khata (Udhaar)",
+        text="🧾 Mera Khata & Bill (Udhaar)",
     )
 
     await handle_my_khata(message)
     mock_answer.assert_called_once()
     args, kwargs = mock_answer.call_args
-    assert "₹450" in args[0]
+    # Verify Kul bill, Jama (paid), and Baaki (remaining balance) are reported
+    assert "₹1850" in args[0]
+    assert "₹500" in args[0]
+    assert "₹1350" in args[0]
     assert kwargs.get("reply_markup") is not None
+
+
+@pytest.mark.asyncio
+async def test_pay_now_qr_and_link(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify pay now presents QR code and direct payment link."""
+    mock_db = MagicMock()
+    mock_customers = MagicMock()
+    mock_customers.find_one = AsyncMock(return_value={"_id": "cust_sharma_001", "name": "Sunita Patil"})
+
+    class AsyncEntryCursor:
+        def __init__(self) -> None:
+            self.docs = [{
+                "amount_total_paise": 135000,
+                "amount_paid_paise": 0,
+            }]
+            self.idx = 0
+
+        def __aiter__(self) -> AsyncEntryCursor:
+            return self
+
+        async def __anext__(self) -> dict[str, Any]:
+            if self.idx < len(self.docs):
+                item = self.docs[self.idx]
+                self.idx += 1
+                return item
+            raise StopAsyncIteration
+
+    mock_db.customers = mock_customers
+    mock_db.khata_entries = MagicMock(find=MagicMock(return_value=AsyncEntryCursor()))
+    mock_db.payments = MagicMock(update_one=AsyncMock())
+    monkeypatch.setattr("vyom.bot.handlers.khata.get_db", lambda: mock_db)
+
+    mock_photo = AsyncMock()
+    monkeypatch.setattr(Message, "answer_photo", mock_photo)
+
+    message = Message(
+        message_id=10,
+        date=datetime.datetime.now(),
+        chat=Chat(id=987654321, type="private"),
+        from_user=User(id=987654321, is_bot=False, first_name="Sunita"),
+        text="💳 Abhi Pay Karein (Pay Now / QR)",
+    )
+
+    await handle_pay_now_direct(message)
+    mock_photo.assert_called_once()
+    kwargs = mock_photo.call_args.kwargs
+    assert "api.qrserver.com" in kwargs.get("photo", "")
+    assert "₹1350" in kwargs.get("caption", "")
+
+
+@pytest.mark.asyncio
+async def test_deadline_setting(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify customer setting payment deadline updates khata entry promise date."""
+    mock_db = MagicMock()
+    mock_customers = MagicMock()
+    mock_customers.find_one = AsyncMock(return_value={"_id": "cust_sharma_001", "name": "Sunita Patil"})
+    mock_khata = MagicMock()
+    mock_khata.find = MagicMock(return_value=MagicMock(__aiter__=lambda self: self, __anext__=AsyncMock(side_effect=StopAsyncIteration)))
+    mock_khata.update_many = AsyncMock()
+
+    mock_db.customers = mock_customers
+    mock_db.khata_entries = mock_khata
+    monkeypatch.setattr("vyom.bot.handlers.khata.get_db", lambda: mock_db)
+
+    mock_cb_answer = AsyncMock()
+    monkeypatch.setattr(CallbackQuery, "answer", mock_cb_answer)
+    mock_msg_answer = AsyncMock()
+    monkeypatch.setattr(Message, "answer", mock_msg_answer)
+
+    dummy_msg = Message(message_id=20, date=datetime.datetime.now(), chat=Chat(id=1, type="private"), text="Select")
+    query = CallbackQuery(
+        id="cb_dl",
+        from_user=User(id=987654321, is_bot=False, first_name="Sunita"),
+        chat_instance="inst_dl",
+        data="deadline:3_days",
+        message=dummy_msg,
+    )
+
+    await handle_deadline_selection(query)
+    mock_khata.update_many.assert_called_once()
+    mock_msg_answer.assert_called_once()
+    args, _ = mock_msg_answer.call_args
+    assert "Payment Deadline Safalta-purvak Set Ho Gayi" in args[0]
+
+
+@pytest.mark.asyncio
+async def test_unrecognized_query_escalation(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify random user questions are politely escalated to merchant."""
+    mock_db = MagicMock()
+    mock_merchants = MagicMock()
+    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "name": "Sharma Kirana Store", "phone_e164": "+91 98765 43210", "owner_name": "Ramesh Sharma"})
+    mock_customers = MagicMock()
+    mock_customers.find_one = AsyncMock(return_value={"_id": "cust_sharma_001"})
+    mock_escalations = MagicMock()
+    mock_escalations.insert_one = AsyncMock()
+
+    mock_db.merchants = mock_merchants
+    mock_db.customers = mock_customers
+    mock_db.support_escalations = mock_escalations
+    monkeypatch.setattr("vyom.bot.handlers.catalog.get_db", lambda: mock_db)
+
+    mock_answer = AsyncMock()
+    monkeypatch.setattr(Message, "answer", mock_answer)
+
+    message = Message(
+        message_id=30,
+        date=datetime.datetime.now(),
+        chat=Chat(id=987654321, type="private"),
+        from_user=User(id=987654321, is_bot=False, first_name="Sunita"),
+        text="Aapke paas bread aur eggs milenge kya?",
+    )
+
+    await handle_unrecognized_query_escalation(message)
+    mock_escalations.insert_one.assert_called_once()
+    mock_answer.assert_called_once()
+    args, _ = mock_answer.call_args
+    assert "Kshama karein" in args[0]
+    assert "Ramesh Sharma" in args[0]
+    assert "+91 98765 43210" in args[0]
+
+
+@pytest.mark.asyncio
+async def test_contact_store_handler(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify contact store handler displays merchant info."""
+    mock_db = MagicMock()
+    mock_merchants = MagicMock()
+    mock_merchants.find_one = AsyncMock(return_value={"_id": "merchant_sharma_01", "phone_e164": "+91 98765 43210", "owner_name": "Ramesh Sharma"})
+    mock_db.merchants = mock_merchants
+    monkeypatch.setattr("vyom.bot.handlers.catalog.get_db", lambda: mock_db)
+
+    mock_answer = AsyncMock()
+    monkeypatch.setattr(Message, "answer", mock_answer)
+
+    message = Message(
+        message_id=40,
+        date=datetime.datetime.now(),
+        chat=Chat(id=1, type="private"),
+        from_user=User(id=1, is_bot=False, first_name="Customer"),
+        text="📞 Dukaan Se Baat Karein (Support)",
+    )
+
+    await handle_contact_store(message)
+    mock_answer.assert_called_once()
+    args, _ = mock_answer.call_args
+    assert "Ramesh Sharma" in args[0]
+    assert "+91 98765 43210" in args[0]
 
 
 @pytest.mark.asyncio

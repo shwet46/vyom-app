@@ -10,6 +10,7 @@ def test_settings_defaults() -> None:
     assert settings.sarvam_llm_model == "sarvam-105b"
     assert settings.sarvam_stt_model == "saaras:v4"
     assert settings.sarvam_tts_model == "bulbul:v3"
+    assert settings.sarvam_tts_speaker == "shubh"
     assert settings.app_timezone == "Asia/Kolkata"
     assert settings.ai_mode in ("mock", "live")
 

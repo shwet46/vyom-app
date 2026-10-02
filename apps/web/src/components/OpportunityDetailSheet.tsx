@@ -18,6 +18,7 @@ import confetti from 'canvas-confetti';
 import { Guardrails, Language, Opportunity } from '../types';
 import { formatRupee } from '../utils/formatters';
 import { translations } from '../utils/i18n';
+import { speakWithShubh } from '../utils/speech';
 
 interface OpportunityDetailSheetProps {
   opportunity: Opportunity | null;
@@ -54,23 +55,17 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
   const isFrequencyWithinLimit = guardrails.maxMessagesPerCustomerPerWeek >= 1;
   const hasGuardrailViolation = !isDiscountWithinLimit || !isBudgetWithinLimit;
 
-  // Speak aloud explainable AI reasons
+  // Speak aloud explainable AI reasons using Kirana Voice Assistant
   const playReasonAudio = () => {
     const textToSpeak =
       opportunity.audioScript[lang] || opportunity.audioScript.hinglish;
 
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = 0.95;
-      utterance.onstart = () => setIsPlayingAudio(true);
-      utterance.onend = () => setIsPlayingAudio(false);
-      utterance.onerror = () => setIsPlayingAudio(false);
-      window.speechSynthesis.speak(utterance);
-    } else {
-      setIsPlayingAudio(true);
-      setTimeout(() => setIsPlayingAudio(false), 4000);
-    }
+    speakWithShubh(textToSpeak, {
+      lang,
+      onStart: () => setIsPlayingAudio(true),
+      onEnd: () => setIsPlayingAudio(false),
+      onError: () => setIsPlayingAudio(false),
+    });
   };
 
   const handleApproveAction = () => {

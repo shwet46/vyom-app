@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     # TTS: bulbul:v3 via POST /text-to-speech
     # Returns base64-encoded audio in audios[] array
     sarvam_tts_model: str = "bulbul:v3"
+    sarvam_tts_speaker: str = "shubh"
+    sarvam_tts_pace: float = 1.0
+    sarvam_tts_sample_rate: int = 22050
 
     # Document AI: POST /doc-ai/v1/job/digitise (async job)
     # Sarvam Vision 1.5, max 10 pages per job

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import base64
 import datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Response, UploadFile
 from pydantic import BaseModel, Field
 
+from vyom.ai import get_tts_client
 from vyom.clock import Clock
 from vyom.core.deps import CurrentMerchant, DatabaseDep
 from vyom.core.errors import NotFoundError
@@ -23,6 +25,15 @@ router = APIRouter(prefix="/copilot", tags=["Copilot"])
 class CopilotChatRequest(BaseModel):
     query: str
     session_id: str | None = None
+
+
+class TTSRequest(BaseModel):
+    text: str
+    target_language_code: str = "hi-IN"
+    speaker: str = "shubh"
+    model: str = "bulbul:v3"
+    pace: float = 1.0
+    speech_sample_rate: int = 22050
 
 
 class CopilotReplyResponse(BaseModel):
@@ -119,13 +130,69 @@ async def copilot_chat(
     )
     await db.copilot_messages.insert_many([user_msg.to_mongo(), ai_msg.to_mongo()])
 
+    # Synthesize audio reply using Sarvam bulbul:v3 with speaker shubh
+    audio_base64 = None
+    try:
+        tts_client = get_tts_client()
+        audio_bytes = await tts_client.synthesize(
+            text=reply_text,
+            target_language_code="hi-IN",
+            speaker="shubh",
+            pace=1.0,
+            speech_sample_rate=22050,
+        )
+        if audio_bytes:
+            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+    except Exception as tts_err:
+        import structlog
+        structlog.get_logger().warning("copilot_audio_synthesis_failed", error=str(tts_err))
+
     return CopilotReplyResponse(
         session_id=session_id,
         text=reply_text,
+        audio_base64=audio_base64,
         transcript=payload.query,
         tool_calls=tool_calls,
         pending_action=pending_action,
     )
+
+
+@router.post("/tts")
+async def copilot_tts(
+    payload: TTSRequest,
+) -> Response:
+    """Convert text to speech audio stream using Sarvam bulbul:v3 and speaker shubh."""
+    tts_client = get_tts_client()
+    audio_bytes = await tts_client.synthesize(
+        text=payload.text,
+        target_language_code=payload.target_language_code,
+        speaker=payload.speaker,
+        pace=payload.pace,
+        speech_sample_rate=payload.speech_sample_rate,
+    )
+    media_type = "audio/wav" if audio_bytes.startswith(b"RIFF") else "audio/mpeg"
+    return Response(content=audio_bytes, media_type=media_type)
+
+
+@router.post("/tts/base64")
+async def copilot_tts_base64(
+    payload: TTSRequest,
+) -> dict[str, str]:
+    """Convert text to speech and return base64 encoded audio."""
+    tts_client = get_tts_client()
+    audio_bytes = await tts_client.synthesize(
+        text=payload.text,
+        target_language_code=payload.target_language_code,
+        speaker=payload.speaker,
+        pace=payload.pace,
+        speech_sample_rate=payload.speech_sample_rate,
+    )
+    return {
+        "audio_base64": base64.b64encode(audio_bytes).decode("utf-8"),
+        "speaker": payload.speaker,
+        "model": payload.model,
+        "format": "mp3",
+    }
 
 
 @router.post("/voice")

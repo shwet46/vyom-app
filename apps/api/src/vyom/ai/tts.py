@@ -21,26 +21,31 @@ class BaseTTSClient(ABC):
         self,
         text: str,
         target_language_code: str = "hi-IN",
-        speaker: str = "meera",
+        speaker: str = "shubh",
         pace: float = 1.0,
+        speech_sample_rate: int = 22050,
     ) -> bytes:
         """Synthesize text into playable audio bytes (WAV/MP3)."""
 
 
 class SarvamTTSClient(BaseTTSClient):
-    """Production client calling Sarvam Text-to-Speech using bulbul:v3."""
+    """Production client calling Sarvam Text-to-Speech using bulbul:v3 and speaker shubh."""
 
     def __init__(self, settings: Settings) -> None:
         self.base_url = settings.sarvam_base_url.rstrip("/")
         self.api_key = settings.sarvam_api_key
-        self.model = settings.sarvam_tts_model  # "bulbul:v3"
+        self.model = getattr(settings, "sarvam_tts_model", "bulbul:v3")
+        self.default_speaker = getattr(settings, "sarvam_tts_speaker", "shubh")
+        self.default_pace = getattr(settings, "sarvam_tts_pace", 1.0)
+        self.default_sample_rate = getattr(settings, "sarvam_tts_sample_rate", 22050)
 
     async def synthesize(
         self,
         text: str,
         target_language_code: str = "hi-IN",
-        speaker: str = "meera",
+        speaker: str = "shubh",
         pace: float = 1.0,
+        speech_sample_rate: int = 22050,
     ) -> bytes:
         url = f"{self.base_url}/text-to-speech"
         headers = {
@@ -49,11 +54,12 @@ class SarvamTTSClient(BaseTTSClient):
         }
         payload = {
             "inputs": [text],
-            "target_language_code": target_language_code,
-            "speaker": speaker,
+            "target_language_code": target_language_code or "hi-IN",
+            "speaker": speaker or self.default_speaker,
             "pitch": 0,
-            "pace": pace,
+            "pace": pace if pace is not None else self.default_pace,
             "model": self.model,
+            "speech_sample_rate": speech_sample_rate or self.default_sample_rate,
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -77,8 +83,9 @@ class MockTTSClient(BaseTTSClient):
         self,
         text: str,
         target_language_code: str = "hi-IN",
-        speaker: str = "meera",
+        speaker: str = "shubh",
         pace: float = 1.0,
+        speech_sample_rate: int = 22050,
     ) -> bytes:
         # Minimal valid 44-byte RIFF WAV header with 0 PCM frames for demo playback
         wav_header = (
@@ -91,6 +98,10 @@ class MockTTSClient(BaseTTSClient):
 def get_tts_client(settings: Settings | None = None) -> BaseTTSClient:
     """Factory selecting the TTS client."""
     cfg = settings or get_settings()
+
+    # If a real Sarvam API key is configured, use the production Sarvam bulbul:v3 client
+    if cfg.sarvam_api_key and not cfg.sarvam_api_key.startswith("mock") and len(cfg.sarvam_api_key) > 10:
+        return SarvamTTSClient(cfg)
 
     if cfg.ai_mode == "mock":
         return MockTTSClient()

@@ -23,6 +23,7 @@ import {
   initialUdhaarCustomers,
   todaySalesHourly,
 } from './data/mockData';
+import { speakWithShubh } from './utils/speech';
 import {
   getHomeDashboard,
   getOpportunities,
@@ -333,16 +334,9 @@ export default function App() {
 
           showToast(`Paytm Soundbox: ₹${amt} prapt hue! 🔔`);
 
-          // Play Soundbox Audio Speech
-          if ('speechSynthesis' in window) {
-            try {
-              const text = data.soundbox_announcement || `Paytm par ${amt} rupaye prapt hue`;
-              const utter = new SpeechSynthesisUtterance(text);
-              utter.lang = 'hi-IN';
-              utter.rate = 1.0;
-              window.speechSynthesis.speak(utter);
-            } catch {}
-          }
+          // Play Soundbox Audio Speech with Shubh Voice
+          const text = data.soundbox_announcement || `Paytm par ${amt} rupaye prapt hue`;
+          speakWithShubh(text, { lang: 'hindi' });
         } else if (eventType === 'demo.visit_simulated') {
           const amt = data.amount_rupees || Math.round((data.amount_paise || 42000) / 100);
           setHomeMetrics((prev) => ({
@@ -624,16 +618,9 @@ export default function App() {
       });
     } catch {}
 
-    // Paytm Soundbox voice chime simulation
-    if (entry.type === 'jama' && 'speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(`Paytm par ${entry.amount} rupaye prapt hue.`);
-        utter.rate = 1.05;
-        utter.pitch = 1.0;
-        utter.lang = 'hi-IN';
-        window.speechSynthesis.speak(utter);
-      } catch {}
+    // Paytm Soundbox voice chime simulation with Shubh Voice
+    if (entry.type === 'jama') {
+      speakWithShubh(`Paytm par ${entry.amount} rupaye prapt hue.`, { lang: 'hindi' });
     }
 
     setActivityFeed((prev) => [
