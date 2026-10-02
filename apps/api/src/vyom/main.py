@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -30,6 +31,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         demo_mode=settings.demo_mode,
     )
 
+    reminder_task: asyncio.Task[None] | None = None
+    polling_task: asyncio.Task[None] | None = None
+
     # 1. Connect to MongoDB
     try:
         db = await init_mongo(settings)
@@ -37,12 +41,70 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await ensure_indexes(db)
         await apply_migrations(db)
         logger.info("vyom_db_ready")
+
+        # 3. Start Telegram bot polling (if configured)
+        if settings.bot_mode == "polling" and settings.telegram_bot_token.strip():
+            from vyom.bot.app import create_bot_and_dispatcher
+
+            async def _bot_polling_worker() -> None:
+                """Run aiogram polling inside the same event loop as FastAPI."""
+                try:
+                    _bot, _dp = create_bot_and_dispatcher(settings)
+                    await _bot.delete_webhook(drop_pending_updates=False)
+                    logger.info(
+                        "telegram_bot_polling_started",
+                        username=settings.bot_username or "configured",
+                    )
+                    await _dp.start_polling(_bot, handle_signals=False)
+                except asyncio.CancelledError:
+                    logger.info("telegram_bot_polling_stopped")
+                except Exception as poll_err:
+                    logger.warning("telegram_bot_polling_error", error=str(poll_err))
+
+            polling_task = asyncio.create_task(_bot_polling_worker())
+            logger.info("telegram_bot_polling_task_scheduled")
+        else:
+            logger.info(
+                "telegram_bot_polling_skipped",
+                mode=settings.bot_mode,
+                token_set=bool(settings.telegram_bot_token.strip()),
+            )
+
+        # 4. Start 10-minute payment reminder background task
+        from vyom.worker.jobs import send_10min_customer_payment_reminders
+
+        async def _periodic_10min_reminders_worker() -> None:
+            logger.info("periodic_10min_payment_reminders_task_started", interval_minutes=10)
+            try:
+                while True:
+                    await asyncio.sleep(600)  # 10 minutes
+                    try:
+                        sent = await send_10min_customer_payment_reminders(db)
+                        logger.info("periodic_10min_payment_reminders_dispatched", sent=sent)
+                    except Exception as loop_err:
+                        logger.warning("periodic_10min_payment_reminders_cycle_error", error=str(loop_err))
+            except asyncio.CancelledError:
+                logger.info("periodic_10min_payment_reminders_task_stopped")
+
+        reminder_task = asyncio.create_task(_periodic_10min_reminders_worker())
     except Exception as exc:
         logger.warning("vyom_db_init_warning", error=str(exc))
 
     yield
 
     # Shutdown
+    if polling_task:
+        polling_task.cancel()
+        try:
+            await polling_task
+        except asyncio.CancelledError:
+            pass
+    if reminder_task:
+        reminder_task.cancel()
+        try:
+            await reminder_task
+        except asyncio.CancelledError:
+            pass
     await close_mongo()
     logger.info("vyom_shutdown")
 

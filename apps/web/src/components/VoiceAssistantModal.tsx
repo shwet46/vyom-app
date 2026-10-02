@@ -28,6 +28,7 @@ import confetti from 'canvas-confetti';
 import { ChatMessage, GenUiData, Language } from '../types';
 import { translations } from '../utils/i18n';
 import { formatRupee } from '../utils/formatters';
+import { speakWithShubh, stopSpeech } from '../utils/speech';
 
 interface VoiceAssistantModalProps {
   isOpen: boolean;
@@ -175,45 +176,27 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isListening, interimTranscript]);
 
-  // Speech synthesis
+  // Speech synthesis using Shubh Voice
   const speakText = (text: string) => {
     if (!autoSpeakEnabled) return;
     setActiveSpeechText(text);
 
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-
-      if (lang === 'hindi') utterance.lang = 'hi-IN';
-      else if (lang === 'marathi') utterance.lang = 'mr-IN';
-      else if (lang === 'english') utterance.lang = 'en-IN';
-      else utterance.lang = 'hi-IN';
-
-      utterance.onstart = () => setIsPlayingAudio(true);
-      utterance.onend = () => {
+    speakWithShubh(text, {
+      lang,
+      onStart: () => setIsPlayingAudio(true),
+      onEnd: () => {
         setIsPlayingAudio(false);
         setActiveSpeechText('');
-      };
-      utterance.onerror = () => {
+      },
+      onError: () => {
         setIsPlayingAudio(false);
         setActiveSpeechText('');
-      };
-      window.speechSynthesis.speak(utterance);
-    } else {
-      setIsPlayingAudio(true);
-      setTimeout(() => {
-        setIsPlayingAudio(false);
-        setActiveSpeechText('');
-      }, 3500);
-    }
+      },
+    });
   };
 
   const stopAudio = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    stopSpeech();
     setIsPlayingAudio(false);
     setActiveSpeechText('');
   };

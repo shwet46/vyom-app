@@ -459,7 +459,7 @@ async def test_udhaar_api(test_app: Any) -> None:
 
 @pytest.mark.asyncio
 async def test_copilot_chat(test_app: Any) -> None:
-    """Verify merchant copilot natural language query."""
+    """Verify merchant copilot natural language query and TTS voice synthesis."""
     transport = ASGITransport(app=test_app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.post(
@@ -470,6 +470,23 @@ async def test_copilot_chat(test_app: Any) -> None:
         data = resp.json()
         assert "text" in data
         assert len(data["text"]) > 0
+        assert "audio_base64" in data
+        assert data["audio_base64"] is not None
+
+        # Test POST /copilot/tts
+        tts_resp = await client.post(
+            "/api/v1/copilot/tts",
+            json={
+                "text": "Namaste Sharma ji, Sarvam bulbul:v3 voice model active hai",
+                "target_language_code": "hi-IN",
+                "speaker": "shubh",
+                "model": "bulbul:v3",
+                "pace": 1.0,
+                "speech_sample_rate": 22050,
+            },
+        )
+        assert tts_resp.status_code == 200
+        assert len(tts_resp.content) >= 44
 
 
 @pytest.mark.asyncio
@@ -482,6 +499,12 @@ async def test_pay_landing(test_app: Any) -> None:
         data = resp.json()
         assert data["pay_token"] == "test_token_999"
         assert "upi_intent" in data
+
+        resp_view = await client.get("/api/v1/pay/test_token_999/view")
+        assert resp_view.status_code == 200
+        assert "text/html" in resp_view.headers.get("content-type", "")
+        assert "Sharma Kirana Store" in resp_view.text
+        assert "Paytm" in resp_view.text
 
 
 @pytest.mark.asyncio
@@ -541,3 +564,19 @@ async def test_demo_controls(test_app: Any) -> None:
         assert adv_time.status_code == 200
         assert adv_time.json()["status"] == "advanced"
         assert adv_time.json()["today"] == "2026-10-05"
+
+
+@pytest.mark.asyncio
+async def test_10min_payment_reminders_endpoint(test_app: Any) -> None:
+    """Verify triggering 10-minute customer payment reminder API dispatches reminders to open accounts."""
+    transport = ASGITransport(app=test_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post(
+            "/api/v1/udhaar/reminders/trigger-10min",
+            headers={"Authorization": "Bearer mock_jwt_token_for_merchant_sharma_01"},
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["status"] == "success"
+        assert body["reminders_sent"] >= 1
+        assert body["interval_minutes"] == 10

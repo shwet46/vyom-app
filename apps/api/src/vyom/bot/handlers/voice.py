@@ -79,3 +79,25 @@ async def handle_voice_message(message: Message) -> None:
     )
 
     await message.answer(reply, parse_mode="Markdown")
+
+    # Send spoken voice note confirmation using Sarvam bulbul:v3 and speaker shubh
+    try:
+        from aiogram.types import BufferedInputFile
+        from vyom.ai import get_tts_client
+
+        tts_client = get_tts_client()
+        spoken_text = f"Namaste {customer_name}! Aapka voice order dukan par note kar liya gaya hai: {transcript}. Jaldi hi pack ho jayega."
+        audio_bytes = await tts_client.synthesize(
+            text=spoken_text,
+            target_language_code="hi-IN",
+            speaker="shubh",
+            pace=1.0,
+            speech_sample_rate=22050,
+        )
+        if audio_bytes and len(audio_bytes) > 44:
+            await message.answer_voice(
+                BufferedInputFile(audio_bytes, filename="voice_order_confirm.mp3"),
+                caption="🎙️ Voice Order Confirmation",
+            )
+    except Exception as tts_err:
+        logger.warning("voice_order_tts_reply_failed", error=str(tts_err))

@@ -19,6 +19,7 @@ import {
 import { KhataEntry, Language, UdhaarCustomer } from '../types';
 import { formatRupee } from '../utils/formatters';
 import { translations } from '../utils/i18n';
+import { speakWithShubh } from '../utils/speech';
 
 interface UdhaarViewProps {
   lang: Language;
@@ -100,16 +101,9 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
       soundboxVerified: entryType === 'jama',
     };
 
-    // Paytm Soundbox voice chime simulation
-    if (entryType === 'jama' && 'speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(`Paytm par ${amt} rupaye prapt hue.`);
-        utter.rate = 1.05;
-        utter.pitch = 1.0;
-        utter.lang = 'hi-IN';
-        window.speechSynthesis.speak(utter);
-      } catch (e) {}
+    // Paytm Soundbox voice chime simulation with Shubh Voice
+    if (entryType === 'jama') {
+      speakWithShubh(`Paytm par ${amt} rupaye prapt hue.`, { lang: 'hindi' });
     }
 
     if (onAddNewKhataEntry) {

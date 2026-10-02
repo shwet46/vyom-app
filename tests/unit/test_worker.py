@@ -14,6 +14,7 @@ from vyom.worker.jobs import (
     run_campaign_dispatch,
     run_nightly_opportunity_detection,
     run_udhaar_reminder_sweep,
+    send_10min_customer_payment_reminders,
 )
 from vyom.worker.scheduler import VyomWorker
 
@@ -218,6 +219,7 @@ class MockWorkerDatabase:
             }
         ])
         now = Clock.now()
+        self.payments = MockWorkerCollection()
         self.campaign_deliveries = MockWorkerCollection()
         self.campaigns = MockWorkerCollection([
             {
@@ -260,6 +262,17 @@ async def test_job_udhaar_sweep() -> None:
 
 
 @pytest.mark.asyncio
+async def test_job_10min_payment_reminders() -> None:
+    """Verify 10-minute automated payment reminder job identifies pending balances and adds reminders."""
+    db = MockWorkerDatabase()
+    count = await send_10min_customer_payment_reminders(db, merchant_id="merchant_sharma_01")
+    assert count == 1
+    assert len(db.khata_entries.docs[0]["reminders"]) == 1
+    assert db.khata_entries.docs[0]["reminders"][0]["tone"] == "gentle"
+    assert "last_reminder_at" in db.khata_entries.docs[0]
+
+
+@pytest.mark.asyncio
 async def test_job_campaign_dispatch() -> None:
     """Verify campaign dispatch splits recipients into 90% treated / 10% holdout and updates metrics."""
     db = MockWorkerDatabase()
@@ -278,7 +291,7 @@ async def test_scheduler_lifecycle() -> None:
     w = VyomWorker()
     w.setup_schedules(demo_mode=True)
     jobs = w.scheduler.get_jobs()
-    assert len(jobs) >= 3
+    assert len(jobs) >= 4
 
     w.start()
     assert w._is_running is True

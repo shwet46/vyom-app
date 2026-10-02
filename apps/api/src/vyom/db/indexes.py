@@ -11,6 +11,7 @@ from typing import Any
 import structlog
 from pymongo import ASCENDING, DESCENDING, TEXT
 from pymongo.asynchronous.database import AsyncDatabase
+from pymongo.errors import OperationFailure
 
 logger = structlog.get_logger()
 
@@ -31,7 +32,7 @@ async def ensure_indexes(db: AsyncDatabase) -> None:  # type: ignore[type-arg]
             {
                 "keys": [("merchant_id", ASCENDING), ("telegram.chat_id", ASCENDING)],
                 "unique": True,
-                "partialFilterExpression": {"telegram.chat_id": {"$gt": 0}},
+                "sparse": True,
             },
             {"keys": [("merchant_id", ASCENDING), ("phone_e164", ASCENDING)]},
             {"keys": [("merchant_id", ASCENDING), ("last_visit_at", ASCENDING)]},
@@ -171,12 +172,34 @@ async def ensure_indexes(db: AsyncDatabase) -> None:  # type: ignore[type-arg]
             keys = idx.pop("keys")
             try:
                 await coll.create_index(keys, **idx)
-            except Exception:
+            except OperationFailure as exc:
+                if exc.code == 86 or "IndexKeySpecsConflict" in str(exc) or "already exists" in str(exc):
+                    # Drop existing conflicting index specification and recreate
+                    try:
+                        idx_name = idx.get("name") or "_".join(f"{k}_{v}" for k, v in keys)
+                        await coll.drop_index(idx_name)
+                        await coll.create_index(keys, **idx)
+                        logger.info("index_recreated_after_conflict", collection=collection_name, index=idx_name)
+                    except Exception as drop_exc:
+                        logger.warning(
+                            "index_conflict_unresolved",
+                            collection=collection_name,
+                            keys=keys,
+                            error=str(drop_exc),
+                        )
+                else:
+                    logger.warning(
+                        "index_creation_skipped",
+                        collection=collection_name,
+                        keys=keys,
+                        error=str(exc),
+                    )
+            except Exception as exc:
                 logger.warning(
                     "index_creation_skipped",
                     collection=collection_name,
                     keys=keys,
-                    exc_info=True,
+                    error=str(exc),
                 )
             # Restore keys for potential re-runs
             idx["keys"] = keys

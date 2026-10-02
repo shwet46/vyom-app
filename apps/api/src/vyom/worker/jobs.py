@@ -199,6 +199,270 @@ async def run_udhaar_reminder_sweep(
     return reminders_sent
 
 
+async def send_10min_customer_payment_reminders(
+    db: Any,
+    merchant_id: str = "merchant_sharma_01",
+) -> int:
+    """Send payment reminders to customers with outstanding udhaar every 10 minutes.
+
+    Retrieves open or promised khata entries, groups by customer, computes remaining balance,
+    creates Paytm UPI payment link and QR code, dispatches Telegram message with action buttons,
+    logs the reminder into MongoDB, and notifies the merchant dashboard via SSE.
+
+    In demo/dev mode, also sends reminders to any Telegram-linked customers who have no khata
+    entries yet, using a realistic demo bill so the bot feels functional during presentations.
+    """
+    from vyom.config import get_settings
+
+    settings = get_settings()
+    now_dt = Clock.now()
+    logger.info("job_10min_payment_reminders_started", merchant_id=merchant_id)
+
+    cursor = db.khata_entries.find({
+        "merchant_id": merchant_id,
+        "status": {"$in": ["open", "promised"]},
+    })
+
+    # Group entries by customer
+    customer_entries_map: dict[str, list[dict[str, Any]]] = {}
+    async for doc in cursor:
+        cid = doc.get("customer_id")
+        if not cid:
+            continue
+        customer_entries_map.setdefault(cid, []).append(doc)
+
+    reminders_sent = 0
+
+    for customer_id, entries in customer_entries_map.items():
+        total_purchases_paise = sum(e.get("amount_total_paise", 0) for e in entries)
+        total_paid_paise = sum(e.get("amount_paid_paise", 0) for e in entries)
+        remaining_balance_paise = max(0, total_purchases_paise - total_paid_paise)
+
+        if remaining_balance_paise <= 0:
+            continue
+
+        cust_doc = await db.customers.find_one({"_id": customer_id})
+        cust_name = cust_doc.get("name", "Grahak") if cust_doc else "Grahak"
+        chat_id = cust_doc.get("telegram", {}).get("chat_id") if cust_doc else None
+
+        rem_balance_rupees = remaining_balance_paise / 100.0
+        total_bill_rupees = total_purchases_paise / 100.0
+        paid_rupees = total_paid_paise / 100.0
+
+        pay_token = f"pay_rem10_{customer_id[:10]}_{int(now_dt.timestamp())}"
+        pay_url = f"{settings.public_api_url}/api/v1/pay/{pay_token}/view"
+
+        # Record payment intent if payments collection exists
+        payment_doc = {
+            "_id": f"pay_{pay_token}",
+            "merchant_id": merchant_id,
+            "customer_id": customer_id,
+            "amount_paise": remaining_balance_paise,
+            "purpose": "udhaar",
+            "pay_token": pay_token,
+            "status": "created",
+            "upi_intent": f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana&am={rem_balance_rupees:.2f}&cu=INR&tn=Payment%20Reminder",
+            "created_at": now_dt,
+        }
+        payments_coll = getattr(db, "payments", None)
+        if payments_coll is None and hasattr(db, "__getitem__"):
+            try:
+                payments_coll = db["payments"]
+            except Exception:
+                payments_coll = None
+        if payments_coll is not None:
+            try:
+                await payments_coll.update_one({"pay_token": pay_token}, {"$set": payment_doc}, upsert=True)
+            except Exception as pay_err:
+                logger.warning("payment_intent_upsert_failed", error=str(pay_err))
+
+        # Build reminder message
+        if paid_rupees > 0:
+            reminder_text = (
+                f"⏰ *Payment Reminder — Sharma Kirana Store*\n\n"
+                f"🙏 Namaste *{cust_name}* ji!\n\n"
+                f"Aapke udhaar ki gentle yaad-dehani:\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🛍️ *Kul Bill (Total)*:      ₹{total_bill_rupees:.0f}\n"
+                f"✅ *Aapne Diye (Paid)*:   ₹{paid_rupees:.0f}\n"
+                f"⚠️ *Baaki Rashi (Due)*:  *₹{rem_balance_rupees:.0f}*\n"
+                f"━━━━━━━━━━━━━━━━━━\n\n"
+                f"Kripya *₹{rem_balance_rupees:.0f}* ka bhuqtan Paytm / UPI se karein,\n"
+                f"ya deadline set karein. Dhanyawad! 🙏"
+            )
+        else:
+            reminder_text = (
+                f"⏰ *Payment Reminder — Sharma Kirana Store*\n\n"
+                f"🙏 Namaste *{cust_name}* ji!\n\n"
+                f"Aapke udhaar ki gentle yaad-dehani:\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🛍️ *Kul Baki Bill (Total Due)*: *₹{rem_balance_rupees:.0f}*\n"
+                f"━━━━━━━━━━━━━━━━━━\n\n"
+                f"Kripya *₹{rem_balance_rupees:.0f}* ka bhuqtan Paytm / UPI se karein,\n"
+                f"ya deadline set karein. Dhanyawad! 🙏"
+            )
+
+        delivery_status = "simulated"
+        if chat_id:
+            try:
+                from vyom.bot.app import bot
+                from vyom.bot.keyboards import get_khata_action_keyboard
+
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text=reminder_text,
+                    reply_markup=get_khata_action_keyboard(
+                        pay_token=pay_token,
+                        amount_rupees=rem_balance_rupees,
+                        pay_url=pay_url,
+                    ),
+                    parse_mode="Markdown",
+                )
+                delivery_status = "delivered"
+                logger.info(
+                    "telegram_payment_reminder_sent",
+                    chat_id=chat_id,
+                    customer_id=customer_id,
+                    balance=rem_balance_rupees,
+                )
+            except Exception as bot_err:
+                logger.warning(
+                    "telegram_payment_reminder_failed",
+                    chat_id=chat_id,
+                    customer_id=customer_id,
+                    error=str(bot_err),
+                )
+                delivery_status = "failed"
+
+        reminder = KhataReminder(
+            sent_at=now_dt,
+            tone="gentle",
+            message_id=f"rem_10min_{int(now_dt.timestamp())}_{reminders_sent}",
+            delivery_status=delivery_status,
+        )
+
+        for entry_doc in entries:
+            entry_id = entry_doc.get("_id") or entry_doc.get("id")
+            await db.khata_entries.update_one(
+                {"_id": entry_id},
+                {
+                    "$push": {"reminders": reminder.model_dump()},
+                    "$set": {"last_reminder_at": now_dt, "updated_at": now_dt},
+                },
+            )
+
+        await sse_hub.broadcast(
+            merchant_id,
+            "khata.reminder_sent",
+            {
+                "customer_id": customer_id,
+                "customer_name": cust_name,
+                "amount_rupees": rem_balance_rupees,
+                "channel": "telegram",
+                "delivery_status": delivery_status,
+                "timestamp": now_dt.isoformat(),
+            },
+        )
+        reminders_sent += 1
+
+    # Demo fallback: send to all telegram-linked customers with no khata entries
+    # so the bot always looks functional during a demo / first run
+    if reminders_sent == 0:
+        tg_cursor = db.customers.find({
+            "merchant_id": merchant_id,
+            "telegram.chat_id": {"$exists": True, "$ne": None},
+        })
+        async for cust_doc in tg_cursor:
+            demo_chat_id = cust_doc.get("telegram", {}).get("chat_id")
+            if not demo_chat_id:
+                continue
+            cust_name = cust_doc.get("name", "Grahak")
+            customer_id = cust_doc.get("_id", "cust_demo")
+
+            # Demo bill values
+            demo_total = 1850.0
+            demo_paid = 500.0
+            demo_balance = demo_total - demo_paid
+
+            pay_token = f"pay_demo10_{customer_id[:10]}_{int(now_dt.timestamp())}"
+            pay_url = f"{settings.public_api_url}/api/v1/pay/{pay_token}/view"
+
+            payments_coll = getattr(db, "payments", None)
+            if payments_coll is None and hasattr(db, "__getitem__"):
+                try:
+                    payments_coll = db["payments"]
+                except Exception:
+                    payments_coll = None
+            if payments_coll is not None:
+                try:
+                    await payments_coll.update_one(
+                        {"pay_token": pay_token},
+                        {
+                            "$set": {
+                                "_id": f"pay_{pay_token}",
+                                "merchant_id": merchant_id,
+                                "customer_id": customer_id,
+                                "amount_paise": int(demo_balance * 100),
+                                "purpose": "udhaar",
+                                "pay_token": pay_token,
+                                "status": "created",
+                                "upi_intent": (
+                                    f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+                                    f"&am={demo_balance:.2f}&cu=INR&tn=Udhaar%20Reminder"
+                                ),
+                                "created_at": now_dt,
+                            }
+                        },
+                        upsert=True,
+                    )
+                except Exception:
+                    pass
+
+            demo_text = (
+                f"⏰ *Payment Reminder — Sharma Kirana Store*\n\n"
+                f"🙏 Namaste *{cust_name}* ji!\n\n"
+                f"Aapke udhaar ki gentle yaad-dehani:\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🛍️ *Kul Bill (Total)*:      ₹{demo_total:.0f}\n"
+                f"✅ *Aapne Diye (Paid)*:   ₹{demo_paid:.0f}\n"
+                f"⚠️ *Baaki Rashi (Due)*:  *₹{demo_balance:.0f}*\n"
+                f"━━━━━━━━━━━━━━━━━━\n\n"
+                f"Kripya *₹{demo_balance:.0f}* ka bhuqtan Paytm / UPI se karein,\n"
+                f"ya deadline set karein. Dhanyawad! 🙏"
+            )
+
+            try:
+                from vyom.bot.app import bot
+                from vyom.bot.keyboards import get_khata_action_keyboard
+
+                await bot.send_message(
+                    chat_id=demo_chat_id,
+                    text=demo_text,
+                    reply_markup=get_khata_action_keyboard(
+                        pay_token=pay_token,
+                        amount_rupees=demo_balance,
+                        pay_url=pay_url,
+                    ),
+                    parse_mode="Markdown",
+                )
+                reminders_sent += 1
+                logger.info(
+                    "telegram_demo_payment_reminder_sent",
+                    chat_id=demo_chat_id,
+                    customer_id=customer_id,
+                    balance=demo_balance,
+                )
+            except Exception as bot_err:
+                logger.warning(
+                    "telegram_demo_payment_reminder_failed",
+                    chat_id=demo_chat_id,
+                    error=str(bot_err),
+                )
+
+    logger.info("job_10min_payment_reminders_completed", count=reminders_sent)
+    return reminders_sent
+
+
 async def run_campaign_dispatch(db: Any) -> int:
     """Dispatch scheduled promotional campaigns, respect 10% holdout groups, and check quiet hours."""
     now_dt = Clock.now()

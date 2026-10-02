@@ -1,63 +1,76 @@
-# Telegram Shop Bot Flows
+# Telegram Customer Assistant Bot Flows
 
-The Vyom Telegram Shop Bot is built on **aiogram v3** and serves as the merchant's automated digital storefront. It runs in either polling or webhook mode (`/telegram/webhook`) and handles both structured inline keyboard callbacks and free-form voice notes.
+The Vyom Telegram Bot is built on **aiogram v3** and serves as the merchant's customer-facing assistant. It focuses strictly on customer billing/udhari, payment settlements, payment deadlines, store discounts, and merchant escalations.
 
 ---
 
 ## 1. Flow A: Customer Onboarding (`/start <shop_code>`)
 
-1. **Trigger**: Customer scans the in-store QR poster or opens `https://t.me/<BOT_USERNAME>?start=SHARMA01`.
-2. **Shop Resolution**: Middleware resolves `SHARMA01` to "Sharma Kirana Store" in Pune.
-3. **Language Selection**:
-   - Buttons: `[हिन्दी] [मराठी] [Hinglish] [English]`.
-4. **Plain-Language Consent**:
-   - Explains that the shop will send festival updates and balance receipts.
-   - Buttons: `[✅ Haan, theek hai] [❌ Nahi]`.
-5. **Main Menu Presentation**:
-   - `[🎁 Mere Offers] [📒 Mera Khata]`
-   - `[🏪 Dukaan Info] [🪔 Tyohaar ki taiyari]`
-   - `[⚙️ Settings]`
+1. **Trigger**: Customer scans in-store QR or opens `https://t.me/<BOT_USERNAME>?start=SHARMA01`.
+2. **Main Menu Navigation**:
+   - `[🧾 Mera Khata & Bill (Udhaar)]`
+   - `[💳 Abhi Pay Karein (Pay Now / QR)]`
+   - `[📅 Payment Deadline Set Karein]`
+   - `[🏷️ Dukaan Ke Offers & Sales]`
+   - `[📞 Dukaan Se Baat Karein (Support)]`
 
 ---
 
-## 2. Flow B: Navratri Vrat Kit Pre-Ordering
+## 2. Flow B: Khata Bill, Partial Payments & Remaining Balance
 
-1. **Trigger**: Customer taps `[🪔 Tyohaar ki taiyari]` or receives an approved campaign offer.
-2. **Context Resolution**: The bot injects today's date (`30 Sep 2026`) and detects Navratri starting in 11 days (11 Oct).
-3. **Item Catalog Presentation**:
-   - The bot dynamically renders available fasting items from the store catalog:
-     - Sabudana 500g (₹65)
-     - Rajgira Atta 500g (₹55)
-     - Sendha Namak 1kg (₹40)
-     - Pure Cow Ghee 1L (₹620)
-     - Makhana 250g (₹180)
-   - Excluded items (onion, garlic, non-veg) are strictly filtered out by code.
-4. **Pre-Order Confirmation**:
-   - Customer taps `[✅ Mujhe ye chahiye]`.
-   - Creates a document in `festival_kit_requests`.
-   - Emits a real-time SSE event `kit.requested` to the Merchant PWA.
-   - The merchant marks the kit as "Ready" in the Shop tab, triggering an automated pickup alert back to the customer.
+1. **Trigger**: Customer taps `[🧾 Mera Khata & Bill (Udhaar)]` or asks for bill/hisaab.
+2. **Ledger Aggregation**:
+   - Computes Total Purchases (`total_purchases`), Amount Paid so far (`amount_paid`), and Remaining Balance (`remaining_balance`).
+   - If partial payment exists:
+     - Clearly displays:
+       - **Kul Kharidari (Total Bill)**: e.g. ₹1,850
+       - **Aapne Jama Kiye (Partial Paid)**: e.g. ₹500
+       - **Baaki Rashi (Balance Left to Pay)**: **₹1,350**
+   - Renders itemized grocery purchases, due date, and quick action buttons:
+     - `[💳 Pay ₹1,350 via Paytm / UPI]`
+     - `[📲 QR Code Dekhein]`
+     - `[📅 Deadline Set Karein]`
 
 ---
 
-## 3. Flow C: Autonomous Polite Udhaar Reminders
+## 3. Flow C: Instant Mock Paytm UPI Payment & QR Code
 
-1. **Trigger**: Morning scheduled sweep (09:30 AM IST) identifies overdue entries outside quiet hours.
-2. **Tone Tier Application**:
-   - **Tiers 1–7 days**: Soft and courteous ("Namaste Sunita ji 🙏 Suvidha ho to bhugtaan kar dijiye").
-   - **Tiers 8–20 days**: Polite-firm.
-   - **Tiers 21+ days**: Firm but always respectful. Never shaming or threatening.
-3. **Customer Actions**:
-   - `[💳 Abhi pay karo ₹1,250]`: Opens simulated Paytm UPI checkout with dynamic QR code.
-   - `[✅ Maine pay kar diya]`: Sets status to `claimed_paid` and alerts merchant PWA for verification.
-   - `[📅 Kuch samay chahiye]`: Offers quick extension chips (`[Kal]`, `[3 din mein]`, `[Is Ravivar]`), setting `promise_date` and halting reminders.
+1. **Trigger**: Customer taps `[💳 Abhi Pay Karein]` or inline pay button.
+2. **QR Code Delivery**:
+   - Sends dynamic high-resolution QR image (`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://...`) scannable by any UPI app.
+3. **Mock UPI Payment Link**:
+   - Provides direct link to `/api/v1/pay/{token}/view`.
+   - Displays authentic Paytm UPI checkout portal with the exact money the customer needs to pay.
+   - Interactive "Pay via Paytm UPI" button triggers instant soundbox chime and auto-updates ledger in MongoDB.
 
 ---
 
-## 4. Flow D: Voice Note Orders
+## 4. Flow D: Setting Payment Deadline (Promise Date)
 
-1. **Customer sends a Telegram voice note**: "Bhaiyya, 2 packet sabudana aur aadha kilo ghee rakh dena kal subah ke liye."
-2. **Audio Pipeline**:
-   - Telegram voice audio (OGG/Opus) is routed to **Sarvam Saaras:v4** STT.
-   - Hinglish transcription extracts item names and quantities.
-   - The bot replies with a confirmed item list and pre-order receipt.
+1. **Trigger**: Customer taps `[📅 Payment Deadline Set Karein]`.
+2. **Options**:
+   - `[⏰ Kal tak]`, `[🗓️ 3 Din mein]`, `[📆 1 Hafte mein]`, `[📅 Agle 15 Din mein]`, `[💳 Abhi Pay Karein]`.
+3. **Resolution**:
+   - Updates `khata_entries` status to `promised` with the new target date.
+   - Emits real-time SSE event `customer.promise_updated` to Merchant Dashboard.
+   - Confirms deadline to customer with option to pay earlier.
+
+---
+
+## 5. Flow E: Ongoing Sales & Store Discounts
+
+1. **Trigger**: Customer taps `[🏷️ Dukaan Ke Offers & Sales]` or asks about offers/discounts.
+2. **Specials Delivery**:
+   - Displays current festival deals (Navratri Shuddh Vrat Kit 12% off), Afternoon Happy Hours (8% off staples), and Ration combos.
+   - Interactive inline pre-ordering for kits.
+
+---
+
+## 6. Flow F: Unhandled Queries Escalation to Merchant
+
+1. **Trigger**: Customer asks any other question or doubt (e.g. stock queries, delivery times, store policies).
+2. **Escalation Protocol**:
+   - Bot politely replies: *"Kshama karein, main is sawaal ka seedha uttar nahi de sakta. Maine aapki query dukaan ke owner (Ramesh Sharma ji) ko forward kar di hai."*
+   - Displays merchant direct contact details (Phone/WhatsApp `+91 98765 43210`, address, timings).
+   - Inserts escalation ticket into `db.support_escalations`.
+   - Dispatches real-time SSE alert `customer.query_escalated` to the merchant live dashboard.

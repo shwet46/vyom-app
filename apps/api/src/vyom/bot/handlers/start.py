@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 import structlog
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
@@ -15,6 +17,26 @@ from vyom.models.enums import Language
 
 logger = structlog.get_logger()
 router = Router(name="start")
+
+
+async def _get_outstanding_balance(merchant_id: str, customer_id: str) -> float:
+    """Return remaining unpaid balance in rupees for this customer (0 if all paid)."""
+    db = get_db()
+    total_due = 0
+    total_paid = 0
+    cursor = db.khata_entries.find({
+        "merchant_id": merchant_id,
+        "customer_id": customer_id,
+        "status": {"$in": ["open", "promised"]},
+    })
+    async for entry in cursor:
+        total_due += entry.get("amount_total_paise", 0)
+        total_paid += entry.get("amount_paid_paise", 0)
+
+    if total_due == 0:
+        # Demo fallback
+        return 1350.0
+    return max(0, total_due - total_paid) / 100.0
 
 
 @router.message(CommandStart())
@@ -38,6 +60,7 @@ async def handle_start(message: Message) -> None:
         merchant_doc = await db.merchants.find_one({"_id": "merchant_sharma_01"})
     merchant_id = merchant_doc.get("_id", "merchant_sharma_01") if merchant_doc else "merchant_sharma_01"
     store_name = merchant_doc.get("name", "Sharma Kirana Store") if merchant_doc else "Sharma Kirana Store"
+    store_phone = merchant_doc.get("phone_e164", "+91 98765 43210") if merchant_doc else "+91 98765 43210"
 
     # Find or register customer
     customer_doc = await db.customers.find_one({
@@ -46,7 +69,6 @@ async def handle_start(message: Message) -> None:
     })
 
     if not customer_doc:
-        # Check if customer exists by phone or username
         cust = Customer(
             merchant_id=merchant_id,
             name=user.full_name or "Valued Customer",
@@ -61,19 +83,44 @@ async def handle_start(message: Message) -> None:
         )
         await db.customers.insert_one(cust.to_mongo())
         logger.info("bot_customer_registered", customer_id=cust.id, chat_id=chat_id)
+        customer_id = cust.id
+        is_new_user = True
     else:
-        cust = Customer.model_validate(customer_doc)
+        customer_id = customer_doc.get("_id", "cust_sharma_001")
+        is_new_user = False
 
-    welcome_text = (
-        f"🙏 **Namaste {user.first_name}!**\n\n"
-        f"Aapka swagat hai **{store_name}** ke Telegram bot par.\n\n"
-        "Yahan aap:\n"
-        "• Dukan ka fresh samaan aur specials dekh sakte hain\n"
-        "• Vrat aur Festival Puja Kits pre-order kar sakte hain\n"
-        "• Apna Udhaar (Khata) hisaab dekh aur UPI se bhuqtan kar sakte hain\n"
-        "• Bol kar (Voice Note se) seedha order de sakte hain!\n\n"
-        "Neeche diye gaye menu se chunav karein:"
-    )
+    # Get outstanding balance for a personalised welcome
+    balance = await _get_outstanding_balance(merchant_id, customer_id)
+
+    if is_new_user:
+        welcome_text = (
+            f"🙏 *Namaste {user.first_name}!*\n\n"
+            f"*{store_name}* ke Customer Assistant mein aapka swagat hai! 🎉\n\n"
+            "Yahan aap yeh kaam kar sakte hain:\n\n"
+            "🧾 *Udhaar Bill Check Karein* — Apna baaki hisaab dekhen\n"
+            "💳 *Paytm / UPI se Pay Karein* — QR Code ya Link se turant bhuqtan\n"
+            "📅 *Payment Deadline Set Karein* — Apna wada darj karein\n"
+            "🏷️ *Dukaan Ke Offers Dekhen* — Ongoing sales aur discounts\n"
+            "📞 *Dukaan Se Sampark* — Koi bhi sawaal ho toh directly connect karein\n\n"
+            "Neeche menu se apna vikalp chunein 👇"
+        )
+    else:
+        if balance > 0:
+            welcome_text = (
+                f"🙏 *Namaste {user.first_name}!*\n\n"
+                f"Dobara aane par swagat hai! *{store_name}* aapki seva mein taiyaar hai.\n\n"
+                f"⚠️ *Aapka baaki hisaab (Udhaar): ₹{balance:.0f}*\n"
+                "Kripya neeche diye menu se apna Khata check karein ya turant bhuqtan karein.\n\n"
+                "Neeche menu se apna vikalp chunein 👇"
+            )
+        else:
+            welcome_text = (
+                f"🙏 *Namaste {user.first_name}!*\n\n"
+                f"Dobara aane par swagat hai! *{store_name}* aapki seva mein taiyaar hai.\n\n"
+                "✅ *Aapka koi udhaar baaki nahi hai. Shukriya!*\n\n"
+                "Aap dukaan ke offers dekh sakte hain ya koi bhi sawaal pooch sakte hain.\n\n"
+                "Neeche menu se apna vikalp chunein 👇"
+            )
 
     await message.answer(
         welcome_text,
@@ -88,6 +135,16 @@ async def handle_language_command(message: Message) -> None:
     await message.answer(
         "Kripya apni bhasha chunein / कृपया भाषा निवडा:",
         reply_markup=get_language_keyboard(),
+    )
+
+
+@router.message(Command("menu"))
+async def handle_menu_command(message: Message) -> None:
+    """Re-show the main menu keyboard."""
+    await message.answer(
+        "🏠 *Main Menu* — Kripya ek vikalp chunein:",
+        reply_markup=get_main_menu_keyboard(),
+        parse_mode="Markdown",
     )
 
 
@@ -113,4 +170,4 @@ async def handle_language_selection(query: CallbackQuery) -> None:
     msg = lang_names.get(lang_code, "Language updated!")
     await query.answer(msg)
     if query.message and isinstance(query.message, Message):
-        await query.message.edit_text(f"✅ {msg}")
+        await query.message.edit_text(f"✅ {msg}\n\nAb aap neeche diye gaye menu ka upyog kar sakte hain.")

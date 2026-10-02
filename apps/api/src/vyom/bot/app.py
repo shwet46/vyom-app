@@ -41,15 +41,21 @@ def create_bot_and_dispatcher(settings: Settings | None = None) -> tuple[Bot, Di
 
         _dp = Dispatcher()
         _dp.include_router(start_router)
-        _dp.include_router(festival_router)
         _dp.include_router(khata_router)
-        _dp.include_router(catalog_router)
+        _dp.include_router(festival_router)
         _dp.include_router(voice_router)
+        _dp.include_router(catalog_router)
 
     return _bot, _dp
 
 
-bot, dp = create_bot_and_dispatcher()
+try:
+    bot, dp = create_bot_and_dispatcher()
+except ValueError:
+    # Token not yet configured — bot will be created lazily when first needed
+    bot = None  # type: ignore[assignment]
+    dp = None   # type: ignore[assignment]
+    logger.warning("telegram_bot_token_not_configured_at_import")
 
 
 async def feed_telegram_update(update_dict: dict[str, Any]) -> None:

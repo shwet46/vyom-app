@@ -262,3 +262,20 @@ async def send_reminder_now(
         "message": text,
         "customer": cust.name,
     }
+
+
+@router.post("/reminders/trigger-10min")
+async def trigger_10min_reminders(
+    merchant: CurrentMerchant,
+    db: DatabaseDep,
+) -> dict[str, Any]:
+    """Trigger the 10-minute automated customer payment reminder cycle immediately."""
+    from vyom.worker.jobs import send_10min_customer_payment_reminders
+
+    count = await send_10min_customer_payment_reminders(db, merchant_id=merchant.id)
+    return {
+        "status": "success",
+        "reminders_sent": count,
+        "interval_minutes": 10,
+        "message": f"Dispatched 10-minute payment reminders to {count} customer(s)",
+    }
