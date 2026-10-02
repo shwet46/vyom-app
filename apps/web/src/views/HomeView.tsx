@@ -116,7 +116,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {festivalBanner && (
         <div
           onClick={() => onNavigateToTab('festivals')}
-          className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent border border-amber-300/60 shadow-xs flex items-center justify-between gap-3 cursor-pointer hover:border-amber-400 transition"
+          className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent border border-amber-300/60 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:border-amber-400 transition"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
@@ -133,12 +133,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-xs font-semibold text-obsidian mt-0.5 truncate">
+              <p className="text-xs font-semibold text-obsidian mt-0.5 whitespace-normal break-words">
                 {festivalBanner.headline}
               </p>
             </div>
           </div>
-          <button className="text-xs font-google font-bold text-amber-900 flex items-center gap-1 shrink-0 bg-white/90 px-3 py-1.5 rounded-xl border border-amber-200/80 hover:bg-white shadow-xs">
+          <button className="self-end sm:self-auto text-xs font-google font-bold text-amber-900 flex items-center gap-1 shrink-0 bg-white/90 px-3 py-1.5 rounded-xl border border-amber-200/80 hover:bg-white shadow-xs">
             <span>{festivalBanner.actionLabel || 'Stock Check'}</span>
             <ChevronRight className="w-3 h-3" />
           </button>
@@ -200,12 +200,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* 4. Unified KPI Business Performance Grid (4 Balanced Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Silent Leak Recovered */}
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+        <div className="p-3 sm:p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
           <div>
-            <div className="flex items-center justify-between gap-1 min-w-0">
-              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-start gap-1 min-w-0 leading-tight">
                 <Sparkles className="w-3 h-3 text-blue shrink-0" />
-                <span className="truncate">Recovered</span>
+                <span className="whitespace-normal">Recovered</span>
               </span>
               <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100 shrink-0">
                 12.8x ROI
@@ -215,21 +215,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {formatRupee(animatedRecovered)}
             </div>
           </div>
-          <div className="text-[11px] text-charcoal mt-2 pt-2 border-t border-soft-line flex items-center justify-between gap-1">
-            <span className="flex items-center gap-1 text-blue font-semibold truncate">
-              <Users className="w-3 h-3 shrink-0" /> <span className="truncate">{wonBackVal} Won Back</span>
+          <div className="text-[11px] text-charcoal mt-2 pt-2 border-t border-soft-line flex items-start sm:items-center justify-between gap-1">
+            <span className="flex items-center gap-1 text-blue font-semibold min-w-0">
+              <Users className="w-3 h-3 shrink-0" /> <span className="whitespace-normal">{wonBackVal} Won Back</span>
             </span>
             <span className="text-slate text-[10px] shrink-0">30 din</span>
           </div>
         </div>
 
         {/* Card 2: Today's Sales */}
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+        <div className="p-3 sm:p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
           <div>
-            <div className="flex items-center justify-between gap-1 min-w-0">
-              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-start gap-1 min-w-0 leading-tight">
                 <TrendingUp className="w-3 h-3 text-emerald-600 shrink-0" />
-                <span className="truncate">{t.todaySales}</span>
+                <span className="whitespace-normal">{t.todaySales}</span>
               </span>
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${
                 salesDelta >= 0
@@ -250,12 +250,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Card 3: Udhaar Collected */}
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+        <div className="p-3 sm:p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
           <div>
-            <div className="flex items-center justify-between gap-1 min-w-0">
-              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-start gap-1 min-w-0 leading-tight">
                 <IndianRupee className="w-3 h-3 text-blue shrink-0" />
-                <span className="truncate">{t.udhaarCollected}</span>
+                <span className="whitespace-normal">{t.udhaarCollected}</span>
               </span>
               <span className="text-[10px] font-bold text-blue bg-sky px-1.5 py-0.5 rounded-full shrink-0">
                 Soundbox ✓
@@ -274,12 +274,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Card 4: Marketing & Campaign ROI */}
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
+        <div className="p-3 sm:p-4 rounded-2xl bg-white border border-line/70 shadow-feature flex flex-col justify-between hover:border-blue/40 transition min-w-0">
           <div>
-            <div className="flex items-center justify-between gap-1 min-w-0">
-              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 min-w-0">
+              <span className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-start gap-1 min-w-0 leading-tight">
                 <Zap className="w-3 h-3 text-purple-600 shrink-0" />
-                <span className="truncate">{t.campaignSpend}</span>
+                <span className="whitespace-normal">{t.campaignSpend}</span>
               </span>
               <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-full border border-purple-100 shrink-0">
                 WhatsApp
