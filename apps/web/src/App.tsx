@@ -43,7 +43,6 @@ import {
   updateStoreDescription as apiUpdateStoreDescription,
   getMemories as apiGetMemories,
   deleteMemory as apiDeleteMemory,
-  resetDemoState as apiResetDemoState,
   subscribeToEvents,
   mapBackendOpportunityToFrontend,
   mapBackendCampaignToFrontend,
@@ -60,7 +59,6 @@ import { KhataScannerModal } from './components/KhataScannerModal';
 import { UdhaarDetailSheet } from './components/UdhaarDetailSheet';
 import { OnboardingModal } from './components/OnboardingModal';
 import { NotificationDrawer } from './components/NotificationDrawer';
-import { DemoModal } from './components/DemoModal';
 import { HomeView, DynamicHomeMetrics } from './views/HomeView';
 import { OpportunitiesView } from './views/OpportunitiesView';
 import { CampaignsView } from './views/CampaignsView';
@@ -183,7 +181,6 @@ export default function App() {
   const [selectedUdhaarCustomer, setSelectedUdhaarCustomer] = useState<UdhaarCustomer | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   // Global Notification / Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -347,30 +344,7 @@ export default function App() {
           // Play Soundbox Audio Speech with Shubh Voice
           const text = data.soundbox_announcement || `Paytm par ${amt} rupaye prapt hue`;
           speakWithShubh(text, { lang: 'hindi' });
-        } else if (eventType === 'demo.visit_simulated') {
-          const amt = data.amount_rupees || Math.round((data.amount_paise || 42000) / 100);
-          setHomeMetrics((prev) => ({
-            ...prev,
-            todaySales: prev.todaySales + amt,
-            todayOrders: prev.todayOrders + 1,
-          }));
-
-          setActivityFeed((prev) => [
-            {
-              id: `act-${Date.now()}`,
-              timestamp: 'Abhi-abhi',
-              iconType: 'campaign',
-              title: 'Grahak Aavak (Walk-in)',
-              detail: `${data.customer_name || 'Grahak'} ne ₹${amt} ka samaan kharida`,
-              amount: amt,
-            },
-            ...prev,
-          ]);
-
-          showToast(`Grahak Aavak: ₹${amt} purchase recorded!`);
         } else if (eventType === 'khata.paid') {
-          refreshAllData();
-        } else if (eventType === 'demo.date_changed' || eventType === 'demo.reset') {
           refreshAllData();
         }
       },
@@ -809,20 +783,6 @@ export default function App() {
     }
   };
 
-  // Reset Demo Data
-  const handleResetDemoData = async () => {
-    try {
-      await apiResetDemoState();
-    } catch {}
-    setOpportunities(initialOpportunities);
-    setCampaigns(initialCampaigns);
-    setUdhaarCustomers(initialUdhaarCustomers);
-    setMemories(initialMemories);
-    setGuardrails(initialGuardrails);
-    refreshAllData();
-    showToast('Demo data shuruwat jaise reset ho gaya!');
-  };
-
   const activeOppCount = opportunities.filter((o) => o.status === 'new').length;
   const pendingUdhaarCount = udhaarCustomers.filter(
     (c) => c.status !== 'paid' && c.daysOverdue >= 30
@@ -838,7 +798,6 @@ export default function App() {
         onOpenNotifications={() => setIsNotificationsOpen(true)}
         unreadCount={activeOppCount + 1}
         onOpenOnboarding={() => setIsOnboardingOpen(true)}
-        onOpenDemo={() => setIsDemoOpen(true)}
         isOnline={isOnline}
       />
 
@@ -989,10 +948,6 @@ export default function App() {
                   city={city}
                   onCityChange={setCity}
                   onLanguageChange={setLang}
-                  memories={memories}
-                  onResetDemoData={handleResetDemoData}
-                  onReplayOnboarding={() => setIsOnboardingOpen(true)}
-                  onOpenDemoLab={() => setIsDemoOpen(true)}
                 />
               )}
             </div>
@@ -1133,14 +1088,6 @@ export default function App() {
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
         onNavigateToTab={setCurrentTab}
-      />
-
-      {/* Interactive Demo Lab Modal */}
-      <DemoModal
-        isOpen={isDemoOpen}
-        onClose={() => setIsDemoOpen(false)}
-        onRefreshData={refreshAllData}
-        onAddToast={showToast}
       />
 
     </div>

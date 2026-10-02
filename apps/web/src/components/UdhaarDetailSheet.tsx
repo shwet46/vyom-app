@@ -193,10 +193,10 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
             </div>
           </div>
 
-          {/* ITEM-BY-ITEM LEDGER ENTRIES TABLE (Authentic Indian Khata) */}
+          {/* LEDGER ENTRIES TABLE (Authentic Indian Khata) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-google font-extrabold text-obsidian px-1">
-              <span>Bahi-Khata Entries (सामान व लेनदेन इतिहास)</span>
+              <span>Bahi-Khata Entries (लेनदेन इतिहास)</span>
               <span className="text-[10px] font-normal text-slate">Dual-entry record</span>
             </div>
 
@@ -205,7 +205,6 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
                 <thead>
                   <tr className="bg-cloud border-b border-soft-line text-[10px] font-google font-bold text-slate">
                     <th className="py-2 px-3">Date</th>
-                    <th className="py-2 px-3">Samaan / Details</th>
                     <th className="py-2 px-3 text-right">Udhaar (+)</th>
                     <th className="py-2 px-3 text-right">Jama (-)</th>
                     <th className="py-2 px-3 text-right">Balance</th>
@@ -218,19 +217,16 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
                         <td className="py-2 px-3 text-[11px] font-medium text-slate whitespace-nowrap">
                           {entry.date}
                         </td>
-                        <td className="py-2 px-3 text-[11px] text-ink font-sans">
-                          {entry.items}
-                          {entry.soundboxVerified && (
-                            <span className="ml-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded">
-                              Soundbox ✓
-                            </span>
-                          )}
-                        </td>
                         <td className="py-2 px-3 text-right font-google font-bold text-rose-700">
                           {entry.type === 'udhaar' ? formatRupee(entry.amount) : '—'}
                         </td>
                         <td className="py-2 px-3 text-right font-google font-bold text-emerald-700">
                           {entry.type === 'jama' ? formatRupee(entry.amount) : '—'}
+                          {entry.soundboxVerified && (
+                            <span className="ml-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded">
+                              Soundbox ✓
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 px-3 text-right font-google font-black text-ink">
                           {formatRupee(entry.balanceAfter)}
@@ -239,7 +235,7 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="py-3 px-3 text-center text-slate text-xs">
+                      <td colSpan={4} className="py-3 px-3 text-center text-slate text-xs">
                         Pura hisaab darj hai.
                       </td>
                     </tr>

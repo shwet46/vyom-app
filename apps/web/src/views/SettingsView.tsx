@@ -23,10 +23,6 @@ interface SettingsViewProps {
   city: SupportedCity;
   onCityChange: (city: SupportedCity) => void;
   onLanguageChange: (lang: Language) => void;
-  memories: MemoryItem[];
-  onResetDemoData: () => void;
-  onReplayOnboarding: () => void;
-  onOpenDemoLab?: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -36,10 +32,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   city,
   onCityChange,
   onLanguageChange,
-  memories,
-  onResetDemoData,
-  onReplayOnboarding,
-  onOpenDemoLab,
 }) => {
   const [limits, setLimits] = useState<Guardrails>(guardrails);
   const [savedToast, setSavedToast] = useState(false);

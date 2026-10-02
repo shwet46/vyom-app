@@ -365,49 +365,6 @@ export async function updateKhataScanRows(scanId: string, rows: any[]): Promise<
   });
 }
 
-// ----------------- DEMO LAB SIMULATIONS -----------------
-export async function simulateCustomerVisit(payload: {
-  amount_paise?: number;
-  payment_mode?: string;
-  customer_id?: string;
-}): Promise<any> {
-  return request<any>('/demo/simulate-visit', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function simulateSoundboxPayment(payload: {
-  amount_paise: number;
-  customer_id?: string;
-  khata_entry_id?: string;
-}): Promise<any> {
-  return request<any>('/demo/simulate-payment', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function advanceDemoTime(days: number = 1): Promise<any> {
-  return request<any>('/demo/advance-time', {
-    method: 'POST',
-    body: JSON.stringify({ days }),
-  });
-}
-
-export async function setDemoToday(dateStr: string): Promise<any> {
-  return request<any>('/demo/set-today', {
-    method: 'POST',
-    body: JSON.stringify({ date_str: dateStr }),
-  });
-}
-
-export async function resetDemoState(): Promise<any> {
-  return request<any>('/demo/reset', {
-    method: 'POST',
-  });
-}
-
 // ----------------- SSE EVENT STREAM -----------------
 export function subscribeToEvents(
   onEvent: (eventType: string, data: any) => void,
@@ -432,15 +389,12 @@ export function subscribeToEvents(
     const eventTypes = [
       'connected',
       'paytm.payment_received',
-      'demo.visit_simulated',
       'khata.paid',
       'khata.reminder_sent',
       'khata.created',
       'khata_scan.uploaded',
       'khata_scan.confirmed',
       'opportunity.detected',
-      'demo.date_changed',
-      'demo.reset',
     ];
 
     eventTypes.forEach((evtName) => {

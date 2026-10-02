@@ -373,7 +373,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                         </div>
 
                         <div className="text-xs text-charcoal font-sans line-clamp-2 break-words mt-0.5">
-                          {cust.address || cust.phone}
+                          {cust.phone}
                         </div>
 
                         <div className="text-[11px] text-slate mt-0.5">

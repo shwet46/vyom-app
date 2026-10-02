@@ -159,4 +159,3 @@ cd apps/web && pnpm build
 - [MongoDB Data Model (27 Collections & ER Diagram)](docs/data-model.md)
 - [Festival Context & Ritual Engine](docs/festival-engine.md)
 - [Customer Telegram Bot Flows](docs/bot-flows.md)
-- [5-Minute Live Presentation Script](docs/demo-script.md)

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Bell, Download, Check, Sparkles, Store, ShieldCheck } from './icons';
 import { Language } from '../types';
 import { SupportedCity } from '../data/cityFestivals';
-import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface TopBarProps {
   currentLang: Language;
@@ -11,7 +10,6 @@ interface TopBarProps {
   onOpenNotifications: () => void;
   unreadCount: number;
   onOpenOnboarding: () => void;
-  onOpenDemo?: () => void;
   isOnline?: boolean;
 }
 
@@ -22,10 +20,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenNotifications,
   unreadCount,
   onOpenOnboarding,
-  onOpenDemo,
   isOnline = true,
 }) => {
-  const { isInstallable, install, isIOS } = usePWAInstall();
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
 
@@ -37,14 +33,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   ];
 
   const currentLangLabel = langNames.find((l) => l.id === currentLang)?.native || 'Hinglish';
-
-  const handleInstallClick = async () => {
-    if (isInstallable) {
-      await install();
-    } else if (isIOS) {
-      setShowIOSModal(true);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-30 bg-paper/95 backdrop-blur-md border-b border-soft-line px-3.5 sm:px-6 h-[57px] flex items-center transition-all">
@@ -84,7 +72,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         </div>
 
-        {/* Right Actions: Demo Lab, Language Selector, Install PWA, Notifications */}
+        {/* Right Actions: Language Selector, Install PWA, Notifications */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={onOpenOnboarding}
@@ -94,18 +82,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             <Store className="w-3.5 h-3.5 text-blue" />
             <span className="hidden sm:inline">Business Profile</span>
           </button>
-
-          {/* Demo Lab Simulation Button */}
-          {onOpenDemo && (
-            <button
-              onClick={onOpenDemo}
-              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-cloud border border-line text-obsidian hover:bg-slate-100 transition-colors shadow-xs cursor-pointer"
-              title="Open Interactive Demo Lab"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-blue" />
-              <span className="hidden sm:inline">Demo Lab</span>
-            </button>
-          )}
 
           {/* PWA Install Button if available */}
           {/* {(isInstallable || isIOS) && (
