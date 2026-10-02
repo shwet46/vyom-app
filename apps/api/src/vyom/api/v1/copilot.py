@@ -9,7 +9,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, File, Response, UploadFile
 from pydantic import BaseModel, Field
 
-from vyom.ai import get_tts_client
+from vyom.ai import get_stt_client, get_tts_client
 from vyom.clock import Clock
 from vyom.core.deps import CurrentMerchant, DatabaseDep
 from vyom.core.errors import NotFoundError
@@ -209,6 +209,21 @@ async def copilot_voice(
         merchant=merchant,
         db=db,
     )
+
+
+@router.post("/transcribe")
+async def transcribe_voice(
+    audio: Annotated[UploadFile, File()],
+    language_code: str = "hi-IN",
+) -> dict[str, str]:
+    """Transcribe browser-recorded audio for short form fields."""
+    audio_bytes = await audio.read()
+    transcript = await get_stt_client().transcribe(
+        audio_bytes,
+        filename=audio.filename or "recording.webm",
+        language_code=language_code,
+    )
+    return {"transcript": transcript}
 
 
 @router.post("/actions/{action_id}/confirm")

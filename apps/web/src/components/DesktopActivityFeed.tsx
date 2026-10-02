@@ -71,12 +71,12 @@ export const DesktopActivityFeed: React.FC<DesktopActivityFeedProps> = ({ items 
       </div>
 
       <div className="pt-3 border-t border-soft-line mt-auto">
-        <div className="p-2 rounded-xl bg-cloud text-[11px] text-charcoal flex items-center justify-between">
+        {/* <div className="p-2 rounded-xl bg-cloud text-[11px] text-charcoal flex items-center justify-between">
           <span className="text-slate">Silent leak protection</span>
           <span className="font-bold text-emerald-700 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Active 24/7
           </span>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

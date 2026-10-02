@@ -38,6 +38,7 @@ import {
   getFestivalContext,
   getGuardrails as apiGetGuardrails,
   updateGuardrails as apiUpdateGuardrails,
+  updateStoreDescription as apiUpdateStoreDescription,
   getMemories as apiGetMemories,
   deleteMemory as apiDeleteMemory,
   resetDemoState as apiResetDemoState,
@@ -970,6 +971,7 @@ export default function App() {
         onLanguageSelect={setLang}
         guardrails={guardrails}
         onUpdateGuardrails={handleUpdateGuardrails}
+        onSaveStoreDescription={apiUpdateStoreDescription}
       />
 
       {/* Notification Drawer */}

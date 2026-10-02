@@ -36,6 +36,9 @@ class UpdateSettingsRequest(BaseModel):
     todays_special: str | None = None
     voice_replies_default: bool = True
 
+class UpdateStoreDescriptionRequest(BaseModel):
+    store_description: str
+
 
 @router.get("/guardrails")
 async def get_guardrails(merchant: CurrentMerchant, db: DatabaseDep) -> Guardrails:
@@ -94,6 +97,20 @@ async def update_settings_endpoint(
                 "updated_at": now_dt,
             }
         },
+    )
+    doc = await db.merchants.find_one({"_id": merchant.id})
+    return Merchant.model_validate(doc)
+
+@router.put("/description")
+async def update_store_description_endpoint(
+    payload: UpdateStoreDescriptionRequest,
+    merchant: CurrentMerchant,
+    db: DatabaseDep,
+) -> Merchant:
+    """Save the merchant's natural-language store description."""
+    await db.merchants.update_one(
+        {"_id": merchant.id},
+        {"$set": {"store_description": payload.store_description, "updated_at": Clock.now()}},
     )
     doc = await db.merchants.find_one({"_id": merchant.id})
     return Merchant.model_validate(doc)

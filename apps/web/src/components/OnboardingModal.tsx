@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Check,
@@ -9,9 +9,13 @@ import {
   Building2,
   Smartphone,
   CheckCircle2,
+  Mic,
+  Volume2,
 } from './icons';
 import { Guardrails, Language } from '../types';
 import { formatRupee } from '../utils/formatters';
+import { speakWithShubh, stopSpeech } from '../utils/speech';
+import { transcribeVoiceAudio } from '../services/api';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -20,6 +24,7 @@ interface OnboardingModalProps {
   onLanguageSelect: (lang: Language) => void;
   guardrails: Guardrails;
   onUpdateGuardrails: (newGuardrails: Guardrails) => void;
+  onSaveStoreDescription?: (description: string) => Promise<void> | void;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
@@ -29,19 +34,93 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onLanguageSelect,
   guardrails,
   onUpdateGuardrails,
+  onSaveStoreDescription,
 }) => {
-  if (!isOpen) return null;
-
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [shopName, setShopName] = useState('Sharma Kirana Store');
   const [city, setCity] = useState('Pune');
   const [category, setCategory] = useState('Kirana & General Store');
+  const [storeDescription, setStoreDescription] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recognitionAvailable, setRecognitionAvailable] = useState(false);
   const [paytmConnected, setPaytmConnected] = useState(true);
   const [isConnectingPaytm, setIsConnectingPaytm] = useState(false);
   const [showConsentSheet, setShowConsentSheet] = useState(false);
 
   // Local copy of guardrails
   const [localLimits, setLocalLimits] = useState<Guardrails>(guardrails);
+  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = lang === 'hindi' ? 'hi-IN' : lang === 'marathi' ? 'mr-IN' : 'en-IN';
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0]?.[0]?.transcript?.trim();
+        if (transcript) {
+          setStoreDescription((current) => (current ? `${current} ${transcript}` : transcript));
+        }
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognitionRef.current = recognition;
+    }
+
+    setRecognitionAvailable(Boolean(SpeechRecognition || navigator.mediaDevices?.getUserMedia));
+
+    return () => {
+      recognitionRef.current?.stop();
+      mediaRecorderRef.current?.stream.getTracks().forEach((track) => track.stop());
+      recognitionRef.current = null;
+      mediaRecorderRef.current = null;
+      setIsListening(false);
+    };
+  }, [isOpen, lang]);
+
+  useEffect(() => () => stopSpeech(), []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      stopSpeech();
+      return;
+    }
+
+    const prompts: Record<1 | 2 | 3 | 4 | 5, string> = {
+      1: 'Namaste! Sabse pehle, aap kis bhasha mein Vyom se baat karna pasand karenge?',
+      2: 'Ab apni dukaan ka naam, shehar aur business category batayein.',
+      3: 'Aapki dukaan mein kya milta hai? Chhota sa description bolkar ya type karke batayein.',
+      4: 'Ab apne Paytm merchant account ko Vyom se connect karein.',
+      5: 'Aakhir mein, apni dukaan ke liye weekly budget aur discount limits set karein.',
+    };
+
+    stopSpeech();
+    const timer = window.setTimeout(() => {
+      speakWithShubh(prompts[step], { lang });
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timer);
+      stopSpeech();
+    };
+  }, [isOpen, lang, step]);
+
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    stopSpeech();
+    onClose();
+  };
 
   const handleConnectPaytm = () => {
     setShowConsentSheet(true);
@@ -56,8 +135,55 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }, 1200);
   };
 
-  const handleFinish = () => {
+  const handleToggleListening = () => {
+    if (recognitionRef.current) {
+      if (isListening) recognitionRef.current.stop();
+      else recognitionRef.current.start();
+      return;
+    }
+
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      return;
+    }
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        const recorder = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) audioChunksRef.current.push(event.data);
+        };
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          setIsListening(false);
+          setIsTranscribing(true);
+          try {
+            const transcript = (await transcribeVoiceAudio(
+              new Blob(audioChunksRef.current, { type: recorder.mimeType }),
+              lang
+            )).trim();
+            if (transcript) {
+              setStoreDescription((current) => (current ? `${current} ${transcript}` : transcript));
+            }
+          } catch {
+            setStoreDescription((current) => current);
+          } finally {
+            setIsTranscribing(false);
+            mediaRecorderRef.current = null;
+          }
+        };
+        mediaRecorderRef.current = recorder;
+        recorder.start();
+        setIsListening(true);
+      })
+      .catch(() => setIsListening(false));
+  };
+
+  const handleFinish = async () => {
     onUpdateGuardrails(localLimits);
+    if (onSaveStoreDescription) await onSaveStoreDescription(storeDescription.trim());
     onClose();
   };
 
@@ -78,7 +204,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-8 h-8 rounded-full bg-white border border-line flex items-center justify-center text-charcoal hover:text-ink cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -87,9 +213,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
         {/* Step Progress Indicators */}
         <div className="px-5 pt-3 pb-1 flex items-center justify-between text-xs font-semibold text-slate border-b border-soft-line">
-          <span>Step {step} of 4</span>
+          <span>Step {step} of 5</span>
           <div className="flex items-center gap-1.5">
-            {[1, 2, 3, 4].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <span
                 key={s}
                 className={`w-6 h-1 rounded-full transition-all ${
@@ -179,8 +305,58 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
           )}
 
-          {/* Step 3: Connect Paytm consent */}
+          {/* Step 3: Store description */}
           {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-base font-extrabold text-obsidian">Apni dukaan ke baare mein batayein</h3>
+                <p className="text-xs text-charcoal">Aap kya bechte hain? Chhota sa description bolkar ya type karke dein.</p>
+              </div>
+
+              <div className="relative">
+                <textarea
+                  value={storeDescription}
+                  onChange={(e) => setStoreDescription(e.target.value)}
+                  placeholder="Jaise: Hum daily grocery, snacks aur ghar ka samaan bechte hain..."
+                  rows={5}
+                  className="w-full resize-none rounded-2xl border border-line bg-white p-3.5 pr-12 text-xs font-medium text-ink focus:border-blue focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleToggleListening}
+                  disabled={!recognitionAvailable || isTranscribing}
+                  className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                    isListening ? 'bg-blue text-white animate-pulse' : 'bg-sky text-blue hover:bg-sky/80'
+                  } disabled:cursor-not-allowed disabled:opacity-40`}
+                  aria-label={isListening ? 'Stop recording' : 'Describe your store by voice'}
+                  title={recognitionAvailable ? 'Bolkar likhein' : 'Microphone input browser mein available nahi hai'}
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
+              </div>
+              {isTranscribing && (
+                <p className="text-[11px] text-blue">Aapki baat likh raha hoon...</p>
+              )}
+{/* 
+              <div className="flex items-center justify-between rounded-2xl border border-line bg-cloud px-3.5 py-3">
+                <span className="text-[11px] text-charcoal">
+                  {isListening ? 'Sun raha hoon... dukaan ke baare mein boliye' : 'Voice se jaldi description bhar dein'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => speakWithShubh('Aapki dukaan mein kya milta hai? Chhota sa description bolkar batayein.', { lang })}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue shadow-xs cursor-pointer"
+                  aria-label="Hear the question"
+                  title="Sawaal suniye"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </button>
+              </div> */}
+            </div>
+          )}
+
+          {/* Step 4: Connect Paytm consent */}
+          {step === 4 && (
             <div className="space-y-4 text-center">
               <div className="w-16 h-16 mx-auto rounded-3xl bg-sky flex items-center justify-center text-blue shadow-xs">
                 <Smartphone className="w-8 h-8" />
@@ -243,8 +419,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
           )}
 
-          {/* Step 4: Set guardrail limits once */}
-          {step === 4 && (
+          {/* Step 5: Set guardrail limits once */}
+          {step === 5 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-obsidian">Apni Limits Set Karein</h3>
@@ -326,14 +502,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </button>
           ) : (
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-xs font-bold text-slate hover:text-charcoal cursor-pointer"
             >
               Skip Demo
             </button>
           )}
 
-          {step < 4 ? (
+          {step < 5 ? (
             <button
               onClick={() => setStep((s) => (s + 1) as any)}
               className="py-2.5 px-5 rounded-xl bg-blue text-white text-xs font-bold shadow-button hover:bg-blue/90 flex items-center gap-1.5 transition cursor-pointer"

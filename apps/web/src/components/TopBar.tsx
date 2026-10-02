@@ -57,7 +57,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-google font-bold uppercase tracking-wider bg-sky text-blue px-2 py-0.5 rounded-full">
                 <Sparkles className="w-2.5 h-2.5" /> AI Saathi
               </span>
-              {isOnline ? (
+              {/* {isOnline ? (
                 <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Paytm Live
@@ -67,7 +67,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                   Offline Mode
                 </span>
-              )}
+              )} */}
             </div>
             <button
               onClick={onOpenOnboarding}
@@ -96,7 +96,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
 
           {/* PWA Install Button if available */}
-          {(isInstallable || isIOS) && (
+          {/* {(isInstallable || isIOS) && (
             <button
               onClick={handleInstallClick}
               className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-sky text-blue hover:bg-sky/80 transition-colors shadow-button cursor-pointer"
@@ -105,7 +105,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Download className="w-3.5 h-3.5" />
               <span className="hidden md:inline">App Install</span>
             </button>
-          )}
+          )} */}
 
           {/* Persistent Language Switcher Chip */}
           <div className="relative">

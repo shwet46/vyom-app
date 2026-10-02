@@ -106,10 +106,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Quiet Hours & Protection Pill */}
-        <div className="inline-flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-xl bg-cloud border border-soft-line text-xs font-medium text-charcoal">
+        {/* <div className="inline-flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-xl bg-cloud border border-soft-line text-xs font-medium text-charcoal">
           <ShieldCheck className="w-3.5 h-3.5 text-blue" />
           <span>Silent Leak Protection: <strong className="text-emerald-700 font-bold">Active 24/7</strong></span>
-        </div>
+        </div> */}
       </div>
 
       {/* 2. Festival Signal Banner (Compact & Non-intrusive) */}

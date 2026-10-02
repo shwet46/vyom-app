@@ -243,6 +243,27 @@ export async function getBusinessProfile(): Promise<any> {
   return request<any>('/settings/profile');
 }
 
+export async function updateStoreDescription(storeDescription: string): Promise<any> {
+  return request<any>('/settings/description', {
+    method: 'PUT',
+    body: JSON.stringify({ store_description: storeDescription }),
+  });
+}
+
+export async function transcribeVoiceAudio(audio: Blob, language: Language): Promise<string> {
+  const languageCode = language === 'hindi' ? 'hi-IN' : language === 'marathi' ? 'mr-IN' : 'en-IN';
+  const formData = new FormData();
+  formData.append('audio', audio, 'onboarding-description.webm');
+
+  const res = await fetch(`${API_BASE}/copilot/transcribe?language_code=${languageCode}`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`Transcription failed (${res.status})`);
+  const data = (await res.json()) as { transcript: string };
+  return data.transcript;
+}
+
 export async function getMemories(): Promise<any[]> {
   return request<any[]>('/settings/memories');
 }
