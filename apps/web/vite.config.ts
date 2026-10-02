@@ -1,11 +1,20 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  // The root .env is shared by the frontend and backend.
+  const env = loadEnv(mode, path.resolve(__dirname, '../..'), '');
+  const apiUrl = (process.env.VITE_API_URL || env.PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+  const apiBase = `${apiUrl}/api/v1`;
+
   return {
+    envDir: path.resolve(__dirname, '../..'),
+    define: {
+      'import.meta.env.VITE_API_URL': JSON.stringify(apiBase),
+    },
     plugins: [
       react(),
       tailwindcss(),
@@ -65,7 +74,7 @@ export default defineConfig(() => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'http://localhost:8000',
+          target: apiUrl,
           changeOrigin: true,
         },
       },

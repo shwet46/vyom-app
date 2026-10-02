@@ -164,7 +164,23 @@ RULES FOR ACCURATE EXTRACTION:
                     return []
 
                 raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                return self._parse_json_result(raw_text)
+                parsed_results = self._parse_json_result(raw_text)
+                
+                # Store raw OCR data in DB
+                try:
+                    from vyom.db import get_db
+                    db = get_db()
+                    await db.raw_ocr_scans.insert_one({
+                        "filename": filename,
+                        "raw_text": raw_text,
+                        "parsed_results": parsed_results,
+                        "model": self.model,
+                        "created_at": Clock.now()
+                    })
+                except Exception as db_exc:
+                    logger.warning("failed_to_store_raw_ocr", error=str(db_exc))
+                    
+                return parsed_results
             except Exception as exc:
                 logger.error("gemini_vision_ocr_failed", error=str(exc))
                 raise
@@ -377,6 +393,22 @@ class SarvamDocOCRClient(BaseOCRClient):
                     job_id=job_id,
                     rows_count=len(structured_rows),
                 )
+                
+                # Store raw OCR data in DB
+                try:
+                    from vyom.db import get_db
+                    db = get_db()
+                    await db.raw_ocr_scans.insert_one({
+                        "filename": filename,
+                        "raw_texts": raw_texts,
+                        "html_contents": html_contents,
+                        "parsed_results": structured_rows,
+                        "model": "sarvam-doc-ai",
+                        "created_at": Clock.now()
+                    })
+                except Exception as db_exc:
+                    logger.warning("failed_to_store_raw_ocr", error=str(db_exc))
+
                 return structured_rows
 
             except Exception as exc:

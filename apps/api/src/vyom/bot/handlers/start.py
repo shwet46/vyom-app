@@ -94,32 +94,32 @@ async def handle_start(message: Message) -> None:
 
     if is_new_user:
         welcome_text = (
-            f"🙏 *Namaste {user.first_name}!*\n\n"
-            f"*{store_name}* ke Customer Assistant mein aapka swagat hai! 🎉\n\n"
-            "Yahan aap yeh kaam kar sakte hain:\n\n"
-            "🧾 *Udhaar Bill Check Karein* — Apna baaki hisaab dekhen\n"
-            "💳 *Paytm / UPI se Pay Karein* — QR Code ya Link se turant bhuqtan\n"
-            "📅 *Payment Deadline Set Karein* — Apna wada darj karein\n"
-            "🏷️ *Dukaan Ke Offers Dekhen* — Ongoing sales aur discounts\n"
-            "📞 *Dukaan Se Sampark* — Koi bhi sawaal ho toh directly connect karein\n\n"
-            "Neeche menu se apna vikalp chunein 👇"
+            f"🌟 *Namaste {user.first_name} ji!* 🌟\n\n"
+            f"Aapka swagat hai *{store_name}* ke naye aur smart Assistant mein! 🎉🛒\n\n"
+            "Ab aapki har suvidha aapke fingertips par hai. Yahan aap kar sakte hain:\n\n"
+            "🧾 *Udhaar Bill Check* — Apna bahi-khata aur baaki hisaab dekhen 👀\n"
+            "💳 *Turant Payment* — Paytm/UPI/QR code se asaan bhuqtan 🚀\n"
+            "📅 *Wada Tarikh (Deadline)* — Apne hisaab se payment ki tarikh set karein ⏳\n"
+            "🎁 *Offers & Discounts* — Dukaan ki latest sales aur special deals chunein ✨\n"
+            "📞 *Direct Sampark* — Koi bhi sawaal ho? Dukaan se seedha baat karein 🤝\n\n"
+            "👇 *Kripya neeche diye gaye menu se apna vikalp chunein* 👇"
         )
     else:
         if balance > 0:
             welcome_text = (
-                f"🙏 *Namaste {user.first_name}!*\n\n"
-                f"Dobara aane par swagat hai! *{store_name}* aapki seva mein taiyaar hai.\n\n"
-                f"⚠️ *Aapka baaki hisaab (Udhaar): ₹{balance:.0f}*\n"
-                "Kripya neeche diye menu se apna Khata check karein ya turant bhuqtan karein.\n\n"
-                "Neeche menu se apna vikalp chunein 👇"
+                f"🌟 *Namaste {user.first_name} ji!* 🌟\n\n"
+                f"Dobara aane par aapka swagat hai! *{store_name}* hamesha aapki seva mein hazir hai. 🏪\n\n"
+                f"⚠️ *Aapka udhaar (baaki hisaab): ₹{balance:.0f}*\n\n"
+                "Kripya apna khata check karein aur neeche diye menu se bhuqtan ka vikalp chunein.\n\n"
+                "👇 *Kripya menu se vikalp chunein* 👇"
             )
         else:
             welcome_text = (
-                f"🙏 *Namaste {user.first_name}!*\n\n"
-                f"Dobara aane par swagat hai! *{store_name}* aapki seva mein taiyaar hai.\n\n"
-                "✅ *Aapka koi udhaar baaki nahi hai. Shukriya!*\n\n"
-                "Aap dukaan ke offers dekh sakte hain ya koi bhi sawaal pooch sakte hain.\n\n"
-                "Neeche menu se apna vikalp chunein 👇"
+                f"🌟 *Namaste {user.first_name} ji!* 🌟\n\n"
+                f"Dobara aane par aapka swagat hai! *{store_name}* hamesha aapki seva mein hazir hai. 🏪\n\n"
+                "✅ *Aapka account bilkul clear hai! Koi udhaar baaki nahi hai. Shukriya!* 🙏\n\n"
+                "Aap aaj ke taza offers aur discounts check kar sakte hain, ya humse baat kar sakte hain.\n\n"
+                "👇 *Kripya menu se vikalp chunein* 👇"
             )
 
     await message.answer(

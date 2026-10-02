@@ -47,13 +47,13 @@ class VyomWorker:
                 name="Udhaar Sweep (Demo)",
                 replace_existing=True,
             )
-            self.scheduler.add_job(
-                self._wrap_job(send_10min_customer_payment_reminders),
-                trigger=IntervalTrigger(minutes=10),
-                id="customer_10min_reminders_demo",
-                name="Customer 10-Minute Payment Reminders (Demo)",
-                replace_existing=True,
-            )
+            # self.scheduler.add_job(
+            #     self._wrap_job(send_10min_customer_payment_reminders),
+            #     trigger=IntervalTrigger(minutes=10),
+            #     id="customer_10min_reminders_demo",
+            #     name="Customer 10-Minute Payment Reminders (Demo)",
+            #     replace_existing=True,
+            # )
             self.scheduler.add_job(
                 self._wrap_job(run_campaign_dispatch),
                 trigger=IntervalTrigger(seconds=30),
@@ -77,13 +77,13 @@ class VyomWorker:
                 name="Udhaar Sweep Morning",
                 replace_existing=True,
             )
-            self.scheduler.add_job(
-                self._wrap_job(send_10min_customer_payment_reminders),
-                trigger=IntervalTrigger(minutes=10),
-                id="customer_10min_reminders",
-                name="Customer 10-Minute Payment Reminders",
-                replace_existing=True,
-            )
+            # self.scheduler.add_job(
+            #     self._wrap_job(send_10min_customer_payment_reminders),
+            #     trigger=IntervalTrigger(minutes=10),
+            #     id="customer_10min_reminders",
+            #     name="Customer 10-Minute Payment Reminders",
+            #     replace_existing=True,
+            # )
             self.scheduler.add_job(
                 self._wrap_job(run_campaign_dispatch),
                 trigger=IntervalTrigger(minutes=5),

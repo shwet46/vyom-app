@@ -86,7 +86,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             except asyncio.CancelledError:
                 logger.info("periodic_10min_payment_reminders_task_stopped")
 
-        reminder_task = asyncio.create_task(_periodic_10min_reminders_worker())
+        # reminder_task = asyncio.create_task(_periodic_10min_reminders_worker())
+        reminder_task = None
     except Exception as exc:
         logger.warning("vyom_db_init_warning", error=str(exc))
 
@@ -125,9 +126,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=[
             settings.web_origin,
-            "http://localhost:3000",
             "http://127.0.0.1:3000",
-            "*",  # Permissive for local demo development
         ],
         allow_credentials=True,
         allow_methods=["*"],
