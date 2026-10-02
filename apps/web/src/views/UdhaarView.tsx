@@ -132,10 +132,10 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex items-stretch gap-2 w-full sm:w-auto">
             <button
               onClick={onOpenKhataScan}
-              className="py-2 px-3 rounded-xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center gap-1.5 transition cursor-pointer"
+              className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center justify-center gap-1.5 transition cursor-pointer min-h-12"
             >
               <Camera className="w-3.5 h-3.5 text-blue" />
               <span>{t.khataScanBtn}</span>
@@ -146,9 +146,9 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 setEntryType('udhaar');
                 setShowAddEntryModal(true);
               }}
-              className="py-2 px-3 rounded-xl bg-rose-600 text-white font-google font-extrabold text-xs shadow-button hover:bg-rose-700 flex items-center gap-1.5 transition cursor-pointer"
+              className="w-full sm:w-auto min-w-0 min-h-16 py-2.5 px-3 rounded-xl bg-rose-600 text-white font-google font-extrabold text-xs shadow-button hover:bg-rose-700 flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center leading-tight transition cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4 shrink-0" />
               <span>{t.addUdhaarBtn}</span>
             </button>
 
@@ -157,9 +157,9 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 setEntryType('jama');
                 setShowAddEntryModal(true);
               }}
-              className="py-2 px-3 rounded-xl bg-emerald-700 text-white font-google font-extrabold text-xs shadow-button hover:bg-emerald-800 flex items-center gap-1.5 transition cursor-pointer"
+              className="w-full sm:w-auto min-w-0 min-h-16 py-2.5 px-3 rounded-xl bg-emerald-700 text-white font-google font-extrabold text-xs shadow-button hover:bg-emerald-800 flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center leading-tight transition cursor-pointer"
             >
-              <Check className="w-3.5 h-3.5" />
+              <Check className="w-4 h-4 shrink-0" />
               <span>{t.recordJamaBtn}</span>
             </button>
           </div>
@@ -348,14 +348,14 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                         {cust.initials}
                       </div>
 
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-google font-extrabold text-sm sm:text-base text-obsidian truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-col items-start gap-1">
+                          <h4 className="font-google font-extrabold text-sm sm:text-base text-obsidian whitespace-normal break-words leading-tight">
                             {cust.name}
                           </h4>
                           {cust.trustScore && (
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
                                 cust.trustScore >= 80
                                   ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                   : 'bg-amber-50 text-amber-800 border border-amber-200'
@@ -366,7 +366,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                           )}
                         </div>
 
-                        <div className="text-xs text-charcoal font-sans truncate mt-0.5">
+                        <div className="text-xs text-charcoal font-sans line-clamp-2 break-words mt-0.5">
                           {cust.address || cust.phone}
                         </div>
 
