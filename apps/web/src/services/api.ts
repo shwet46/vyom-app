@@ -616,6 +616,17 @@ export function mapBackendCampaignToFrontend(raw: any): Campaign {
     (typeof rawTitle === 'object' && rawTitle ? (rawTitle.hinglish || rawTitle.english) : rawTitle) ||
     snapshot.title_key ||
     'Vyom Campaign';
+  const displayTitle =
+    titleText === 'opp_title'
+      ? type === 'deadhours'
+        ? 'Dead-Hour Customer Offer'
+        : type === 'festival'
+        ? 'Festival Special Offer'
+        : type === 'falling'
+        ? 'Sales Recovery Offer'
+        : 'Customer Win-Back Offer'
+      : titleText;
+  const localizedTitle = (value?: string) => (value && value !== 'opp_title' ? value : displayTitle);
 
   const customMessage = snapshot.custom_message || snapshot.message || raw.message;
   const offerText =
@@ -626,10 +637,10 @@ export function mapBackendCampaignToFrontend(raw: any): Campaign {
   return {
     id: raw._id || raw.id || `camp-${Date.now()}`,
     title: {
-      hinglish: typeof rawTitle === 'object' && rawTitle?.hinglish ? rawTitle.hinglish : titleText,
-      hindi: typeof rawTitle === 'object' && rawTitle?.hindi ? rawTitle.hindi : titleText,
-      marathi: typeof rawTitle === 'object' && rawTitle?.marathi ? rawTitle.marathi : titleText,
-      english: typeof rawTitle === 'object' && rawTitle?.english ? rawTitle.english : titleText,
+      hinglish: localizedTitle(typeof rawTitle === 'object' ? rawTitle?.hinglish : undefined),
+      hindi: localizedTitle(typeof rawTitle === 'object' ? rawTitle?.hindi : undefined),
+      marathi: localizedTitle(typeof rawTitle === 'object' ? rawTitle?.marathi : undefined),
+      english: localizedTitle(typeof rawTitle === 'object' ? rawTitle?.english : undefined),
     },
     type,
     status: raw.status === 'running' || raw.status === 'scheduled' ? 'running' : 'completed',

@@ -232,9 +232,15 @@ export default function App() {
       const rawOpps = await getOpportunities();
       if (rawOpps && rawOpps.length > 0) {
         const mapped = rawOpps
-          .filter((opp) => (opp.type || opp.kind) !== 'falling_sales')
+          .filter(
+            (opp) =>
+              (opp.type || opp.kind) !== 'falling_sales' &&
+              !['approved', 'rejected', 'dismissed'].includes(opp.status)
+          )
           .map(mapBackendOpportunityToFrontend);
-        setOpportunities(mapped);
+        if (mapped.length > 0) {
+          setOpportunities(mapped);
+        }
       }
 
       // 3. Fetch Campaigns

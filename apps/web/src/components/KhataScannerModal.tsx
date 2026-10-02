@@ -112,7 +112,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
     }, 1200);
 
     const timer2 = setTimeout(() => {
-      setScanStatusMsg('Grahak naam, items, udhari aur jama rashi extract ho rahi hai...');
+      setScanStatusMsg('Grahak naam, udhari aur jama rashi extract ho rahi hai...');
     }, 2800);
 
     const timer3 = setTimeout(() => {
@@ -200,12 +200,6 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   const handleUpdateName = (id: string, newName: string) => {
     setScannedRows((prev) =>
       prev.map((row) => (row.id === id ? { ...row, name: newName } : row))
-    );
-  };
-
-  const handleUpdateItems = (id: string, newItems: string) => {
-    setScannedRows((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, items: newItems } : row))
     );
   };
 
@@ -476,11 +470,11 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
 
                   <div className="font-mono text-[11px] text-charcoal/80 space-y-1 bg-white/70 p-2.5 rounded-xl border border-amber-100">
                     <div className="flex justify-between border-b border-dashed border-amber-200 pb-0.5">
-                      <span>Ramesh Kumar (2L Oil, 5kg Atta - Udhar)</span>
+                      <span>Ramesh Kumar (Udhar)</span>
                       <span className="font-bold text-rose-700">₹750 [Udhar]</span>
                     </div>
                     <div className="flex justify-between border-b border-dashed border-amber-200 pb-0.5">
-                      <span>Suresh Patil (500g Ghee - Udhar)</span>
+                      <span>Suresh Patil (Udhar)</span>
                       <span className="font-bold text-rose-700">₹420 [Udhar]</span>
                     </div>
                     <div className="flex justify-between">
@@ -584,7 +578,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               {/* Scanned Entries List */}
               <div className="space-y-2">
                 <div className="text-xs font-bold text-obsidian flex justify-between px-1">
-                  <span>Grahak Naam, Items & Type</span>
+                  <span>Grahak Naam & Type</span>
                   <span>Amount & Status</span>
                 </div>
 
@@ -657,16 +651,8 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Bottom Line: Items description and date */}
-                    <div className="flex items-center justify-between text-[10px] text-slate pl-7 pr-1 gap-2">
-                      <input
-                        type="text"
-                        value={row.items || ''}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => handleUpdateItems(row.id, e.target.value)}
-                        placeholder="Items description (e.g. Atta, Oil, Ghee)"
-                        className="flex-1 bg-transparent border-b border-dashed border-line/60 hover:border-blue focus:border-blue focus:outline-none text-[10px] text-charcoal"
-                      />
+                    {/* Bottom Line: Date and confidence */}
+                    <div className="flex items-center justify-end text-[10px] text-slate pl-7 pr-1">
                       <span className="shrink-0 text-slate-400">{row.date} • {row.confidence}% AI</span>
                     </div>
                   </div>
