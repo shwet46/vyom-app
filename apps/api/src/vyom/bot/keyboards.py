@@ -226,3 +226,42 @@ def get_escalation_keyboard(phone: str = "+919167586024") -> InlineKeyboardMarku
             ],
         ]
     )
+
+
+def get_campaign_offer_keyboard(
+    offer_code: str = "OFFER10",
+    phone: str = "+919167586024",
+) -> InlineKeyboardMarkup:
+    """Inline keyboard for campaign/offer promotions sent directly to Telegram customers."""
+    clean_phone = phone.replace("+", "").replace(" ", "").replace("-", "")
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🏷️ Dukaan Ke Sabhi Offers Dekhein",
+                    callback_data="offer:all_offers",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="💬 WhatsApp Store",
+                    url=f"https://wa.me/{clean_phone}?text=Namaste%20Sharma%20ji,%20mujhe%20offer%20ka%20labh%20uthana%20hai",
+                ),
+                InlineKeyboardButton(
+                    text="📞 Call Store",
+                    callback_data="contact:call_info",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🧾 Mera Khata Check Karein",
+                    callback_data="khata:check",
+                ),
+                InlineKeyboardButton(
+                    text="🏠 Main Menu",
+                    callback_data="help:menu",
+                ),
+            ],
+        ]
+    )
+

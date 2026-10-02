@@ -131,11 +131,21 @@ export async function getOpportunities(status?: string, kind?: string): Promise<
 export async function approveOpportunity(
   opportunityId: string,
   variantKey: string = 'primary',
-  via: string = 'tap'
+  via: string = 'tap',
+  customMessage?: string,
+  discountPercent?: number,
+  title?: string
 ): Promise<any> {
   return request<any>(`/opportunities/${opportunityId}/approve`, {
     method: 'POST',
-    body: JSON.stringify({ variant_key: variantKey, via }),
+    body: JSON.stringify({
+      variant_key: variantKey,
+      via,
+      custom_message: customMessage,
+      discount_percent: discountPercent,
+      title,
+      send_immediately: true,
+    }),
   });
 }
 
@@ -159,9 +169,38 @@ export async function getCampaigns(status?: string): Promise<any[]> {
   return request<any[]>(`/campaigns${q}`);
 }
 
+export async function broadcastOffer(payload: {
+  title: string;
+  message: string;
+  discount_percent?: number;
+  campaign_type?: string;
+}): Promise<any> {
+  return request<any>('/campaigns/broadcast-offer', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function resendCampaignBroadcast(
+  campaignId: string,
+  payload?: {
+    title?: string;
+    offer?: string;
+    custom_message?: string;
+    campaign_type?: string;
+    discount_percent?: number;
+  }
+): Promise<any> {
+  return request<any>(`/campaigns/${campaignId}/broadcast`, {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function pauseCampaign(campaignId: string): Promise<any> {
   return request<any>(`/campaigns/${campaignId}/pause`, { method: 'POST' });
 }
+
 
 export async function resumeCampaign(campaignId: string): Promise<any> {
   return request<any>(`/campaigns/${campaignId}/resume`, { method: 'POST' });
@@ -608,20 +647,39 @@ export function mapBackendCampaignToFrontend(raw: any): Campaign {
   else if (rawType.startsWith('festival')) type = 'festival';
   else if (rawType === 'falling_sales') type = 'falling';
 
-  const titleText = raw.title || snapshot.title_key || 'Vyom Campaign';
+  const rawTitle = raw.title || snapshot.title;
+  const titleText =
+    (typeof rawTitle === 'object' && rawTitle ? (rawTitle.hinglish || rawTitle.english) : rawTitle) ||
+    snapshot.title_key ||
+    'Vyom Campaign';
+
+  const customMessage = snapshot.custom_message || snapshot.message || raw.message;
+  const offerText =
+    raw.offer ||
+    (snapshot.offer?.type ? `${snapshot.offer.type} Offer` : typeof snapshot.offer === 'string' ? snapshot.offer : null) ||
+    (snapshot.discount ? `${snapshot.discount}% Discount Offer` : '10% Discount Offer');
 
   return {
     id: raw._id || raw.id || `camp-${Date.now()}`,
     title: {
-      hinglish: titleText,
-      hindi: titleText,
-      marathi: titleText,
-      english: titleText,
+      hinglish: typeof rawTitle === 'object' && rawTitle?.hinglish ? rawTitle.hinglish : titleText,
+      hindi: typeof rawTitle === 'object' && rawTitle?.hindi ? rawTitle.hindi : titleText,
+      marathi: typeof rawTitle === 'object' && rawTitle?.marathi ? rawTitle.marathi : titleText,
+      english: typeof rawTitle === 'object' && rawTitle?.english ? rawTitle.english : titleText,
     },
     type,
     status: raw.status === 'running' || raw.status === 'scheduled' ? 'running' : 'completed',
     startDate: raw.created_at ? new Date(raw.created_at).toLocaleDateString('en-IN') : 'Chalu hai',
-    offer: snapshot.offer?.type ? `${snapshot.offer.type} Offer` : '10% Discount Offer',
+    offer: offerText,
+    message: customMessage,
+    draftedMessage: customMessage
+      ? {
+          hinglish: customMessage,
+          hindi: customMessage,
+          marathi: customMessage,
+          english: customMessage,
+        }
+      : undefined,
     targetCount,
     funnel: {
       sent: sentCount,

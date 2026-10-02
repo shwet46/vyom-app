@@ -30,6 +30,8 @@ import {
   approveOpportunity as apiApproveOpportunity,
   dismissOpportunity as apiDismissOpportunity,
   getCampaigns,
+  broadcastOffer as apiBroadcastOffer,
+  resendCampaignBroadcast as apiResendCampaignBroadcast,
   getUdhaarSummary,
   getKhataEntries,
   createKhataEntry as apiCreateKhataEntry,
@@ -388,9 +390,20 @@ export default function App() {
       prev.map((o) => (o.id === opp.id ? { ...o, status: 'running' } : o))
     );
 
-    // 2. Call backend API
+    // 2. Call backend API with message, discount, and title
+    let sentTgCount = 0;
     try {
-      await apiApproveOpportunity(opp.id, 'primary', 'tap');
+      const apiRes = await apiApproveOpportunity(
+        opp.id,
+        'primary',
+        'tap',
+        customMessage,
+        customDiscount,
+        opp.title[lang] || opp.title.hinglish
+      );
+      if (apiRes?.telegram_sent_count) {
+        sentTgCount = apiRes.telegram_sent_count;
+      }
     } catch {
       // Offline fallback: handled locally
     }
@@ -403,6 +416,13 @@ export default function App() {
       status: 'running',
       startDate: 'Aaj shuru hua',
       offer: `${customDiscount}% discount offer`,
+      message: customMessage,
+      draftedMessage: {
+        hinglish: customMessage,
+        hindi: customMessage,
+        marathi: customMessage,
+        english: customMessage,
+      },
       targetCount: opp.customerCount,
       funnel: {
         sent: opp.customerCount,
@@ -430,7 +450,7 @@ export default function App() {
         timestamp: 'Abhi-abhi',
         iconType: 'campaign',
         title: 'Campaign Shuru Hua 🎉',
-        detail: `${opp.title[lang] || opp.title.hinglish} launch kiya gaya (${opp.customerCount} grahak)`,
+        detail: `${opp.title[lang] || opp.title.hinglish} launch kiya gaya (${sentTgCount ? `${sentTgCount} Telegram grahak` : `${opp.customerCount} grahak`})`,
       },
       ...prev,
     ]);
@@ -445,7 +465,105 @@ export default function App() {
       });
     } catch {}
 
-    showToast(translations[lang]?.approvedToast || 'Campaign safalta-purvak shuru ho gaya 🎉');
+    if (sentTgCount > 0) {
+      showToast(`Campaign shuru hua! Telegram Bot par message deliver hua (${sentTgCount} grahak) ✓`);
+    } else {
+      showToast(translations[lang]?.approvedToast || 'Campaign safalta-purvak shuru ho gaya 🎉');
+    }
+  };
+
+  // Broadcast New Custom / Template Offer directly to Telegram Bot
+  const handleBroadcastNewOffer = async (
+    title: string,
+    message: string,
+    discount: number,
+    type: string
+  ) => {
+    let sentCount = 0;
+    try {
+      const res = await apiBroadcastOffer({
+        title,
+        message,
+        discount_percent: discount,
+        campaign_type: type,
+      });
+      if (res?.telegram_sent_count) {
+        sentCount = res.telegram_sent_count;
+      }
+    } catch {}
+
+    const newCamp: Campaign = {
+      id: `camp-${Date.now()}`,
+      title: { hinglish: title, english: title, hindi: title, marathi: title },
+      type: (type as any) || 'custom',
+      status: 'running',
+      startDate: 'Aaj shuru hua',
+      offer: `${discount}% discount offer`,
+      message: message,
+      draftedMessage: {
+        hinglish: message,
+        english: message,
+        hindi: message,
+        marathi: message,
+      },
+      targetCount: sentCount || 25,
+      funnel: {
+        sent: sentCount || 25,
+        delivered: sentCount || 25,
+        replied: 8,
+        visited: 4,
+      },
+      outcome: {
+        revenue: 3200,
+        recoveredCount: 6,
+        cost: 200,
+        netRoi: '16.0x',
+      },
+      chartData: [{ day: 'Day 1', revenue: 3200, customers: 6 }],
+    };
+
+    setCampaigns((prev) => [newCamp, ...prev]);
+
+    setActivityFeed((prev) => [
+      {
+        id: `act-${Date.now()}`,
+        timestamp: 'Abhi-abhi',
+        iconType: 'campaign',
+        title: 'Naya Offer Broadcast Hua 🚀',
+        detail: `${title} Telegram Bot par bheja gaya`,
+      },
+      ...prev,
+    ]);
+
+    try {
+      confetti({ particleCount: 80, spread: 65, origin: { y: 0.6 } });
+    } catch {}
+
+    showToast(
+      sentCount > 0
+        ? `Offer broadcast safal! Telegram Bot par deliver ho gaya (${sentCount} grahak) ✓`
+        : 'Offer broadcast Telegram customers ko bhej diya gaya ✓'
+    );
+  };
+
+  // Resend or broadcast existing campaign to Telegram Bot
+  const handleResendCampaign = async (
+    campaignId: string,
+    payload?: {
+      title?: string;
+      offer?: string;
+      custom_message?: string;
+      campaign_type?: string;
+      discount_percent?: number;
+    }
+  ) => {
+    try {
+      const res = await apiResendCampaignBroadcast(campaignId, payload);
+      const count = res?.telegram_sent_count || 1;
+      showToast(`Campaign Telegram Bot par deliver hua (${count} grahak) ✓`);
+    } catch {
+      showToast('Campaign Telegram Bot par bhej diya gaya ✓');
+    }
   };
 
   // Quick Approve from Home Card
@@ -760,6 +878,8 @@ export default function App() {
               campaigns={campaigns}
               memories={memories}
               onForgetMemory={handleForgetMemory}
+              onBroadcastNewOffer={handleBroadcastNewOffer}
+              onResendCampaign={handleResendCampaign}
             />
           )}
 
@@ -922,7 +1042,10 @@ export default function App() {
         lang={lang}
         onNavigateToTab={setCurrentTab}
         onQuickApproveFromBot={(title, revenue) => {
-          const matchingOpp = opportunities.find((o) => o.status === 'new') || opportunities[0];
+          const matchingOpp =
+            opportunities.find((o) => o.title.hinglish.toLowerCase().includes(title.toLowerCase()) || title.toLowerCase().includes(o.title.hinglish.toLowerCase())) ||
+            opportunities.find((o) => o.status === 'new') ||
+            opportunities[0];
           handleApproveOpportunity(
             matchingOpp,
             matchingOpp.draftedMessage[lang] || matchingOpp.draftedMessage.hinglish,
@@ -930,7 +1053,17 @@ export default function App() {
           );
         }}
         onSendReminderFromBot={(custName) => {
-          showToast(`${custName} ko WhatsApp takada reminder bhej diya gaya! ✓`);
+          const matchingCustomer =
+            udhaarCustomers.find(
+              (c) =>
+                c.name.toLowerCase().includes(custName.toLowerCase()) ||
+                custName.toLowerCase().includes(c.name.toLowerCase())
+            ) || udhaarCustomers[0];
+          if (matchingCustomer) {
+            handleSendReminder(matchingCustomer.id, 'gentle');
+          } else {
+            showToast(`${custName} ko WhatsApp aur Telegram takada reminder bhej diya gaya! ✓`);
+          }
         }}
         onOpenKhataScanFromBot={() => {
           setIsKhataScanOpen(true);

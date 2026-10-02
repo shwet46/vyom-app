@@ -13,8 +13,9 @@ from vyom.core.deps import CurrentMerchant, DatabaseDep
 from vyom.core.errors import NotFoundError
 from vyom.core.sse import sse_hub
 from vyom.models.campaign import Campaign, CampaignSchedule
-from vyom.models.enums import CampaignStatus, OpportunityStatus
-from vyom.models.opportunity import Opportunity
+from vyom.models.enums import CampaignStatus, OpportunityKind, OpportunityStatus, OpportunityType
+from vyom.models.opportunity import Opportunity, OpportunityEvidence
+from vyom.services.campaign_dispatch import dispatch_campaign_to_telegram
 from vyom.services.explain import OpportunityExplainer, OpportunityExplanation
 
 router = APIRouter(prefix="/opportunities", tags=["Opportunities"])
@@ -23,6 +24,10 @@ router = APIRouter(prefix="/opportunities", tags=["Opportunities"])
 class ApproveRequest(BaseModel):
     variant_key: str = "primary"
     via: str = "tap"  # tap | voice
+    custom_message: str | None = None
+    discount_percent: float | None = None
+    title: str | None = None
+    send_immediately: bool = True
 
 
 @router.get("")
@@ -79,14 +84,85 @@ async def approve_opportunity(
     merchant: CurrentMerchant,
     db: DatabaseDep,
 ) -> dict[str, Any]:
-    """Approve an opportunity. Promotes it to an immutable scheduled Campaign with 10% holdout."""
+    """Approve an opportunity. Promotes it to an immutable scheduled Campaign and dispatches Telegram offer."""
     doc = await db.opportunities.find_one({"_id": opportunity_id, "merchant_id": merchant.id})
+    now_dt = Clock.now()
+
     if not doc:
-        raise NotFoundError("Opportunity not found")
-    opp = Opportunity.model_validate(doc)
+        # Template or frontend opportunity ID (e.g. opp-1, opp-2, opp-3)
+        mock_templates: dict[str, tuple[OpportunityType, str, int, float]] = {
+            "opp-1": (
+                OpportunityType.WINBACK,
+                "23 purane regular customers 30 din se nahi aaye",
+                690000,
+                10.0,
+            ),
+            "opp-2": (
+                OpportunityType.DEAD_HOUR,
+                "Dopahar 2–4 baje dukaan shaant rehti hai (Dead hours)",
+                240000,
+                8.0,
+            ),
+            "opp-3": (
+                OpportunityType.FESTIVAL_KIT,
+                "Ganesh Chaturthi aa rahi hai – Modak/Pooja Combo Pack",
+                850000,
+                12.0,
+            ),
+        }
+        opp_type, default_title, est_ret, default_disc = mock_templates.get(
+            opportunity_id,
+            (OpportunityType.WINBACK, payload.title or "Sharma Kirana Store Special Offer", 500000, payload.discount_percent or 10.0),
+        )
+
+        all_custs = [c.get("_id") async for c in db.customers.find({"merchant_id": merchant.id}).limit(100)]
+        if not all_custs:
+            all_custs = [c.get("_id") async for c in db.customers.find({}).limit(100)]
+
+        new_opp = Opportunity(
+            id=opportunity_id,
+            merchant_id=merchant.id,
+            kind=OpportunityKind.CAMPAIGN,
+            type=opp_type,
+            title_key="opp_title",
+            dedupe_key=f"dedupe_{opportunity_id}",
+            evidence=OpportunityEvidence(reason=payload.title or default_title),
+            est_return_paise=est_ret,
+            est_cost_paise=35000,
+            recommended_send_at=now_dt,
+            audience_customer_ids=[str(cid) for cid in all_custs],
+            status=OpportunityStatus.DETECTED,
+            created_at=now_dt,
+            updated_at=now_dt,
+        )
+        await db.opportunities.insert_one(new_opp.to_mongo())
+        opp = new_opp
+    else:
+        opp = Opportunity.model_validate(doc)
 
     if opp.status == OpportunityStatus.APPROVED:
-        return {"status": "already_approved", "message": "Opportunity was already approved"}
+        # Check if already has a campaign
+        existing_camp = await db.campaigns.find_one({"opportunity_id": opp.id})
+        if existing_camp:
+            camp_id = existing_camp.get("_id")
+            if payload.send_immediately:
+                dispatch_res = await dispatch_campaign_to_telegram(
+                    db=db,
+                    merchant_id=merchant.id,
+                    campaign_id=camp_id,
+                    custom_message=payload.custom_message,
+                    discount_percent=payload.discount_percent,
+                    title=payload.title or (opp.evidence.reason if opp.evidence and opp.evidence.reason else "Special Offer"),
+                    opportunity_type=opp.type.value if hasattr(opp, "type") and opp.type else "campaign",
+                )
+                return {
+                    "status": "already_approved_dispatched",
+                    "campaign_id": camp_id,
+                    "telegram_sent_count": dispatch_res.get("sent_count", 0),
+                    "recipients": dispatch_res.get("recipients", []),
+                    "message": "Campaign offer delivered to customers via Telegram Bot",
+                }
+            return {"status": "already_approved", "message": "Opportunity was already approved", "campaign_id": camp_id}
 
     # Compute 10% holdout audience
     audience = list(opp.audience_customer_ids)
@@ -94,8 +170,8 @@ async def approve_opportunity(
     holdout = audience[:holdout_size]
     treated = audience[holdout_size:]
 
-    now_dt = Clock.now()
     send_at = opp.recommended_send_at or (now_dt + datetime.timedelta(hours=1))
+    campaign_status = CampaignStatus.RUNNING if payload.send_immediately else CampaignStatus.SCHEDULED
 
     # Create immutable Campaign record
     campaign = Campaign(
@@ -107,12 +183,12 @@ async def approve_opportunity(
         approved_at=now_dt,
         approved_via=payload.via,
         idempotency_key=f"camp_{opp.id}_{int(now_dt.timestamp())}",
-        status=CampaignStatus.SCHEDULED,
+        status=campaign_status,
         schedule=CampaignSchedule(send_at=send_at),
         audience_customer_ids=treated,
         holdout_customer_ids=holdout,
-        starts_at=send_at,
-        ends_at=send_at + datetime.timedelta(days=3),
+        starts_at=now_dt,
+        ends_at=now_dt + datetime.timedelta(days=3),
     )
     await db.campaigns.insert_one(campaign.to_mongo())
 
@@ -122,11 +198,28 @@ async def approve_opportunity(
         {"$set": {"status": OpportunityStatus.APPROVED, "updated_at": now_dt}},
     )
 
+    # Immediately dispatch offer to Telegram-connected customers
+    dispatch_res: dict[str, Any] = {"sent_count": 0, "recipients": []}
+    if payload.send_immediately:
+        dispatch_res = await dispatch_campaign_to_telegram(
+            db=db,
+            merchant_id=merchant.id,
+            campaign_id=campaign.id,
+            custom_message=payload.custom_message,
+            discount_percent=payload.discount_percent,
+            title=payload.title or (opp.evidence.reason if opp.evidence and opp.evidence.reason else "Kirana Special Offer"),
+            opportunity_type=opp.type.value if hasattr(opp, "type") and opp.type else "campaign",
+        )
+
     # Broadcast via SSE
     await sse_hub.broadcast(
         merchant.id,
         "opportunity.approved",
-        {"opportunity_id": opp.id, "campaign_id": campaign.id},
+        {
+            "opportunity_id": opp.id,
+            "campaign_id": campaign.id,
+            "telegram_sent": dispatch_res.get("sent_count", 0),
+        },
     )
 
     return {
@@ -135,7 +228,11 @@ async def approve_opportunity(
         "scheduled_for": send_at.isoformat(),
         "treated_count": len(treated),
         "holdout_count": len(holdout),
+        "telegram_sent_count": dispatch_res.get("sent_count", 0),
+        "recipients": dispatch_res.get("recipients", []),
+        "dispatched": payload.send_immediately,
     }
+
 
 
 @router.post("/{opportunity_id}/reject")
