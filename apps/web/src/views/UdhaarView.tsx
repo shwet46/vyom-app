@@ -14,6 +14,7 @@ import {
   Calendar,
   Sparkles,
   QrCode,
+  Upload,
   X,
 } from '../components/icons';
 import { KhataEntry, Language, UdhaarCustomer } from '../types';
@@ -135,9 +136,14 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           <div className="grid grid-cols-2 sm:flex items-stretch gap-2 w-full sm:w-auto">
             <button
               onClick={onOpenKhataScan}
-              className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center justify-center gap-1.5 transition cursor-pointer min-h-12"
+              className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center justify-center gap-2 transition cursor-pointer min-h-12"
+              title="Upload handwritten register image/PDF, or scan via camera (Sarvam OCR)"
             >
-              <Camera className="w-3.5 h-3.5 text-blue" />
+              <div className="flex items-center gap-1 text-blue">
+                <Upload className="w-3.5 h-3.5" />
+                <span className="text-[10px] text-charcoal/50">/</span>
+                <Camera className="w-3.5 h-3.5" />
+              </div>
               <span>{t.khataScanBtn}</span>
             </button>
 

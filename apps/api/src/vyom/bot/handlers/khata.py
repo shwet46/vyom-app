@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import datetime
 import io
-from urllib.parse import quote
 
 import qrcode
 import structlog
-from aiogram import F, Router
+from aiogram import Bot, F, Router
 from aiogram.types import (
     BufferedInputFile,
     CallbackQuery,
@@ -17,6 +16,7 @@ from aiogram.types import (
     Message,
 )
 
+from vyom.ai.ocr import get_ocr_client
 from vyom.bot.keyboards import (
     get_deadline_selection_keyboard,
     get_khata_action_keyboard,
@@ -49,13 +49,13 @@ def _generate_qr_input_file(upi_intent: str) -> BufferedInputFile:
 
 # ─── Demo Data ─────────────────────────────────────────────────────────────────
 _DEMO_ITEMS = [
-    ("2× Fortune Sunlite Oil (1L)", 240, 0),
+    ("2x Fortune Sunlite Oil (1L)", 240, 0),
     ("5kg Aashirvaad Chakki Atta", 290, 0),
     ("500g Gir Cow Pure Ghee", 520, 0),
-    ("2× Tata Namak (1kg)", 50, 0),
+    ("2x Tata Namak (1kg)", 50, 0),
     ("Harpic + Lizol Combo", 250, 0),
     ("Surf Excel (1kg)", 200, 50),   # partially paid
-    ("Maggi × 12 pack", 300, 0),
+    ("Maggi x 12 pack", 300, 0),
 ]
 
 
@@ -108,13 +108,13 @@ async def _get_customer_khata_summary(chat_id: int) -> dict:
         entry_count = 3
         earliest_due = Clock.now().date() + datetime.timedelta(days=5)
         items_detail = [
-            {"name": "2× Fortune Sunlite Oil (1L)", "amount_paise": 24000, "paid_paise": 24000},
+            {"name": "2x Fortune Sunlite Oil (1L)", "amount_paise": 24000, "paid_paise": 24000},
             {"name": "5kg Aashirvaad Chakki Atta", "amount_paise": 29000, "paid_paise": 26000},
             {"name": "500g Gir Cow Pure Ghee", "amount_paise": 52000, "paid_paise": 0},
-            {"name": "2× Tata Namak (1kg)", "amount_paise": 5000, "paid_paise": 0},
+            {"name": "2x Tata Namak (1kg)", "amount_paise": 5000, "paid_paise": 0},
             {"name": "Harpic + Lizol Combo", "amount_paise": 25000, "paid_paise": 0},
             {"name": "Surf Excel (1kg)", "amount_paise": 20000, "paid_paise": 0},
-            {"name": "Maggi × 12 pack", "amount_paise": 30000, "paid_paise": 0},
+            {"name": "Maggi x 12 pack", "amount_paise": 30000, "paid_paise": 0},
         ]
 
     remaining_balance_paise = max(0, total_purchases_paise - total_paid_paise)
@@ -153,14 +153,14 @@ async def _get_customer_khata_summary(chat_id: int) -> dict:
     }
 
 
-def _build_bill_text(summary: dict) -> str:
-    """Build a detailed, customer-friendly Hinglish bill message."""
+def _build_bill_text(summary: dict, pay_url: str | None = None) -> str:
+    """Build a detailed, customer-friendly Hinglish bill message with partial payment and Pay Now balance."""
     cust_name = summary["customer_name"]
     rem = summary["remaining_balance_rupees"]
     total = summary["total_purchases_rupees"]
     paid = summary["total_paid_rupees"]
     due_str = (
-        summary["earliest_due"].strftime("%d %B %Y")
+        summary["earliest_due"].strftime("%d %b %Y")
         if summary["earliest_due"]
         else "Jald (Soon)"
     )
@@ -168,15 +168,15 @@ def _build_bill_text(summary: dict) -> str:
 
     # Header
     lines = [
-        f"🧾 *Aapka Udhaar Bill — Sharma Kirana Store*",
+        "🧾 *Aapka Udhaar Bill — Sharma Kirana Store*",
         f"👤 *Naam*: {cust_name}",
         "",
     ]
 
-    # Item-wise breakdown (up to 7 items)
+    # Item-wise breakdown (up to 5 items to keep photo caption concise)
     if items:
         lines.append("📋 *Item-wise Hisaab:*")
-        for it in items[:7]:
+        for it in items[:5]:
             n = it.get("name", "Item")
             a_r = it.get("amount_paise", 0) / 100.0
             p_r = it.get("paid_paise", 0) / 100.0
@@ -185,23 +185,32 @@ def _build_bill_text(summary: dict) -> str:
                 lines.append(f"  • {n}: ₹{a_r:.0f} _(Paid ₹{p_r:.0f} | Baki ₹{bal:.0f})_")
             else:
                 lines.append(f"  • {n}: ₹{a_r:.0f}")
-        if len(items) > 7:
-            lines.append(f"  • ...aur {len(items) - 7} aur items")
+        if len(items) > 5:
+            lines.append(f"  • ...aur {len(items) - 5} aur items")
         lines.append("")
 
-    # Summary totals
+    # Summary totals & partial payments
     lines += [
-        "━━━━━━━━━━━━━━━━━━",
-        f"🛍️ *Kul Kharidari (Total Bill)*: ₹{total:.0f}",
+        "━━━━━━━━━━━━━━━━━━━━",
+        f"🛍️ *Kul Kharidari (Total Purchases)*: ₹{total:.0f}",
     ]
     if paid > 0:
-        lines.append(f"✅ *Aapne Pehle Diye (Paid)*:    ₹{paid:.0f}")
+        lines.append(f"✅ *Aapne Pehle Diye (Partially Paid)*: ₹{paid:.0f}")
     lines += [
-        f"⚠️ *Baaki Rashi (Balance Due)*:  *₹{rem:.0f}*",
-        "━━━━━━━━━━━━━━━━━━",
+        f"⚠️ *BAAKI RASHI (BALANCE DUE)*: *₹{rem:.0f}*",
+        f"👉 *Yeh ₹{rem:.0f} baaki hai — kripya ise abhi pay karein (Pay It Now)!*",
+        "━━━━━━━━━━━━━━━━━━━━",
         f"📅 *Due Date*: {due_str}",
+    ]
+    if pay_url:
+        lines += [
+            "",
+            "📱 *Paytm Mock UPI Payment Portal*:",
+            f"🔗 [Paytm se ₹{rem:.0f} Pay Karne Ke Liye Yahan Tap Karein]({pay_url})",
+        ]
+    lines += [
         "",
-        f"💡 Kripya *₹{rem:.0f}* ka bhuqtan Paytm / UPI se karein ya deadline set karein.",
+        "💡 Neeche diye gaye QR code ko scan karein ya Paytm link se pay karein.",
     ]
     return "\n".join(lines)
 
@@ -231,9 +240,9 @@ async def handle_my_khata(message: Message) -> None:
 
     if rem_balance <= 0:
         await message.answer(
-            f"✅ *Badhaai Ho!*\n\n"
-            f"Aapka Sharma Kirana Store par koi bhi udhaar baaki nahi hai.\n"
-            f"Aapka account bilkul clean hai! Dhanyawad 🙏",
+            "✅ *Badhaai Ho!*\n\n"
+            "Aapka Sharma Kirana Store par koi bhi udhaar baaki nahi hai.\n"
+            "Aapka account bilkul clean hai! Dhanyawad 🙏",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="Markdown",
         )
@@ -244,6 +253,10 @@ async def handle_my_khata(message: Message) -> None:
     pay_url = f"{settings.public_api_url}/api/v1/pay/{pay_token}/view"
 
     db = get_db()
+    upi_intent = (
+        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+    )
     payment_doc = {
         "_id": f"pay_{pay_token}",
         "merchant_id": summary["merchant_id"],
@@ -252,26 +265,31 @@ async def handle_my_khata(message: Message) -> None:
         "purpose": "udhaar",
         "pay_token": pay_token,
         "status": "created",
-        "upi_intent": (
-            f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
-            f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
-        ),
+        "upi_intent": upi_intent,
         "created_at": Clock.now(),
     }
     await db.payments.update_one({"pay_token": pay_token}, {"$set": payment_doc}, upsert=True)
 
-    text = _build_bill_text(summary)
-    upi_intent = (
-        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
-        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+    text = _build_bill_text(summary, pay_url=pay_url)
+    keyboard = get_khata_action_keyboard(
+        pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
     )
-    await message.answer(
-        text,
-        reply_markup=get_khata_action_keyboard(
-            pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent
-        ),
-        parse_mode="Markdown",
-    )
+
+    try:
+        photo_file = _generate_qr_input_file(upi_intent)
+        await message.answer_photo(
+            photo=photo_file,
+            caption=text,
+            reply_markup=keyboard,
+            parse_mode="Markdown",
+        )
+    except Exception as exc:
+        logger.warning("khata_bill_photo_failed_fallback_text", error=str(exc))
+        await message.answer(
+            text,
+            reply_markup=keyboard,
+            parse_mode="Markdown",
+        )
 
 
 @router.callback_query(F.data == "khata:check")
@@ -290,9 +308,9 @@ async def handle_khata_callback(query: CallbackQuery) -> None:
 
     if rem_balance <= 0:
         await query.message.answer(
-            f"\u2705 *Badhaai Ho!*\n\n"
-            f"Aapka Sharma Kirana Store par koi bhi udhaar baaki nahi hai.\n"
-            f"Aapka account bilkul clean hai! Dhanyawad \U0001f64f",
+            "✅ *Badhaai Ho!*\n\n"
+            "Aapka Sharma Kirana Store par koi bhi udhaar baaki nahi hai.\n"
+            "Aapka account bilkul clean hai! Dhanyawad 🙏",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="Markdown",
         )
@@ -303,6 +321,10 @@ async def handle_khata_callback(query: CallbackQuery) -> None:
     pay_url = f"{settings.public_api_url}/api/v1/pay/{pay_token}/view"
 
     db = get_db()
+    upi_intent_str = (
+        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
+        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+    )
     payment_doc = {
         "_id": f"pay_{pay_token}",
         "merchant_id": summary["merchant_id"],
@@ -311,26 +333,31 @@ async def handle_khata_callback(query: CallbackQuery) -> None:
         "purpose": "udhaar",
         "pay_token": pay_token,
         "status": "created",
-        "upi_intent": (
-            f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
-            f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
-        ),
+        "upi_intent": upi_intent_str,
         "created_at": Clock.now(),
     }
     await db.payments.update_one({"pay_token": pay_token}, {"$set": payment_doc}, upsert=True)
 
-    text = _build_bill_text(summary)
-    upi_intent_str = (
-        f"upi://pay?pa=sharmakirana@paytm&pn=Sharma%20Kirana"
-        f"&am={rem_balance:.2f}&cu=INR&tn=Udhaar%20Settlement"
+    text = _build_bill_text(summary, pay_url=pay_url)
+    keyboard = get_khata_action_keyboard(
+        pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent_str
     )
-    await query.message.answer(
-        text,
-        reply_markup=get_khata_action_keyboard(
-            pay_token=pay_token, amount_rupees=rem_balance, pay_url=pay_url, upi_intent=upi_intent_str
-        ),
-        parse_mode="Markdown",
-    )
+
+    try:
+        photo_file = _generate_qr_input_file(upi_intent_str)
+        await query.message.answer_photo(
+            photo=photo_file,
+            caption=text,
+            reply_markup=keyboard,
+            parse_mode="Markdown",
+        )
+    except Exception as exc:
+        logger.warning("khata_callback_photo_failed_fallback_text", error=str(exc))
+        await query.message.answer(
+            text,
+            reply_markup=keyboard,
+            parse_mode="Markdown",
+        )
 
 
 @router.callback_query(F.data.startswith("khata:pay_info:"))
@@ -833,3 +860,171 @@ async def handle_khata_details(query: CallbackQuery) -> None:
     await query.answer()
     if query.message and isinstance(query.message, Message):
         await query.message.answer("\n".join(lines), parse_mode="Markdown")
+
+
+@router.message(F.photo)
+async def handle_khata_photo_upload(message: Message) -> None:
+    """Process uploaded bill or handwritten register photo via Sarvam Document Intelligence OCR."""
+    if not message.photo:
+        return
+
+    status_msg = await message.answer(
+        "📸 *Photo Prapt Hua!*\n\n"
+        "⏳ *Sarvam Document Intelligence (hi-IN) OCR* se bahi-khata / bill scan aur digitize kar rahe hain...\n"
+        "_Kripya thoda intezaar karein..._",
+        parse_mode="Markdown",
+    )
+
+    try:
+        photo = message.photo[-1]
+        bot = message.bot
+        if not bot:
+            return
+
+        file_info = await bot.get_file(photo.file_id)
+        if not file_info.file_path:
+            await status_msg.edit_text("❌ Photo download nahi ho paya. Kripya dobara bhejein.")
+            return
+
+        file_bytes_io = io.BytesIO()
+        await bot.download_file(file_info.file_path, destination=file_bytes_io)
+        file_bytes = file_bytes_io.getvalue()
+
+        ocr_client = get_ocr_client()
+        ocr_result = await ocr_client.extract_khata_rows(file_bytes)
+        rows = ocr_result.get("rows", [])
+
+        if not rows:
+            await status_msg.edit_text(
+                "⚠️ *OCR Parinam:* Bahi-khata ya bill entry saaf nahi padhi ja saki.\n\n"
+                "Kripya acchi roshni me seedha photo khinchein ya Vyom Web App se scan karein.",
+                parse_mode="Markdown",
+            )
+            return
+
+        # Structure and save to DB
+        db = get_db()
+        now_dt = Clock.now()
+        scan_id = f"scan_tg_{int(now_dt.timestamp())}"
+
+        scan_doc = {
+            "_id": scan_id,
+            "merchant_id": "merchant_sharma_01",
+            "status": "confirmed",
+            "created_via": "telegram",
+            "created_at": now_dt,
+            "rows": rows,
+        }
+        await db.khata_scans.insert_one(scan_doc)
+
+        total_paise = sum(r.get("amount_paise", 0) for r in rows)
+        total_rs = total_paise / 100.0
+
+        lines = [
+            "✅ *Sarvam Document Intelligence OCR — Khata Digitize Hua!*\n",
+            f"📋 *Extracted Entries ({len(rows)} rows):*",
+        ]
+        for r in rows[:8]:
+            amt = r.get("amount_paise", 0) / 100.0
+            name = r.get("customer_name", "Grahak")
+            items = r.get("items_summary", "Kirana items")
+            typ = "Udhaar" if r.get("entry_type") == "credit_given" else "Jama"
+            lines.append(f"• *{name}*: ₹{amt:.0f} ({items}) [{typ}]")
+
+        lines.append(f"\n💰 *Kul Rashi (Total): ₹{total_rs:.0f}*")
+        lines.append("\n✅ Yeh entries Sharma Kirana digital bahi-khate me safalta-purvak jud gayi hain!")
+
+        await status_msg.edit_text("\n".join(lines), parse_mode="Markdown")
+
+    except Exception as exc:
+        logger.error("khata_photo_ocr_error", error=str(exc))
+        await status_msg.edit_text(
+            "⚠️ Photo process karne me samasya aayi. Kripya thodi der baad dobara koshish karein.",
+            parse_mode="Markdown",
+        )
+
+
+@router.message(F.document)
+async def handle_khata_document_upload(message: Message) -> None:
+    """Process uploaded PDF or image document via Sarvam Document Intelligence OCR."""
+    if not message.document:
+        return
+
+    doc = message.document
+    mime = doc.mime_type or ""
+    if not (mime.startswith("image/") or mime == "application/pdf"):
+        return
+
+    status_msg = await message.answer(
+        "📄 *Document Prapt Hua!*\n\n"
+        "⏳ *Sarvam Document Intelligence (hi-IN) OCR* se document process kar rahe hain...\n"
+        "_Kripya thoda intezaar karein..._",
+        parse_mode="Markdown",
+    )
+
+    try:
+        bot = message.bot
+        if not bot:
+            return
+
+        file_info = await bot.get_file(doc.file_id)
+        if not file_info.file_path:
+            await status_msg.edit_text("❌ Document download nahi ho paya. Kripya dobara bhejein.")
+            return
+
+        file_bytes_io = io.BytesIO()
+        await bot.download_file(file_info.file_path, destination=file_bytes_io)
+        file_bytes = file_bytes_io.getvalue()
+
+        ocr_client = get_ocr_client()
+        ocr_result = await ocr_client.extract_khata_rows(file_bytes)
+        rows = ocr_result.get("rows", [])
+
+        if not rows:
+            await status_msg.edit_text(
+                "⚠️ *OCR Parinam:* Document me bahi-khata records saaf nahi mile.\n\n"
+                "Kripya saaf photo ya PDF upload karein.",
+                parse_mode="Markdown",
+            )
+            return
+
+        db = get_db()
+        now_dt = Clock.now()
+        scan_id = f"scan_tg_doc_{int(now_dt.timestamp())}"
+
+        scan_doc = {
+            "_id": scan_id,
+            "merchant_id": "merchant_sharma_01",
+            "status": "confirmed",
+            "created_via": "telegram",
+            "created_at": now_dt,
+            "rows": rows,
+        }
+        await db.khata_scans.insert_one(scan_doc)
+
+        total_paise = sum(r.get("amount_paise", 0) for r in rows)
+        total_rs = total_paise / 100.0
+
+        lines = [
+            "✅ *Sarvam Document Intelligence OCR — Document Digitize Hua!*\n",
+            f"📋 *Extracted Entries ({len(rows)} rows):*",
+        ]
+        for r in rows[:8]:
+            amt = r.get("amount_paise", 0) / 100.0
+            name = r.get("customer_name", "Grahak")
+            items = r.get("items_summary", "Kirana items")
+            typ = "Udhaar" if r.get("entry_type") == "credit_given" else "Jama"
+            lines.append(f"• *{name}*: ₹{amt:.0f} ({items}) [{typ}]")
+
+        lines.append(f"\n💰 *Kul Rashi (Total): ₹{total_rs:.0f}*")
+        lines.append("\n✅ Yeh entries Sharma Kirana digital bahi-khate me safalta-purvak jud gayi hain!")
+
+        await status_msg.edit_text("\n".join(lines), parse_mode="Markdown")
+
+    except Exception as exc:
+        logger.error("khata_doc_ocr_error", error=str(exc))
+        await status_msg.edit_text(
+            "⚠️ Document process karne me samasya aayi. Kripya thodi der baad dobara koshish karein.",
+            parse_mode="Markdown",
+        )
+

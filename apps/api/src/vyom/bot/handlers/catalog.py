@@ -54,7 +54,7 @@ async def handle_contact_store(message: Message) -> None:
     phone = merchant_doc.get("phone_e164", "+91 91675 86024") if merchant_doc else "+91 91675 86024"
     owner = merchant_doc.get("owner_name", "Ramesh Sharma") if merchant_doc else "Ramesh Sharma"
     address = merchant_doc.get("address", "Shop No 4, Somwar Peth, Pune 411011") if merchant_doc else "Shop No 4, Somwar Peth, Pune 411011"
-    timings = ", ".join(merchant_doc.get("timings", ["08:00 AM - 10:00 PM"])) if merchant_doc else "08:00 AM – 10:00 PM"
+    timings = ", ".join(merchant_doc.get("timings", ["08:00 AM - 10:00 PM"])) if merchant_doc else "08:00 AM - 10:00 PM"
     clean_phone = _clean_phone_number(phone)
 
     text = (
@@ -96,7 +96,7 @@ async def handle_contact_callback(query: CallbackQuery) -> None:
     phone = merchant_doc.get("phone_e164", "+91 91675 86024") if merchant_doc else "+91 91675 86024"
     owner = merchant_doc.get("owner_name", "Ramesh Sharma") if merchant_doc else "Ramesh Sharma"
     address = merchant_doc.get("address", "Shop No 4, Somwar Peth, Pune 411011") if merchant_doc else "Shop No 4, Somwar Peth, Pune 411011"
-    timings = ", ".join(merchant_doc.get("timings", ["08:00 AM - 10:00 PM"])) if merchant_doc else "08:00 AM – 10:00 PM"
+    timings = ", ".join(merchant_doc.get("timings", ["08:00 AM - 10:00 PM"])) if merchant_doc else "08:00 AM - 10:00 PM"
     clean_phone = _clean_phone_number(phone)
 
     text = (
@@ -260,13 +260,14 @@ async def handle_unrecognized_query_escalation(message: Message) -> None:
 
     reply_text = (
         f"🤖 *Sharma Kirana Store — Auto Reply*\n\n"
-        f"_\"Kshama karein, main is sawaal ka seedha uttar nahi de sakta._\n"
+        f"❌ *I can't answer this query. Connect with the store.*\n"
+        f"_\"Kshama karein, main is query/sawaal ka seedha uttar nahi de sakta._\n"
         f"_Aapki query store ke owner *{owner} ji* ko turant forward kar di hai.\"_\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"Aap *turant* dukaandar se seedha sampark kar sakte hain:\n\n"
         f"📱 *Phone / WhatsApp*: `{phone}`\n"
         f"📍 *Pata*: Shop No 4, Somwar Peth, Pune 411011\n"
-        f"⏰ *Timings*: 08:00 AM – 10:00 PM\n\n"
+        f"⏰ *Timings*: 08:00 AM - 10:00 PM\n\n"
         f"🔔 *{owner} ji* jald hi aapke sawaal ka jawab denge. Dhanyawad! 🙏"
     )
 

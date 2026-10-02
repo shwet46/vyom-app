@@ -38,8 +38,6 @@ async def handle_voice_message(message: Message) -> None:
     customer_name = message.from_user.full_name if message.from_user else "Customer"
     chat_id = message.chat.id
 
-    # Simulated audio processing via STT client
-    # In live mode with bot token, bot.download(message.voice) downloads bytes; in mock mode transcribe returns simulated grocery order
     try:
         raw_audio = b"\x00" * 44  # Fallback dummy audio buffer
         transcript = await stt_client.transcribe(raw_audio, language_code="hi-IN")
@@ -83,6 +81,7 @@ async def handle_voice_message(message: Message) -> None:
     # Send spoken voice note confirmation using Sarvam bulbul:v3 and speaker shubh
     try:
         from aiogram.types import BufferedInputFile
+
         from vyom.ai import get_tts_client
 
         tts_client = get_tts_client()

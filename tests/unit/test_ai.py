@@ -156,3 +156,39 @@ def test_ai_factories() -> None:
 
     tr = get_translate_client(mock_settings)
     assert isinstance(tr, MockTranslateClient)
+
+    # Sarvam Doc AI factory
+    sarvam_settings = Settings(ai_mode="live", sarvam_api_key="test_key", sarvam_doc_ai_enabled=True)
+    sarvam_ocr = get_ocr_client(sarvam_settings)
+    from vyom.ai.ocr import SarvamDocOCRClient
+    assert isinstance(sarvam_ocr, SarvamDocOCRClient)
+
+
+def test_sarvam_doc_ocr_structuring() -> None:
+    """Verify SarvamDocOCRClient parses and structures handwritten/printed khata records."""
+    from vyom.ai.ocr import SarvamDocOCRClient
+
+    settings = Settings(sarvam_api_key="test_key")
+    client = SarvamDocOCRClient(settings)
+
+    raw_texts = [
+        "Rohan Gupta - Rs 650 cooking oil, spices\nSunita Patil: ₹1,200 (5kg Atta, 2L Oil)",
+        "Meena Joshi 300 जमा cash received\nAnand Kulkarni - 450/- ghee",
+    ]
+    html_contents = [
+        "<html><head><style>body { width: 100%; margin: 10px; }</style></head><body><p>Rohan Gupta - Rs 650</p></body></html>"
+    ]
+
+    rows = client._structure_ledger_rows(raw_texts, html_contents)
+    assert len(rows) >= 3
+
+    rohan = next((r for r in rows if "rohan" in r["customer_name"].lower()), None)
+    assert rohan is not None
+    assert rohan["amount_paise"] == 65000
+    assert rohan["entry_type"] == "credit_given"
+
+    meena = next((r for r in rows if "meena" in r["customer_name"].lower()), None)
+    assert meena is not None
+    assert meena["amount_paise"] == 30000
+    assert meena["entry_type"] == "payment_received"
+

@@ -678,8 +678,13 @@ export default function App() {
   };
 
   // Khata Scanner Save Handler
-  const handleSaveScannedToLedger = (newEntries: UdhaarCustomer[]) => {
-    setUdhaarCustomers((prev) => [...newEntries, ...prev]);
+  const handleSaveScannedToLedger = async (newEntries: UdhaarCustomer[]) => {
+    const persistedEntries = await getKhataEntries().catch(() => []);
+    if (persistedEntries.length > 0) {
+      setUdhaarCustomers(persistedEntries.map(mapBackendKhataEntryToUdhaarCustomer));
+    } else if (newEntries.length > 0) {
+      setUdhaarCustomers((prev) => [...newEntries, ...prev]);
+    }
 
     setActivityFeed((prev) => [
       {

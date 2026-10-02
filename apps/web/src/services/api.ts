@@ -326,13 +326,13 @@ export async function sendCopilotChat(query: string, sessionId?: string): Promis
 }
 
 // ----------------- KHATA SCANS (OCR) -----------------
-export async function uploadKhataScan(file: File, createdVia: string = 'camera'): Promise<any> {
+export async function uploadKhataScan(file: File, createdVia: string = 'upload'): Promise<any> {
   const formData = new FormData();
   formData.append('files', file);
   formData.append('created_via', createdVia);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 90000);
 
   try {
     const res = await fetch(`${API_BASE}/khata/scans`, {
@@ -341,7 +341,10 @@ export async function uploadKhataScan(file: File, createdVia: string = 'camera')
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
-    if (!res.ok) throw new Error(`Scan upload error ${res.status}`);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`Scan upload error ${res.status}: ${errText}`);
+    }
     return await res.json();
   } catch (err: any) {
     clearTimeout(timeoutId);
@@ -352,6 +355,13 @@ export async function uploadKhataScan(file: File, createdVia: string = 'camera')
 export async function confirmKhataScan(scanId: string): Promise<any> {
   return request<any>(`/khata/scans/${scanId}/confirm`, {
     method: 'POST',
+  });
+}
+
+export async function updateKhataScanRows(scanId: string, rows: any[]): Promise<any> {
+  return request<any>(`/khata/scans/${scanId}/rows`, {
+    method: 'PATCH',
+    body: JSON.stringify({ rows }),
   });
 }
 

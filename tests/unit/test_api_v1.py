@@ -309,6 +309,7 @@ class MockDatabase:
         self.opportunities = MockCollection()
         self.campaigns = MockCollection()
         self.payments = MockCollection()
+        self.khata_scans = MockCollection()
         self.guardrails = MockCollection([
             {
                 "_id": "guard_01",
@@ -580,3 +581,41 @@ async def test_10min_payment_reminders_endpoint(test_app: Any) -> None:
         assert body["status"] == "success"
         assert body["reminders_sent"] >= 1
         assert body["interval_minutes"] == 10
+
+
+@pytest.mark.asyncio
+async def test_khata_scans_ocr_flow(test_app: Any) -> None:
+    """Verify khata ledger scan upload, OCR digitization, review rows, and confirmation into entries."""
+    transport = ASGITransport(app=test_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Upload scan
+        files = {"files": ("test_ledger.jpg", b"fake_ledger_bytes", "image/jpeg")}
+        resp = await client.post(
+            "/api/v1/khata/scans",
+            headers={"Authorization": "Bearer mock_jwt_token_for_merchant_sharma_01"},
+            files=files,
+            data={"created_via": "camera"},
+        )
+        assert resp.status_code == 200
+        scan_data = resp.json()
+        assert scan_data["status"] == "review"
+        assert len(scan_data["rows"]) >= 1
+        scan_id = scan_data["_id"]
+
+        # 2. Get scan details
+        get_res = await client.get(
+            f"/api/v1/khata/scans/{scan_id}",
+            headers={"Authorization": "Bearer mock_jwt_token_for_merchant_sharma_01"},
+        )
+        assert get_res.status_code == 200
+        assert get_res.json()["_id"] == scan_id
+
+        # 3. Confirm scan into ledger entries
+        conf_res = await client.post(
+            f"/api/v1/khata/scans/{scan_id}/confirm",
+            headers={"Authorization": "Bearer mock_jwt_token_for_merchant_sharma_01"},
+        )
+        assert conf_res.status_code == 200
+        assert conf_res.json()["status"] == "confirmed"
+        assert conf_res.json()["entries_created"] >= 1
+

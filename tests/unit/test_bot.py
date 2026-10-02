@@ -8,7 +8,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram import Bot, Dispatcher
-from aiogram.types import CallbackQuery, Chat, Message, User
+from aiogram.types import CallbackQuery, Chat, Document, Message, PhotoSize, User
+from aiogram.types import File as TgFile
 
 from vyom.bot import create_bot_and_dispatcher
 from vyom.bot.handlers.catalog import (
@@ -21,6 +22,8 @@ from vyom.bot.handlers.festival import (
 )
 from vyom.bot.handlers.khata import (
     handle_deadline_selection,
+    handle_khata_document_upload,
+    handle_khata_photo_upload,
     handle_my_khata,
     handle_pay_now_direct,
 )
@@ -454,3 +457,119 @@ async def test_voice_order_handler(monkeypatch: pytest.MonkeyPatch) -> None:
     mock_answer.assert_called_once()
     args, _ = mock_answer.call_args
     assert "Voice Order" in args[0]
+
+
+@pytest.mark.asyncio
+async def test_khata_photo_upload_ocr(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify uploaded photo is parsed by Sarvam Document AI OCR and structured rows saved."""
+    mock_db = MagicMock()
+    mock_scans = MagicMock()
+    mock_scans.insert_one = AsyncMock()
+    mock_db.khata_scans = mock_scans
+    monkeypatch.setattr("vyom.bot.handlers.khata.get_db", lambda: mock_db)
+
+    mock_ocr = MagicMock()
+    mock_ocr.extract_khata_rows = AsyncMock(
+        return_value={
+            "rows": [
+                {
+                    "customer_name": "Rohan Gupta",
+                    "amount_paise": 65000,
+                    "entry_type": "credit_given",
+                    "items_summary": "cooking oil, spices",
+                },
+                {
+                    "customer_name": "Sunita Patil",
+                    "amount_paise": 120000,
+                    "entry_type": "credit_given",
+                    "items_summary": "5kg Atta, 2L Oil",
+                },
+            ]
+        }
+    )
+    monkeypatch.setattr("vyom.bot.handlers.khata.get_ocr_client", lambda: mock_ocr)
+
+    mock_status_msg = AsyncMock()
+    mock_answer = AsyncMock(return_value=mock_status_msg)
+    monkeypatch.setattr(Message, "answer", mock_answer)
+
+    mock_bot = MagicMock()
+    mock_bot.get_file = AsyncMock(
+        return_value=TgFile(file_id="p123", file_unique_id="pu123", file_path="photos/p123.jpg")
+    )
+    mock_bot.download_file = AsyncMock()
+
+    photo_size = PhotoSize(file_id="p123", file_unique_id="pu123", width=100, height=100)
+    message = Message(
+        message_id=10,
+        date=datetime.datetime.now(),
+        chat=Chat(id=111, type="private"),
+        photo=[photo_size],
+    )
+    message.bot = mock_bot
+
+    await handle_khata_photo_upload(message)
+
+    mock_answer.assert_called_once()
+    mock_status_msg.edit_text.assert_called_once()
+    edit_args, _ = mock_status_msg.edit_text.call_args
+    assert "Sarvam Document Intelligence OCR" in edit_args[0]
+    assert "Rohan Gupta" in edit_args[0]
+    assert "Sunita Patil" in edit_args[0]
+    assert "1,850" in edit_args[0]
+    mock_scans.insert_one.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_khata_document_upload_ocr(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify uploaded PDF document is parsed by Sarvam Document AI OCR and structured."""
+    mock_db = MagicMock()
+    mock_scans = MagicMock()
+    mock_scans.insert_one = AsyncMock()
+    mock_db.khata_scans = mock_scans
+    monkeypatch.setattr("vyom.bot.handlers.khata.get_db", lambda: mock_db)
+
+    mock_ocr = MagicMock()
+    mock_ocr.extract_khata_rows = AsyncMock(
+        return_value={
+            "rows": [
+                {
+                    "customer_name": "Meena Joshi",
+                    "amount_paise": 30000,
+                    "entry_type": "payment_received",
+                    "items_summary": "cash received",
+                }
+            ]
+        }
+    )
+    monkeypatch.setattr("vyom.bot.handlers.khata.get_ocr_client", lambda: mock_ocr)
+
+    mock_status_msg = AsyncMock()
+    mock_answer = AsyncMock(return_value=mock_status_msg)
+    monkeypatch.setattr(Message, "answer", mock_answer)
+
+    mock_bot = MagicMock()
+    mock_bot.get_file = AsyncMock(
+        return_value=TgFile(file_id="doc123", file_unique_id="docu123", file_path="docs/register.pdf")
+    )
+    mock_bot.download_file = AsyncMock()
+
+    doc = Document(file_id="doc123", file_unique_id="docu123", file_name="register.pdf", mime_type="application/pdf")
+    message = Message(
+        message_id=11,
+        date=datetime.datetime.now(),
+        chat=Chat(id=111, type="private"),
+        document=doc,
+    )
+    message.bot = mock_bot
+
+    await handle_khata_document_upload(message)
+
+    mock_answer.assert_called_once()
+    mock_status_msg.edit_text.assert_called_once()
+    edit_args, _ = mock_status_msg.edit_text.call_args
+    assert "Document Digitize Hua" in edit_args[0]
+    assert "Meena Joshi" in edit_args[0]
+    assert "300" in edit_args[0]
+    mock_scans.insert_one.assert_called_once()
+

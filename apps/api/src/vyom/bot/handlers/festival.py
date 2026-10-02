@@ -6,7 +6,10 @@ import structlog
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
 
-from vyom.bot.keyboards import get_festival_kit_keyboard, get_main_menu_keyboard, get_offers_keyboard
+from vyom.bot.keyboards import (
+    get_festival_kit_keyboard,
+    get_offers_keyboard,
+)
 from vyom.clock import Clock
 from vyom.core.sse import sse_hub
 from vyom.db import get_db
@@ -37,7 +40,7 @@ async def handle_store_sales_and_discounts(message: Message) -> None:
         flash_note = "⚡ *ABHI ACTIVE HAI — Dopahar Flash Hours!* 2-4 PM tak 8% off milega! Jaldi aayein! 🔥\n\n"
     else:
         flash_note = (
-            f"_Dopahar Flash Hours sirf 2:00 PM – 4:00 PM mein milta hai._\n"
+            f"_Dopahar Flash Hours sirf 2:00 PM - 4:00 PM mein milta hai._\n"
             f"_Abhi: {now.strftime('%I:%M %p')} IST_\n\n"
         )
 
@@ -48,7 +51,7 @@ async def handle_store_sales_and_discounts(message: Message) -> None:
         "1️⃣ 🌸 *Navratri Shuddh Vrat Combo Kit*\n"
         "   Sabudana + Singhara Atta + Pure Gir Cow Ghee + Sendha Namak + Makhana\n"
         "   💰 *Offer: ₹450* ~~(₹510)~~ — *Save 12% OFF!*\n\n"
-        "2️⃣ ⚡ *Dopahar Flash Hours* (2:00 PM – 4:00 PM, Mon–Sat)\n"
+        "2️⃣ ⚡ *Dopahar Flash Hours* (2:00 PM - 4:00 PM, Mon-Sat)\n"
         "   Sab Daalein, Atta, Khane Tel par *Flat 8% Instant Chhoot!*\n\n"
         "3️⃣ 📦 *Monthly Ration Saving Deal*\n"
         "   ₹1,500+ ki shopping par *₹120 Cash Discount* + Free Home Delivery!\n\n"
@@ -78,7 +81,7 @@ async def handle_happy_hours_info(query: CallbackQuery) -> None:
     text = (
         "⚡ *Dopahar Flash Hours Offer*\n\n"
         f"{status_text}\n\n"
-        "📅 *Timing*: Somwar–Shanivar, 2:00 PM – 4:00 PM\n"
+        "📅 *Timing*: Somwar-Shanivar, 2:00 PM - 4:00 PM\n"
         "🏷️ *Discount*: Sabhi Daalein, Atta, Khane Tel par *8% Flat Off*\n\n"
         "Kripya dukaan par aakar counter par batayein ya advance order Telegram se karein.\n\n"
         "Dhanyawad! 🙏"
@@ -200,7 +203,7 @@ async def handle_callback_all_offers(query: CallbackQuery) -> None:
         flash_note = "⚡ *ABHI ACTIVE HAI — Dopahar Flash Hours!* 2-4 PM tak 8% off milega! Jaldi aayein! 🔥\n\n"
     else:
         flash_note = (
-            f"_Dopahar Flash Hours sirf 2:00 PM – 4:00 PM mein milta hai._\n"
+            f"_Dopahar Flash Hours sirf 2:00 PM - 4:00 PM mein milta hai._\n"
             f"_Abhi: {now.strftime('%I:%M %p')} IST_\n\n"
         )
 
@@ -211,7 +214,7 @@ async def handle_callback_all_offers(query: CallbackQuery) -> None:
         "1️⃣ 🌸 *Navratri Shuddh Vrat Combo Kit*\n"
         "   Sabudana + Singhara Atta + Pure Gir Cow Ghee + Sendha Namak + Makhana\n"
         "   💰 *Offer: ₹450* ~~(₹510)~~ — *Save 12% OFF!*\n\n"
-        "2️⃣ ⚡ *Dopahar Flash Hours* (2:00 PM – 4:00 PM, Mon–Sat)\n"
+        "2️⃣ ⚡ *Dopahar Flash Hours* (2:00 PM - 4:00 PM, Mon-Sat)\n"
         "   Sab Daalein, Atta, Khane Tel par *Flat 8% Instant Chhoot!*\n\n"
         "3️⃣ 📦 *Monthly Ration Saving Deal*\n"
         "   ₹1,500+ ki shopping par *₹120 Cash Discount* + Free Home Delivery!\n\n"

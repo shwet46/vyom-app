@@ -53,6 +53,7 @@ export {
   FiCreditCard as CreditCard,
   FiFastForward as FastForward,
   FiPackage as Package,
+  FiFileText as FileText,
 } from 'react-icons/fi';
 
 export {

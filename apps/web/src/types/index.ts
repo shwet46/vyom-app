@@ -136,6 +136,8 @@ export interface ScannedLedgerRow {
   date: string;
   confidence: number; // 0-100
   selected: boolean;
+  items?: string;
+  entryType?: 'udhaar' | 'jama';
 }
 
 export interface ActivityFeedItem {
