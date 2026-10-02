@@ -26,12 +26,11 @@ flowchart TD
         Ranker["Composite Opportunity Ranker"]
     end
 
-    subgraph AI["AI Layer (Sarvam + Google)"]
+    subgraph AI["AI Layer (Sarvam)"]
         LLM["Sarvam 105B (Reasoning & Copy)"]
         STT["Sarvam Saaras:v4 (Speech-to-Text)"]
         TTS["Sarvam Bulbul:v3 (Voice Synthesis)"]
-        OCR["Sarvam Vision / DocAI (Khata OCR)"]
-        Trans["Google Cloud Translate (Cached)"]
+        OCR["Unified OCR (Sarvam DocAI)"]
         Mocks["Zero-Key Deterministic Mocks"]
     end
 
@@ -100,7 +99,7 @@ make web
 |---|---|---|
 | **Merchant PWA** | Primary merchant control center | Mobile-first 5-tab IA, Obsidian/Paper fintech aesthetics, offline Serwist service worker, real-time SSE updates. |
 | **🎙 Voice FAB** | Vyom AI Copilot | Instant speech-to-text (**Sarvam Saaras:v4**), natural speech playback (**Sarvam Bulbul:v3**), 2-phase confirmation cards for all state-changing actions. |
-| **📷 Camera FAB** | Handwritten Khata Scanner | Multi-page capture, **Sarvam Vision Document AI** extraction, Devanagari numeral normalization (`१,२५०/-`), fuzzy customer matching table. |
+| **📷 Camera FAB** | Handwritten Khata Scanner | Multi-page capture, **Unified OCR (Sarvam Doc AI)** extraction, Devanagari numeral normalization (`१,२५०/-`), fuzzy customer matching table. |
 | **Telegram Shop Bot** | Customer-facing storefront | Built with **aiogram v3**. Customers pre-order festival kits, check balances, receive polite udhaar reminders, and pay via simulated UPI. |
 | **Festival Engine** | Regional ritual intelligence | Classifies Pune calendar phases (Ganesh post-dip, Pitru Paksha solemnity, Navratri vrat prep), advises on stock-up units, and enforces cultural tone rules. |
 

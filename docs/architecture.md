@@ -19,10 +19,10 @@ flowchart TD
     end
 
     subgraph AILayer["AI & Cognitive Layer (Sarvam + Google)"]
-        LLM["Sarvam 105B<br/>(Intent, Copy, Reasoning)"]
+        LLM["Sarvam 105B / Gemini 2.5<br/>(Intent, Copy, Reasoning)"]
         STT["Sarvam Saaras:v4<br/>(Voice-to-Text / Hinglish)"]
         TTS["Sarvam Bulbul:v3<br/>(Natural Speech Output)"]
-        OCR["Sarvam Vision / DocAI<br/>(Handwritten Khata OCR)"]
+        OCR["Unified OCR (Gemini Vision + Sarvam DocAI)<br/>(Handwritten Khata OCR)"]
         Trans["Google Cloud Translate<br/>(Server-side i18n Cache)"]
     end
 
@@ -81,10 +81,10 @@ flowchart TD
 ## 2. AI Architecture & Zero-Key Fallbacks
 
 Vyom integrates cutting-edge Indian foundation models:
-- **Sarvam 105B**: Conversational copilot, customer copy generation, and slot extraction.
+- **Sarvam 105B / Gemini 2.5**: Conversational copilot, customer copy generation, and slot extraction.
 - **Sarvam Saaras:v4**: Robust speech-to-text with Hinglish and regional code-mixing.
 - **Sarvam Bulbul:v3**: Text-to-speech for Hindi, Marathi, and Indian-accented English.
-- **Sarvam Vision / Document AI**: Extraction of handwritten rows from physical bahi-khata books.
+- **Unified OCR (Gemini Vision + Sarvam Doc AI)**: Extraction of handwritten rows from physical bahi-khata books with multi-level fallback.
 - **Deterministic Zero-Key Mocks**: When `AI_MODE=mock`, mock implementations execute instantly using curated cultural fixtures, allowing presentations and evaluations to run completely keyless.
 
 ---
