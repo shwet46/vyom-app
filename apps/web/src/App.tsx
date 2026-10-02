@@ -448,7 +448,7 @@ export default function App() {
         particleCount: 85,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#2597d0', '#d7e6f5', '#070709', '#10b981'],
+        colors: ['#6c63ff', '#d8d0f0', '#c8f0e0', '#10b981'],
       });
     } catch {}
 
@@ -795,7 +795,7 @@ export default function App() {
   ).length;
 
   return (
-    <div className="app-shell min-h-screen flex flex-col bg-paper text-obsidian">
+    <div className="app-shell min-h-screen min-h-dvh flex flex-col text-obsidian">
       {/* Top Header Bar */}
       <TopBar
         currentLang={lang}
@@ -820,7 +820,7 @@ export default function App() {
         />
 
         {/* Central Content Area */}
-        <main className="flex-1 min-w-0 px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-28 md:pb-8 max-w-5xl mx-auto w-full">
+        <main className="flex-1 min-w-0 px-3 sm:px-5 lg:px-8 py-3 sm:py-5 pb-24 md:pb-6 max-w-5xl mx-auto w-full">
           {currentTab === 'home' && (
             <HomeView
               lang={lang}
@@ -886,12 +886,12 @@ export default function App() {
           {currentTab === 'more' && (
             <div className="space-y-4">
               {/* Sub-tab switcher: Dukaan Insights, Festival Radar, and Guardrails */}
-              <div className="flex items-center p-1 rounded-2xl bg-cloud border border-line">
+              <div className="flex items-center p-1 rounded-2xl bg-cloud/60 border border-line">
                 <button
                   onClick={() => setMoreSubTab('insights')}
-                  className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-2 text-[11px] font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
                     moreSubTab === 'insights'
-                      ? 'bg-white text-blue shadow-xs font-extrabold'
+                      ? 'bg-white text-blue shadow-xs font-bold'
                       : 'text-charcoal hover:text-ink'
                   }`}
                 >
@@ -901,9 +901,9 @@ export default function App() {
 
                 <button
                   onClick={() => setMoreSubTab('festivals')}
-                  className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-2 text-[11px] font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
                     moreSubTab === 'festivals'
-                      ? 'bg-white text-blue shadow-xs font-extrabold'
+                      ? 'bg-white text-blue shadow-xs font-bold'
                       : 'text-charcoal hover:text-ink'
                   }`}
                 >
@@ -913,9 +913,9 @@ export default function App() {
 
                 <button
                   onClick={() => setMoreSubTab('settings')}
-                  className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-2 text-[11px] font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
                     moreSubTab === 'settings'
-                      ? 'bg-white text-blue shadow-xs font-extrabold'
+                      ? 'bg-white text-blue shadow-xs font-bold'
                       : 'text-charcoal hover:text-ink'
                   }`}
                 >
@@ -974,26 +974,26 @@ export default function App() {
       />
 
       {/* Floating Action Companion: Bot / Mic + Bahi-Khata Camera (Mobile only) */}
-      <div className="fixed bottom-20 md:hidden right-3.5 z-40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3">
+      <div className="fixed bottom-[68px] md:hidden right-3 z-40 flex items-center gap-1.5 animate-fade-slide-up">
         {/* Bahi-Khata Camera Button */}
         <button
           onClick={() => setIsKhataScanOpen(true)}
-          className="h-10 px-3 rounded-full bg-white/95 backdrop-blur-md text-obsidian border border-line/80 shadow-feature hover:border-blue hover:shadow-md transition-all transform active:scale-95 flex items-center gap-1.5 cursor-pointer group"
+          className="h-9 px-2.5 rounded-full bg-white/90 backdrop-blur-xl text-obsidian border border-line/60 shadow-card hover:border-blue/30 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer group"
           title="Bahi-Khata Register Scan Karein"
           aria-label="Scan Bahi-Khata"
         >
-          <div className="w-6 h-6 rounded-full bg-cloud flex items-center justify-center text-blue group-hover:bg-sky transition-colors">
+          <div className="w-5 h-5 rounded-full bg-cloud/70 flex items-center justify-center text-blue group-hover:bg-lavender/30 transition-colors">
             <Camera className="w-3.5 h-3.5 text-blue" />
           </div>
-          <span className="font-google font-bold text-xs text-obsidian hidden sm:inline">
-            Khata Scan
+          <span className="font-heading font-semibold text-[10px] text-obsidian hidden sm:inline">
+            Scan
           </span>
         </button>
 
         {/* Floating Vyom AI Bot / Mic Button */}
         <button
           onClick={() => setIsVoiceOpen(true)}
-          className="h-10 px-3.5 rounded-full bg-gradient-to-r from-blue to-blue-dark text-white shadow-feature hover:shadow-glow-blue transition-all transform active:scale-95 flex items-center gap-2 cursor-pointer relative overflow-hidden group"
+          className="h-9 px-3 rounded-full bg-gradient-to-r from-blue to-blue-dark text-white shadow-button hover:shadow-glow-blue transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer relative overflow-hidden group"
           title="Vyom AI Bot - Bolke Poochhein"
           aria-label="Open Vyom Voice Assistant"
         >
@@ -1001,7 +1001,7 @@ export default function App() {
             <span className="absolute -inset-0.5 rounded-full bg-white/30 animate-ping opacity-60" />
             <Mic className="w-4 h-4 text-white relative z-10" />
           </div>
-          <span className="font-google font-black text-xs text-white tracking-tight">
+          <span className="font-heading font-bold text-[10px] text-white tracking-tight">
             Vyom AI
           </span>
         </button>
@@ -1009,7 +1009,7 @@ export default function App() {
 
       {/* Global Floating Action Toast */}
       {toastMessage && (
-        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-obsidian text-white text-xs font-bold shadow-feature flex items-center gap-2 border border-soft-line animate-in fade-in slide-in-from-bottom-2 pointer-events-none">
+        <div className="fixed bottom-[68px] md:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-obsidian/90 backdrop-blur-xl text-white text-[11px] font-semibold shadow-feature flex items-center gap-1.5 border border-white/5 animate-fade-slide-up pointer-events-none">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>

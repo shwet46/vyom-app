@@ -53,36 +53,38 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-paper/95 backdrop-blur-md border-t border-soft-line md:hidden px-2 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_16px_rgba(7,7,9,0.04)]">
-      <div className="flex items-center justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-paper/90 backdrop-blur-xl border-t border-soft-line md:hidden safe-bottom shadow-[0_-2px_20px_rgba(108,99,255,0.06)]">
+      <div className="flex items-center justify-around h-[60px] max-w-lg mx-auto">
         {tabs.map((tab) => {
           const isActive = currentTab === tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => onSelectTab(tab.key)}
-              className={`relative flex flex-col items-center justify-center flex-1 h-full min-h-[48px] min-w-[48px] py-1 transition-all cursor-pointer ${
-                isActive ? 'text-blue' : 'text-charcoal hover:text-ink'
+              className={`relative flex flex-col items-center justify-center flex-1 h-full min-h-[48px] min-w-[48px] py-1 transition-all duration-200 cursor-pointer ${
+                isActive ? 'text-blue' : 'text-charcoal/70 hover:text-ink'
               }`}
               aria-label={tab.label}
             >
               <div className="relative">
-                {tab.icon}
+                <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
+                  {tab.icon}
+                </div>
                 {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-blue text-white text-[10px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-blue text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
                     {tab.badge}
                   </span>
                 )}
               </div>
               <span
-                className={`text-[11px] font-medium tracking-tight mt-1 truncate ${
-                  isActive ? 'font-bold text-blue' : 'text-charcoal'
+                className={`text-[10px] tracking-tight mt-0.5 truncate ${
+                  isActive ? 'font-bold text-blue' : 'font-medium text-charcoal/70'
                 }`}
               >
                 {tab.label}
               </span>
               {isActive && (
-                <span className="absolute bottom-1 w-5 h-1 rounded-full bg-blue" />
+                <span className="absolute bottom-1 w-4 h-[3px] rounded-full bg-gradient-to-r from-blue to-blue-dark" />
               )}
             </button>
           );

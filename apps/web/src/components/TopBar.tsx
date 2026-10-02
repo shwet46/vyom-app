@@ -35,75 +35,51 @@ export const TopBar: React.FC<TopBarProps> = ({
   const currentLangLabel = langNames.find((l) => l.id === currentLang)?.native || 'Hinglish';
 
   return (
-    <header className="sticky top-0 z-30 bg-paper/95 backdrop-blur-md border-b border-soft-line px-3.5 sm:px-6 h-[57px] flex items-center transition-all">
+    <header className="sticky top-0 z-30 bg-paper/80 backdrop-blur-xl border-b border-soft-line px-3 sm:px-6 h-14 flex items-center transition-all">
       <div className="w-full max-w-[1480px] mx-auto flex items-center justify-between gap-2">
-        {/* Left: Brand & Shop Identity */}
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-2xl bg-blue flex items-center justify-center text-white font-google font-black shadow-button flex-shrink-0 tracking-tight text-lg">
+        {/* Left: Brand */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-white font-heading font-bold shadow-button flex-shrink-0 text-sm">
             V
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-google font-black text-obsidian text-base tracking-tight">VYOM</span>
-              <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-google font-bold uppercase tracking-wider bg-sky text-blue px-2 py-0.5 rounded-full">
+              <span className="font-heading font-bold text-obsidian text-sm tracking-tight">VYOM</span>
+              <span className="hidden sm:inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider bg-lavender/50 text-blue px-1.5 py-0.5 rounded-full">
                 <Sparkles className="w-2.5 h-2.5" /> AI Saathi
               </span>
-              {/* {isOnline ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Paytm Live
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                  Offline Mode
-                </span>
-              )} */}
             </div>
             <button
               onClick={onOpenOnboarding}
-              className="text-left text-xs text-charcoal hover:text-blue flex items-center gap-1 truncate transition-colors"
+              className="text-left text-[11px] text-charcoal hover:text-blue flex items-center gap-1 truncate transition-colors"
               title="View / re-configure shop details"
             >
-              <Store className="w-3 h-3 flex-shrink-0 text-slate" />
-              <span className="font-bold text-ink truncate font-google">Sharma Kirana</span>
-              <span className="text-[11px] text-slate hidden xs:inline">• {city}</span>
+              <span className="font-semibold text-ink truncate font-heading">Sharma Kirana</span>
+              <span className="text-[10px] text-slate hidden xs:inline">• {city}</span>
             </button>
           </div>
         </div>
 
-        {/* Right Actions: Language Selector, Install PWA, Notifications */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Right Actions */}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={onOpenOnboarding}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-cloud border border-line text-obsidian hover:bg-slate-100 transition-colors shadow-xs cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-cloud/80 border border-line text-obsidian hover:bg-lavender/30 transition-colors cursor-pointer"
             title="Open business profile"
           >
             <Store className="w-3.5 h-3.5 text-blue" />
-            <span className="hidden sm:inline">Business Profile</span>
+            <span>Profile</span>
           </button>
 
-          {/* PWA Install Button if available */}
-          {/* {(isInstallable || isIOS) && (
-            <button
-              onClick={handleInstallClick}
-              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-sky text-blue hover:bg-sky/80 transition-colors shadow-button cursor-pointer"
-              title="Install Vyom on your phone"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">App Install</span>
-            </button>
-          )} */}
-
-          {/* Persistent Language Switcher Chip */}
+          {/* Language Switcher */}
           <div className="relative">
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-cloud border border-line text-xs font-semibold text-ink hover:bg-slate-100 transition shadow-sm cursor-pointer"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-cloud/80 border border-line text-[11px] font-semibold text-ink hover:bg-lavender/30 transition cursor-pointer"
               aria-label="Change Language"
             >
               <span className="text-blue font-bold">🌐</span>
-              <span className="font-semibold">{currentLangLabel}</span>
+              <span className="font-semibold hidden sm:inline">{currentLangLabel}</span>
               <span className="text-[10px] text-slate">▾</span>
             </button>
 
@@ -113,9 +89,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                   className="fixed inset-0 z-40"
                   onClick={() => setShowLangMenu(false)}
                 />
-                <div className="absolute right-0 mt-1.5 w-40 bg-white rounded-2xl border border-line shadow-feature py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                  <div className="px-3 py-1 text-[11px] font-bold text-slate uppercase tracking-wider">
-                    Select Language
+                <div className="absolute right-0 mt-1.5 w-40 bg-white/95 backdrop-blur-xl rounded-2xl border border-line shadow-feature py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3 py-1 text-[10px] font-bold text-slate uppercase tracking-wider">
+                    Language
                   </div>
                   {langNames.map((l) => (
                     <button
@@ -126,8 +102,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition cursor-pointer ${
                         currentLang === l.id
-                          ? 'bg-sky/50 text-blue font-semibold'
-                          : 'text-ink hover:bg-cloud'
+                          ? 'bg-lavender/40 text-blue font-semibold'
+                          : 'text-ink hover:bg-cloud/50'
                       }`}
                     >
                       <div className="flex flex-col text-left">
@@ -145,12 +121,12 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Notification Bell */}
           <button
             onClick={onOpenNotifications}
-            className="relative w-9 h-9 rounded-full bg-cloud border border-soft-line flex items-center justify-center text-charcoal hover:text-ink hover:bg-slate-100 transition shadow-button cursor-pointer"
+            className="relative w-8 h-8 rounded-xl bg-cloud/80 border border-line flex items-center justify-center text-charcoal hover:text-ink hover:bg-lavender/30 transition cursor-pointer"
             aria-label="Notifications"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-3.5 h-3.5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">
                 {unreadCount}
               </span>
             )}
@@ -160,12 +136,12 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* iOS Install Guidance Modal */}
       {showIOSModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/40 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-feature border border-line animate-in zoom-in-95">
             <div className="w-12 h-12 rounded-2xl bg-sky flex items-center justify-center text-blue mb-4">
               <Download className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-obsidian">iPhone par Vyom install karein</h3>
+            <h3 className="text-lg font-bold text-obsidian font-heading">iPhone par Vyom install karein</h3>
             <p className="mt-2 text-xs text-charcoal leading-relaxed">
               1. Safari browser ke neeche <strong>Share (तीर वाला आइकन)</strong> dabayein.<br />
               2. Neeche scroll karke <strong>Add to Home Screen</strong> select karein.<br />
@@ -173,7 +149,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </p>
             <button
               onClick={() => setShowIOSModal(false)}
-              className="mt-5 w-full rounded-xl bg-blue py-2.5 text-xs font-bold text-white shadow-button hover:bg-blue/90"
+              className="mt-5 w-full rounded-xl bg-blue py-2.5 text-xs font-bold text-white shadow-button hover:bg-blue-dark transition cursor-pointer"
             >
               Samajh Gaya (Close)
             </button>

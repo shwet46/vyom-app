@@ -26,8 +26,8 @@ export default defineConfig(({ mode }) => {
           name: 'VYOM - Kirana AI Saathi',
           short_name: 'VYOM',
           description: 'AI teammate for Paytm merchants to recover lost revenue from silent churn, dead hours, and pending udhaar.',
-          theme_color: '#2597d0',
-          background_color: '#ffffff',
+          theme_color: '#897dc2',
+          background_color: '#fffdfb',
           display: 'standalone',
           orientation: 'portrait-primary',
           start_url: '/',
@@ -57,6 +57,26 @@ export default defineConfig(({ mode }) => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           navigateFallback: '/index.html',
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-stylesheets',
+                expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-webfonts',
+                expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
         },
         devOptions: {
           enabled: true,

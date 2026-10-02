@@ -117,26 +117,27 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in duration-150 relative">
+    <div className="space-y-6 pb-24 animate-in fade-in duration-150 relative">
       {/* Clean Modern Header Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="text-[11px] font-google font-bold text-slate uppercase tracking-wider">
+      <div className="p-5 sm:p-7 rounded-[2rem] bg-gradient-to-br from-white via-white to-lavender/30 border border-line/70 shadow-feature relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 text-[11px] font-google font-bold text-blue uppercase tracking-wider">
+              <BookOpen className="w-3.5 h-3.5" />
               {t.ledgerHeaderBlessing}
             </div>
-            <h1 className="font-google font-black text-xl sm:text-2xl text-obsidian tracking-tight mt-0.5">
+            <h1 className="font-google font-black text-2xl sm:text-3xl text-obsidian tracking-tight mt-2">
               {t.khataTitle}
             </h1>
-            <p className="text-xs text-charcoal mt-0.5 font-sans">
-              Sharma Kirana Store • Paytm Soundbox & Khata Reconciliation
+            <p className="text-sm text-charcoal mt-1 max-w-xl leading-relaxed font-sans">
+              Sharma Kirana Store · Paytm Soundbox aur bahi hisaab ek jagah
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:flex items-stretch gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-2 sm:flex items-stretch gap-2 w-full lg:w-auto lg:min-w-[28rem]">
             <button
               onClick={onOpenKhataScan}
-              className="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center justify-center gap-2 transition cursor-pointer min-h-12"
+              className="col-span-2 sm:col-span-1 py-3 px-3 rounded-2xl bg-cloud border border-line/70 text-obsidian font-google font-bold text-xs shadow-xs hover:bg-slate-100 flex items-center justify-center gap-2 transition cursor-pointer min-h-12"
               title="Upload handwritten register image/PDF, or scan via camera (Sarvam OCR)"
             >
               <div className="flex items-center gap-1 text-blue">
@@ -152,10 +153,15 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 setEntryType('udhaar');
                 setShowAddEntryModal(true);
               }}
-              className="w-full sm:w-auto min-w-0 min-h-16 py-2.5 px-3 rounded-xl bg-rose-600 text-white font-google font-extrabold text-xs shadow-button hover:bg-rose-700 flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center leading-tight transition cursor-pointer"
+              className="group w-full sm:w-auto min-w-0 min-h-11 py-2 px-3 rounded-xl bg-rose-600 text-white font-google shadow-button hover:bg-rose-700 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-2"
+              aria-label="Naya udhaar likhein"
             >
-              <Plus className="w-4 h-4 shrink-0" />
-              <span>{t.addUdhaarBtn}</span>
+              <span className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0 group-hover:bg-white/30 transition-colors">
+                <Plus className="w-4 h-4" strokeWidth={2.5} />
+              </span>
+              <span className="min-w-0 text-xs font-extrabold leading-tight">
+                {t.addUdhaarBtn.replace(/^[+✓]\s*/, '')}
+              </span>
             </button>
 
             <button
@@ -163,18 +169,23 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 setEntryType('jama');
                 setShowAddEntryModal(true);
               }}
-              className="w-full sm:w-auto min-w-0 min-h-16 py-2.5 px-3 rounded-xl bg-emerald-700 text-white font-google font-extrabold text-xs shadow-button hover:bg-emerald-800 flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center leading-tight transition cursor-pointer"
+              className="group w-full sm:w-auto min-w-0 min-h-11 py-2 px-3 rounded-xl bg-emerald-700 text-white font-google shadow-button hover:bg-emerald-800 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2"
+              aria-label="Jama darj karein"
             >
-              <Check className="w-4 h-4 shrink-0" />
-              <span>{t.recordJamaBtn}</span>
+              <span className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0 group-hover:bg-white/30 transition-colors">
+                <Check className="w-4 h-4" strokeWidth={2.5} />
+              </span>
+              <span className="min-w-0 text-xs font-extrabold leading-tight">
+                {t.recordJamaBtn.replace(/^[+✓]\s*/, '')}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Financial Health Summary: 3 Pillars of Kirana Khata */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature space-y-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-5 rounded-3xl bg-white border border-line/70 shadow-feature space-y-3 min-h-[8.5rem]">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate uppercase tracking-wider font-google">
               {t.totalOutstanding}
@@ -191,7 +202,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 shadow-feature space-y-1">
+        <div className="p-5 rounded-3xl bg-rose-50/70 border border-rose-200/80 shadow-feature space-y-3 min-h-[8.5rem]">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-error uppercase tracking-wider font-google">
               {t.overdueAmount}
@@ -208,7 +219,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-feature space-y-1">
+        <div className="p-5 rounded-3xl bg-emerald-50/70 border border-emerald-200/80 shadow-feature space-y-3 min-h-[8.5rem]">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider font-google">
               {t.collectedThisWeek}
@@ -227,7 +238,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
       </div>
 
       {/* Autonomous Reminders ON Toggle Banner */}
-      <div className="p-3.5 sm:p-4 rounded-2xl bg-sky/40 border border-blue/20 shadow-xs flex items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 rounded-3xl bg-sky/40 border border-blue/20 shadow-xs flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-white border border-sky flex items-center justify-center text-blue flex-shrink-0 shadow-xs">
             <ShieldCheck className="w-5 h-5 text-blue" />
@@ -259,8 +270,8 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
       </div>
 
       {/* View Switcher: Cards vs Traditional Bahi-Khata Ledger */}
-      <div className="flex items-center justify-between gap-2 pt-1">
-        <div className="flex items-center p-1 rounded-2xl bg-cloud border border-line">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+        <div className="flex items-center self-start p-1 rounded-2xl bg-white border border-line shadow-xs">
           <button
             onClick={() => setViewMode('cards')}
             className={`py-1.5 px-3 rounded-xl text-xs font-google font-bold transition cursor-pointer ${
@@ -285,13 +296,17 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
         </div>
 
         <span className="text-xs font-bold text-slate font-google hidden sm:inline">
-          {filteredCustomers.length} Records
+          {filteredCustomers.length} customer{filteredCustomers.length === 1 ? '' : 's'}
         </span>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="flex-1 relative">
+      <div className="p-4 rounded-3xl bg-white border border-line/70 shadow-xs flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-google font-bold uppercase tracking-wider text-slate">Find a customer</span>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex-1 relative min-w-0">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate" />
           <input
             type="text"
@@ -302,8 +317,8 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           />
         </div>
 
-        {/* Quick Filter Buttons */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+          {/* Quick Filter Buttons */}
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {[
             { id: 'all' as const, label: 'Sabhi Khata' },
             { id: 'overdue30' as const, label: '30+ Din (Risk)' },
@@ -322,12 +337,13 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
               {f.label}
             </button>
           ))}
+          </div>
         </div>
       </div>
 
       {/* VIEW MODE 1: MODERN DIGITAL KHATA CARDS */}
       {viewMode === 'cards' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredCustomers.length > 0 ? (
             filteredCustomers.map((cust) => {
               const isOverdue = cust.daysOverdue >= 30 && cust.status !== 'paid' && cust.amount > 0;
@@ -337,7 +353,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 <div
                   key={cust.id}
                   onClick={() => onSelectCustomer(cust)}
-                  className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature hover:border-blue/50 transition-all cursor-pointer space-y-3 flex flex-col justify-between"
+                  className="p-5 rounded-3xl bg-white border border-line/70 shadow-feature hover:border-blue/50 transition-all cursor-pointer space-y-4 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-3">
                     {/* Left: Customer Initials + Trust Score + Details */}
@@ -462,13 +478,16 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
 
       {/* VIEW MODE 2: TRADITIONAL INDIAN BAHI-KHATA LEDGER */}
       {viewMode === 'ledger' && (
-        <div className="rounded-3xl bg-[#fdfcf9] border border-line shadow-feature overflow-hidden animate-in fade-in">
+        <div className="rounded-[2rem] bg-[#fffdfb] border border-line shadow-feature overflow-hidden animate-in fade-in">
           {/* Clean Ledger Top Ribbon */}
-          <div className="bg-obsidian text-white px-4 py-3 flex items-center justify-between border-b border-soft-line">
+          <div className="bg-obsidian text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-soft-line">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-blue" />
-              <div className="font-google font-bold text-xs sm:text-sm tracking-wide text-white">
-                Bahi-Khata Ledger Register (उधार-जमा)
+              <div>
+                <div className="font-google font-bold text-sm tracking-wide text-white">
+                  Bahi-Khata Ledger
+                </div>
+                <div className="text-[11px] text-white/60 font-sans mt-0.5">Udhaar aur jama ka saaf hisaab</div>
               </div>
             </div>
             <div className="text-[11px] font-google font-bold text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
@@ -479,7 +498,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-sans border-collapse">
               <thead>
-                <tr className="bg-amber-100/80 border-b border-amber-300/80 text-[11px] font-google font-black text-amber-950">
+                <tr className="bg-lavender/45 border-b border-line text-[11px] font-google font-black text-obsidian">
                   <th className="py-3 px-3.5">Grahak (Customer)</th>
                   <th className="py-3 px-3.5">Mohalla / Pata</th>
                   <th className="py-3 px-3.5 text-right text-emerald-800">Jama (मिला -)</th>
@@ -488,7 +507,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                   <th className="py-3 px-3.5 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-amber-200/60 font-sans">
+              <tbody className="divide-y divide-line/70 font-sans">
                 {filteredCustomers.map((c) => {
                   const isOverdue = c.daysOverdue >= 30 && c.status !== 'paid' && c.amount > 0;
                   const isPaid = c.status === 'paid' || c.amount === 0;
@@ -497,7 +516,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                     <tr
                       key={c.id}
                       onClick={() => onSelectCustomer(c)}
-                      className="hover:bg-amber-50/70 cursor-pointer transition"
+                      className="hover:bg-lavender/20 cursor-pointer transition"
                     >
                       <td className="py-3.5 px-3.5 font-google font-extrabold text-sm text-ink truncate max-w-[150px]">
                         {c.name}
