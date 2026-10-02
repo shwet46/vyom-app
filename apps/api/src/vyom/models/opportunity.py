@@ -16,6 +16,15 @@ from vyom.models.enums import (
 )
 
 
+class OpportunityRecommendation(BaseModel):
+    headline: str | None = None
+    body: str | None = None
+    offer_type: str | None = None
+    discount_pct: float | None = None
+    target_items: list[str] = Field(default_factory=list)
+
+
+
 class OpportunityEvidence(BaseModel):
     """Detailed facts, metrics, and reasoning behind the opportunity."""
 
@@ -39,6 +48,7 @@ class Opportunity(MongoModel):
     phase: FestivalPhase | None = None
     title_key: str
     evidence: OpportunityEvidence = Field(default_factory=OpportunityEvidence)
+    recommendation: OpportunityRecommendation | None = None
     audience_customer_ids: list[str] = Field(default_factory=list)
     est_return_paise: int = 0
     est_cost_paise: int = 0

@@ -229,12 +229,10 @@ async def trigger_detection(merchant: CurrentMerchant, db: DatabaseDep) -> dict[
     """Manually trigger detection engines to surface new growth opportunities."""
     from vyom.models.customer import Customer
     from vyom.models.festival import FestivalCalendar, FestivalPlaybook
-    from vyom.models.transaction import BusinessProfile
-    from vyom.services.detection.churn import ChurnDetector
-    from vyom.services.detection.dead_hours import DeadHoursDetector
-    from vyom.services.detection.falling_sales import FallingSalesDetector
+    from vyom.models.transaction import BusinessProfile, Transaction
     from vyom.services.detection.festival_opps import FestivalOpportunityGenerator
     from vyom.services.festival.context import FestivalContextEngine
+    from vyom.services.proactive_detection import ProactiveOpportunityEngine
 
     today_date = Clock.today()
 
@@ -259,20 +257,23 @@ async def trigger_detection(merchant: CurrentMerchant, db: DatabaseDep) -> dict[
     fest_opps = FestivalOpportunityGenerator.generate_festival_opportunities(merchant, fest_ctx, customers, pbs, today=today_date)
     new_opps.extend(fest_opps)
 
-    # 2. Churn opps
-    churn = ChurnDetector.detect_churn_opportunities(merchant.id, customers, today=today_date)
-    if churn:
-        new_opps.append(churn)
-
-    # 3. Dead hours
-    dead_hr = DeadHoursDetector.detect_dead_hour_opportunity(merchant.id, profile, customers, today=today_date)
-    if dead_hr:
-        new_opps.append(dead_hr)
-
-    # 4. Falling sales
-    falling = FallingSalesDetector.detect_falling_sales(merchant.id, profile, today=today_date)
-    if falling:
-        new_opps.append(falling)
+    # 2. Proactive opps (replaces old churn, dead hours, falling sales)
+    txn_cursor = db.transactions.find({"merchant_id": merchant.id})
+    txns = [Transaction.model_validate(t) async for t in txn_cursor]
+    
+    raw_txns = []
+    for t in txns:
+        raw_txns.append({
+            "transaction_id": t.id,
+            "customer_id": t.customer_id,
+            "amount": t.amount_paise / 100.0,
+            "timestamp": t.paid_at,
+            "status": "TXN_SUCCESS",
+            "payment_method": t.payment_mode
+        })
+        
+    proactive_opps = await ProactiveOpportunityEngine.detect_opportunities(raw_txns, merchant, today=datetime.datetime.combine(today_date, datetime.time.min))
+    new_opps.extend(proactive_opps)
 
     inserted = 0
     for o in new_opps:

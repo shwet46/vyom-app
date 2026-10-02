@@ -85,3 +85,68 @@ async def pause_all_campaigns(
         {"$set": {"status": CampaignStatus.PAUSED, "updated_at": Clock.now()}},
     )
     return {"status": "paused_all", "count": res.modified_count}
+
+
+@router.get("/{campaign_id}/metrics")
+async def get_campaign_metrics(
+    campaign_id: str,
+    merchant: CurrentMerchant,
+    db: DatabaseDep,
+) -> dict[str, Any]:
+    """Compares Sales from the holdout group vs. Sales from the treated group over a 3-day window."""
+    import datetime
+    
+    doc = await db.campaigns.find_one({"_id": campaign_id, "merchant_id": merchant.id})
+    if not doc:
+        raise NotFoundError("Campaign not found")
+    
+    campaign = Campaign.model_validate(doc)
+    
+    start_time = campaign.starts_at
+    if not start_time:
+        start_time = campaign.approved_at or Clock.now()
+    end_time = start_time + datetime.timedelta(days=3)
+    
+    treated_ids = set(campaign.audience_customer_ids)
+    holdout_ids = set(campaign.holdout_customer_ids)
+    
+    txn_cursor = db.transactions.find({
+        "merchant_id": merchant.id,
+        "paid_at": {"$gte": start_time, "$lt": end_time}
+    })
+    
+    from vyom.models.transaction import Transaction
+    txns = [Transaction.model_validate(t) async for t in txn_cursor]
+    
+    treated_sales = 0.0
+    holdout_sales = 0.0
+    
+    for t in txns:
+        if t.customer_id in treated_ids:
+            treated_sales += t.amount_paise / 100.0
+        elif t.customer_id in holdout_ids:
+            holdout_sales += t.amount_paise / 100.0
+            
+    treated_per_capita = treated_sales / len(treated_ids) if treated_ids else 0
+    holdout_per_capita = holdout_sales / len(holdout_ids) if holdout_ids else 0
+    
+    return {
+        "campaign_id": campaign.id,
+        "window": {
+            "start": start_time.isoformat(),
+            "end": end_time.isoformat()
+        },
+        "treated": {
+            "audience_size": len(treated_ids),
+            "total_sales": treated_sales,
+            "per_capita_sales": treated_per_capita
+        },
+        "holdout": {
+            "audience_size": len(holdout_ids),
+            "total_sales": holdout_sales,
+            "per_capita_sales": holdout_per_capita
+        },
+        "uplift_per_capita": treated_per_capita - holdout_per_capita,
+        "estimated_total_uplift": (treated_per_capita - holdout_per_capita) * len(treated_ids)
+    }
+

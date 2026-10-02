@@ -39,6 +39,8 @@ class MerchantSettings(BaseModel):
     """Operational settings for the merchant."""
 
     voice_replies_default: bool = True
+    max_discount_pct: float = 10.0
+    preferred_campaign_times: list[str] = Field(default_factory=lambda: ["10:00", "16:00"])
 
 
 class Merchant(MongoModel):

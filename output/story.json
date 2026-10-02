@@ -1,0 +1,43 @@
+{
+  "referenceDate": "2026-10-06",
+  "historyStartDate": "2026-04-09",
+  "totalTransactions": 2298,
+  "successfulTransactions": 2203,
+  "failedTransactions": 84,
+  "pendingTransactions": 11,
+  "plantedChurnedCustomers": 14,
+  "churnedCustomerIds": [
+    "C0061",
+    "C0062",
+    "C0063",
+    "C0064",
+    "C0065",
+    "C0066",
+    "C0067",
+    "C0068",
+    "C0069",
+    "C0070",
+    "C0071",
+    "C0072",
+    "C0073",
+    "C0074"
+  ],
+  "estMonthlyRevenueAtRiskFromChurn": 22453.0,
+  "last7DaysRevenue": 31680.0,
+  "preChurnBaselineWeeklyAvgRevenue": 37270.0,
+  "revenueDipPct": -15.0,
+  "deadHourWindow": "15:00-17:00 on weekdays [1, 2, 3] (0=Mon)",
+  "deadHourTransactionCount": 16,
+  "festival": {
+    "name": "Navratri",
+    "start": "2026-10-11",
+    "daysFromReference": 5
+  },
+  "khataOverdueCount": 15,
+  "khataTotalDueInr": 16310.0,
+  "notes": [
+    "revenueDipPct compares the last 7 days against the pre-churn baseline (weeks 6-10 before REFERENCE_DATE), calibrated by calibrate_recent_dip() to land near DIP_MAGNITUDE.",
+    "Use churnedCustomerIds to sanity-check your churn detector — it should recover ~all of these.",
+    "Item data (itemsNoted) appears only on khata.json rows (simulating a photographed handwritten ledger) — transactions.json never carries item/basket data, matching real Paytm payment payloads."
+  ]
+}

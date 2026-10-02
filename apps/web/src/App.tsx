@@ -275,12 +275,12 @@ export default function App() {
       const rawGuardrails = await apiGetGuardrails();
       if (rawGuardrails) {
         setGuardrails({
-          maxWeeklyBudget: Math.round((rawGuardrails.weekly_budget_paise || 150000) / 100),
-          maxDiscountPercent: rawGuardrails.max_discount_pct || 15,
-          maxMessagesPerCustomerPerWeek: rawGuardrails.max_msgs_per_customer_week || 1,
+          maxWeeklyBudget: Math.round((rawGuardrails.weekly_budget_paise ?? 150000) / 100),
+          maxDiscountPercent: rawGuardrails.max_discount_pct ?? 15,
+          maxMessagesPerCustomerPerWeek: rawGuardrails.max_msgs_per_customer_week ?? 1,
           preferredLanguage: 'hinglish',
-          quietHoursStart: rawGuardrails.quiet_hours?.start_time || '21:00',
-          quietHoursEnd: rawGuardrails.quiet_hours?.end_time || '09:00',
+          quietHoursStart: rawGuardrails.quiet_hours?.start ?? '21:00',
+          quietHoursEnd: rawGuardrails.quiet_hours?.end ?? '09:00',
           autonomousUdhaarReminders: rawGuardrails.udhaar_autonomy ?? true,
         });
       }
@@ -665,7 +665,7 @@ export default function App() {
   };
 
   // Update Guardrails
-  const handleUpdateGuardrails = async (newLimits: Guardrails) => {
+  const handleUpdateGuardrails = async (newLimits: Guardrails): Promise<boolean> => {
     setGuardrails(newLimits);
     try {
       await apiUpdateGuardrails({
@@ -673,17 +673,20 @@ export default function App() {
         max_discount_pct: newLimits.maxDiscountPercent,
         max_msgs_per_customer_week: newLimits.maxMessagesPerCustomerPerWeek,
         quiet_hours: {
-          start_time: newLimits.quietHoursStart,
-          end_time: newLimits.quietHoursEnd,
-          enabled: true,
+          start: newLimits.quietHoursStart,
+          end: newLimits.quietHoursEnd,
         },
         udhaar_autonomy: newLimits.autonomousUdhaarReminders,
         udhaar_max_reminders: 3,
         udhaar_min_gap_days: 7,
         kill_switch: false,
       });
-    } catch {}
-    showToast('Guardrails limits update ho gayi!');
+      showToast('Guardrails limits update ho gayi!');
+      return true;
+    } catch {
+      showToast('Guardrails save nahi ho paaya. Dobara try karein.');
+      return false;
+    }
   };
 
   // Reset Demo Data

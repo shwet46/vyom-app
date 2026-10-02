@@ -1,0 +1,23 @@
+{
+  "merchantId": "MID_RAMESH_PUNE01",
+  "mid": "VYOMDEMO0001234567",
+  "name": "Ramesh Kirana Store",
+  "ownerName": "Ramesh",
+  "category": "kirana_grocery",
+  "city": "Pune",
+  "pincode": "411030",
+  "lat": 18.5308,
+  "lng": 73.8475,
+  "preferredLanguage": "hi-en",
+  "onboardedDaysAgo": 304,
+  "guardrails": {
+    "maxCampaignBudgetInr": 500,
+    "maxDiscountPct": 10,
+    "maxCampaignFrequencyPerWeek": 2,
+    "udhaarAutopilot": true,
+    "quietHours": {
+      "start": "21:30",
+      "end": "08:00"
+    }
+  }
+}

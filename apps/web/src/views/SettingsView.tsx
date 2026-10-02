@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ShieldCheck,
   Sliders,
@@ -17,7 +17,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface SettingsViewProps {
   guardrails: Guardrails;
-  onUpdateGuardrails: (newLimits: Guardrails) => void;
+  onUpdateGuardrails: (newLimits: Guardrails) => Promise<boolean>;
   lang: Language;
   onLanguageChange: (lang: Language) => void;
   memories: MemoryItem[];
@@ -40,8 +40,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [savedToast, setSavedToast] = useState(false);
   const { isInstallable, install, isIOS } = usePWAInstall();
 
-  const handleSave = () => {
-    onUpdateGuardrails(limits);
+  useEffect(() => {
+    setLimits(guardrails);
+  }, [guardrails]);
+
+  const handleSave = async () => {
+    const saved = await onUpdateGuardrails(limits);
+    if (!saved) return;
+
     setSavedToast(true);
     setTimeout(() => setSavedToast(false), 2000);
   };

@@ -1,0 +1,210 @@
+[
+  {
+    "pincode": "411030",
+    "weekStart": "2026-04-09",
+    "weekLabel": "2026-04-09/W0",
+    "peerStoreCount": 22,
+    "peerMedianRevenueDeltaPct": 0.011,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-04-16",
+    "weekLabel": "2026-04-16/W1",
+    "peerStoreCount": 21,
+    "peerMedianRevenueDeltaPct": -0.025,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-04-23",
+    "weekLabel": "2026-04-23/W2",
+    "peerStoreCount": 24,
+    "peerMedianRevenueDeltaPct": -0.021,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-04-30",
+    "weekLabel": "2026-04-30/W3",
+    "peerStoreCount": 20,
+    "peerMedianRevenueDeltaPct": 0.007,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-05-07",
+    "weekLabel": "2026-05-07/W4",
+    "peerStoreCount": 23,
+    "peerMedianRevenueDeltaPct": 0.008,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-05-14",
+    "weekLabel": "2026-05-14/W5",
+    "peerStoreCount": 25,
+    "peerMedianRevenueDeltaPct": 0.04,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-05-21",
+    "weekLabel": "2026-05-21/W6",
+    "peerStoreCount": 19,
+    "peerMedianRevenueDeltaPct": 0.031,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-05-28",
+    "weekLabel": "2026-05-28/W7",
+    "peerStoreCount": 22,
+    "peerMedianRevenueDeltaPct": -0.034,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-06-04",
+    "weekLabel": "2026-06-04/W8",
+    "peerStoreCount": 20,
+    "peerMedianRevenueDeltaPct": 0.023,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-06-11",
+    "weekLabel": "2026-06-11/W9",
+    "peerStoreCount": 23,
+    "peerMedianRevenueDeltaPct": -0.023,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-06-18",
+    "weekLabel": "2026-06-18/W10",
+    "peerStoreCount": 18,
+    "peerMedianRevenueDeltaPct": -0.031,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-06-25",
+    "weekLabel": "2026-06-25/W11",
+    "peerStoreCount": 20,
+    "peerMedianRevenueDeltaPct": 0.003,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-07-02",
+    "weekLabel": "2026-07-02/W12",
+    "peerStoreCount": 25,
+    "peerMedianRevenueDeltaPct": 0.036,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-07-09",
+    "weekLabel": "2026-07-09/W13",
+    "peerStoreCount": 18,
+    "peerMedianRevenueDeltaPct": -0.017,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-07-16",
+    "weekLabel": "2026-07-16/W14",
+    "peerStoreCount": 22,
+    "peerMedianRevenueDeltaPct": -0.034,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-07-23",
+    "weekLabel": "2026-07-23/W15",
+    "peerStoreCount": 24,
+    "peerMedianRevenueDeltaPct": 0.001,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-07-30",
+    "weekLabel": "2026-07-30/W16",
+    "peerStoreCount": 18,
+    "peerMedianRevenueDeltaPct": 0.024,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-08-06",
+    "weekLabel": "2026-08-06/W17",
+    "peerStoreCount": 24,
+    "peerMedianRevenueDeltaPct": -0.028,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-08-13",
+    "weekLabel": "2026-08-13/W18",
+    "peerStoreCount": 25,
+    "peerMedianRevenueDeltaPct": 0.008,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-08-20",
+    "weekLabel": "2026-08-20/W19",
+    "peerStoreCount": 22,
+    "peerMedianRevenueDeltaPct": -0.05,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-08-27",
+    "weekLabel": "2026-08-27/W20",
+    "peerStoreCount": 23,
+    "peerMedianRevenueDeltaPct": -0.028,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-09-03",
+    "weekLabel": "2026-09-03/W21",
+    "peerStoreCount": 22,
+    "peerMedianRevenueDeltaPct": -0.038,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-09-10",
+    "weekLabel": "2026-09-10/W22",
+    "peerStoreCount": 23,
+    "peerMedianRevenueDeltaPct": -0.046,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-09-17",
+    "weekLabel": "2026-09-17/W23",
+    "peerStoreCount": 24,
+    "peerMedianRevenueDeltaPct": -0.03,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-09-24",
+    "weekLabel": "2026-09-24/W24",
+    "peerStoreCount": 19,
+    "peerMedianRevenueDeltaPct": -0.027,
+    "category": "kirana_grocery"
+  },
+  {
+    "pincode": "411030",
+    "weekStart": "2026-10-01",
+    "weekLabel": "2026-10-01/W25",
+    "peerStoreCount": 25,
+    "peerMedianRevenueDeltaPct": 0.013,
+    "category": "kirana_grocery"
+  }
+]

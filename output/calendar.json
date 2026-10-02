@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Navratri",
+    "start": "2026-10-11",
+    "end": "2026-10-20",
+    "regions": [
+      "MH"
+    ],
+    "pincodes": [
+      "411030"
+    ],
+    "leadDays": 7,
+    "categoryLift": {
+      "sweets": 1.4,
+      "dry_fruits": 1.3,
+      "puja_items": 1.8
+    },
+    "notes": "Evening footfall up; daytime slightly down. Sweets/dry-fruit/puja demand rises in the lead week."
+  },
+  {
+    "name": "Ganesh Chaturthi (last year, reference only)",
+    "start": "2025-09-16",
+    "end": "2025-09-26",
+    "regions": [
+      "MH"
+    ],
+    "pincodes": [
+      "411030"
+    ],
+    "leadDays": 5,
+    "categoryLift": {
+      "sweets": 1.5,
+      "puja_items": 2.0
+    },
+    "notes": "Historical reference event, outside current transaction window's active promo logic."
+  },
+  {
+    "name": "Kothrud Weekly Haat (local market day)",
+    "start": null,
+    "end": null,
+    "recurrence": "weekly:Sunday",
+    "regions": [
+      "MH"
+    ],
+    "pincodes": [
+      "411030"
+    ],
+    "leadDays": 0,
+    "categoryLift": {},
+    "notes": "Nearby weekly market draws footfall away from small kirana on Sunday mornings."
+  },
+  {
+    "name": "Local college semester break",
+    "start": "2026-10-26",
+    "end": "2026-11-25",
+    "regions": [
+      "MH"
+    ],
+    "pincodes": [
+      "411030"
+    ],
+    "leadDays": 3,
+    "categoryLift": {},
+    "notes": "Student housing nearby empties out; expect a genuine (not churn-driven) footfall dip."
+  }
+]
