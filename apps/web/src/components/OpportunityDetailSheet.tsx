@@ -188,6 +188,12 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
               <span className="text-[10px] text-slate font-medium">Aap edit kar sakte hain</span>
             </div>
 
+            {/* Live Telegram Bot Delivery Status Badge */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] text-emerald-800 font-semibold w-fit">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Live Telegram Bot & WhatsApp Delivery Enabled</span>
+            </div>
+
             {/* Chat Bubble Representation */}
             <div className="p-3.5 rounded-2xl bg-[#e7f7e9] border border-emerald-200/80 shadow-xs relative">
               <textarea
@@ -197,8 +203,8 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
                 className="w-full bg-transparent text-xs text-ink leading-relaxed font-normal focus:outline-none resize-none"
               />
               <div className="flex items-center justify-between mt-1 text-[10px] text-emerald-800 font-medium">
-                <span>Sharma Kirana Store WhatsApp</span>
-                <span>Abhi 11:30 AM ✓✓</span>
+                <span>Sharma Kirana Store • WhatsApp & Telegram Bot</span>
+                <span>Send dabate hi customer ko jayega ✓✓</span>
               </div>
             </div>
           </div>
@@ -344,7 +350,7 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
               }`}
             >
               <Check className="w-4 h-4" />
-              <span>{t.approveFullBtn}</span>
+              <span>{t.approveFullBtn} (Send to Bot)</span>
             </button>
           </div>
 

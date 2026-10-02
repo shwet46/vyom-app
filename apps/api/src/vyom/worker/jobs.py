@@ -507,6 +507,26 @@ async def run_campaign_dispatch(db: Any) -> int:
         if deliveries:
             await db.campaign_deliveries.insert_many([d.to_mongo() for d in deliveries])
 
+        # Dispatch real messages to all Telegram-connected customers
+        try:
+            from vyom.services.campaign_dispatch import dispatch_campaign_to_telegram
+
+            snap = campaign.approved_snapshot or {}
+            custom_msg = snap.get("custom_message")
+            snap_title = snap.get("title", {}).get("hinglish") if isinstance(snap.get("title"), dict) else snap.get("title")
+            disc = snap.get("discount_percent", 10.0)
+
+            await dispatch_campaign_to_telegram(
+                db=db,
+                merchant_id=campaign.merchant_id,
+                campaign_id=campaign.id,
+                custom_message=custom_msg,
+                discount_percent=disc,
+                title=snap_title,
+            )
+        except Exception as tg_dispatch_err:
+            logger.warning("campaign_dispatch_telegram_failed", error=str(tg_dispatch_err))
+
         await db.campaigns.update_one(
             {"_id": campaign.id},
             {
@@ -532,3 +552,4 @@ async def run_campaign_dispatch(db: Any) -> int:
 
     logger.info("job_campaign_dispatch_completed", count=dispatched)
     return dispatched
+

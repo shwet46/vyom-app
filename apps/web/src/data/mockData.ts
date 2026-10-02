@@ -264,6 +264,12 @@ export const initialCampaigns: Campaign[] = [
     status: 'running',
     startDate: 'Kal shuru hua',
     offer: 'Wagh Bakri 500g + Sugar 1kg @ ₹240',
+    draftedMessage: {
+      hinglish: '☕ Monsoon Special Chai Combo! Sharma Kirana Store par Wagh Bakri Tea (500g) + Madhur Pure Sugar (1kg) ka combo sirf ₹240 mein (MRP ₹285, Save ₹45). Baarish ke mausam mein kadak chai ka aanand lein! Limited stock! 🙏',
+      hindi: '☕ मानसून स्पेशल चाय कॉम्बो! शर्मा किराना स्टोर पर वाघ बकरी चाय (500g) + चीनी (1kg) का कॉम्बो केवल ₹240 में। बारिश में कड़क चाय का आनंद लें! 🙏',
+      marathi: '☕ मान्सून स्पेशल चहा कॉम्बो! शर्मा किराणा स्टोअरमध्ये वाघ बकरी चहा (500g) + साखर (1kg) कॉम्बो फक्त ₹240 मध्ये. नक्की भेट द्या! 🙏',
+      english: '☕ Monsoon Special Tea Combo! Get Wagh Bakri Tea (500g) + Madhur Pure Sugar (1kg) bundle at just ₹240 (Save ₹45). Limited monsoon stock at Sharma Kirana! 🙏',
+    },
     targetCount: 45,
     funnel: {
       sent: 45,
@@ -295,6 +301,12 @@ export const initialCampaigns: Campaign[] = [
     startDate: '12 Sep 2026',
     endDate: '19 Sep 2026',
     offer: 'Flat ₹50 off on bill above ₹500',
+    draftedMessage: {
+      hinglish: 'Namaste ji! Sharma Kirana Store ki taraf se special aadar. Aap hamare vishwas-patra regular grahak hain. Is hafte ₹500+ ke ration par seedha Flat ₹50 Cash Discount. Naya taaza stock aa chuka hai, zaroor aayein! 🙏',
+      hindi: 'नमस्ते जी! शर्मा किराना स्टोर की ओर से विशेष सत्कार। इस सप्ताह ₹500+ के राशन पर सीधे ₹50 की नकद छूट। पधारें! 🙏',
+      marathi: 'नमस्कार! शर्मा किराणा स्टोअरकडून आपुलकीची भेट. या आठवड्यात ₹500+ किराण्यावर थेट ₹50 ची सवलत. नक्की या! 🙏',
+      english: 'Namaste! We miss you at Sharma Kirana Store. Enjoy a flat ₹50 discount on your grocery shopping above ₹500 this week. See you soon! 🙏',
+    },
     targetCount: 60,
     funnel: {
       sent: 60,
@@ -331,6 +343,12 @@ export const initialCampaigns: Campaign[] = [
     startDate: '5 Sep 2026',
     endDate: '11 Sep 2026',
     offer: 'Buy 2 get 10% off on all namkeen',
+    draftedMessage: {
+      hinglish: '🥨 Shaam Ki Chai & Namkeen Deal! Sharma Kirana par aaj shaam 5 se 8 baje koi bhi 2 Haldiram ya Bikaji namkeen packs lene par Flat 10% Instant Discount. Shaam ki chai ke saath snacks ka maza lein! 🙏',
+      hindi: '🥨 शाम की चाय और नमकीन स्पेशल! शर्मा किराना पर आज शाम 5 से 8 बजे कोई भी 2 नमकीन पैकेट लेने पर 10% की तुरंत छूट। पधारें! 🙏',
+      marathi: '🥨 संध्याकाळची चहा व स्नॅक्स स्पेशल! शर्मा किराणा स्टोअरमध्ये आज संध्याकाळी 5 ते 8 दरम्यान नमकीन पॅकवर 10% सूट. नक्की खरेदी करा! 🙏',
+      english: '🥨 Evening Tea & Snacks Special! Visit Sharma Kirana between 5-8 PM today and get flat 10% off when you buy any 2 namkeen packs. Perfect with evening chai! 🙏',
+    },
     targetCount: 80,
     funnel: {
       sent: 80,

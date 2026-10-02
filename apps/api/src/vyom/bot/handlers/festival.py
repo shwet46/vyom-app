@@ -188,3 +188,42 @@ async def handle_notifications_opt_in(query: CallbackQuery) -> None:
             "Dhanyawad ki aapne hamare saath bane rehne ka chunav kiya! 🙏",
             parse_mode="Markdown",
         )
+
+
+@router.callback_query(F.data == "offer:all_offers")
+async def handle_callback_all_offers(query: CallbackQuery) -> None:
+    """Handle inline button click for viewing all ongoing store offers."""
+    now = Clock.now()
+    hour = now.hour
+
+    if 14 <= hour < 16:
+        flash_note = "⚡ *ABHI ACTIVE HAI — Dopahar Flash Hours!* 2-4 PM tak 8% off milega! Jaldi aayein! 🔥\n\n"
+    else:
+        flash_note = (
+            f"_Dopahar Flash Hours sirf 2:00 PM – 4:00 PM mein milta hai._\n"
+            f"_Abhi: {now.strftime('%I:%M %p')} IST_\n\n"
+        )
+
+    text = (
+        "🏷️ *Sharma Kirana Store — Ongoing Sales & Discounts (Chal Rahe Offers)*\n\n"
+        f"{flash_note}"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+        "1️⃣ 🌸 *Navratri Shuddh Vrat Combo Kit*\n"
+        "   Sabudana + Singhara Atta + Pure Gir Cow Ghee + Sendha Namak + Makhana\n"
+        "   💰 *Offer: ₹450* ~~(₹510)~~ — *Save 12% OFF!*\n\n"
+        "2️⃣ ⚡ *Dopahar Flash Hours* (2:00 PM – 4:00 PM, Mon–Sat)\n"
+        "   Sab Daalein, Atta, Khane Tel par *Flat 8% Instant Chhoot!*\n\n"
+        "3️⃣ 📦 *Monthly Ration Saving Deal*\n"
+        "   ₹1,500+ ki shopping par *₹120 Cash Discount* + Free Home Delivery!\n\n"
+        "4️⃣ 💳 *Paytm UPI Fast Pay Reward*\n"
+        "   Paytm UPI se bill settle karte hi instant confirmation + reward points!\n\n"
+        "5️⃣ 🎁 *Udhaar Clearance Bonus*\n"
+        "   Poora udhaar ek baar mein chukao → ₹50 store credit milega!\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "Neeche se apna vikalp chunein:"
+    )
+
+    await query.answer()
+    if query.message and isinstance(query.message, Message):
+        await query.message.answer(text, reply_markup=get_offers_keyboard(), parse_mode="Markdown")
+

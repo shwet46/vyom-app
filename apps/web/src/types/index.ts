@@ -42,6 +42,8 @@ export interface Campaign {
   startDate: string;
   endDate?: string;
   offer: string;
+  message?: string;
+  draftedMessage?: Record<Language, string>;
   targetCount: number;
   funnel: CampaignFunnel;
   outcome: CampaignOutcome;
