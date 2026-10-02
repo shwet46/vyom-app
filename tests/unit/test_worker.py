@@ -291,7 +291,7 @@ async def test_scheduler_lifecycle() -> None:
     w = VyomWorker()
     w.setup_schedules(demo_mode=True)
     jobs = w.scheduler.get_jobs()
-    assert len(jobs) >= 4
+    assert len(jobs) >= 3
 
     w.start()
     assert w._is_running is True

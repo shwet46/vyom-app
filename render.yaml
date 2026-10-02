@@ -1,0 +1,57 @@
+services:
+  # -------------------------------------------------------------
+  # 1. FastAPI Core + Telegram Bot (Web Service)
+  # -------------------------------------------------------------
+  - type: web
+    name: vyom-api
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile.api
+    dockerContext: .
+    plan: free # Change to 'starter' if you want 24/7 uptime without sleep
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: MONGODB_URI
+        sync: false # Provide your MongoDB Atlas connection string in Render Dashboard
+      - key: MONGODB_DATABASE
+        value: vyom
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false # Telegram Bot Token from @BotFather
+      - key: BOT_MODE
+        value: webhook # 'webhook' (recommended on Render) or 'polling'
+      - key: BOT_USERNAME
+        sync: false # e.g. VyomShopBot
+      - key: RUN_WORKER_IN_API
+        value: "true" # Embeds background opportunity/udhaar scheduler inside API container
+      - key: AI_MODE
+        value: mock # Set to 'live' if providing SARVAM_API_KEY / GEMINI_API_KEY
+      - key: DEMO_MODE
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: WEB_ORIGIN
+        sync: false # Set to your frontend URL, e.g. https://vyom-web.onrender.com
+      - key: PUBLIC_API_URL
+        sync: false # Set to your API URL, e.g. https://vyom-api.onrender.com
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # -------------------------------------------------------------
+  # 2. Merchant PWA Frontend (Static Site - Free on Render)
+  # -------------------------------------------------------------
+  - type: web
+    name: vyom-web
+    runtime: static
+    rootDir: apps/web
+    buildCommand: pnpm install && pnpm build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: PUBLIC_API_URL
+        sync: false # Set to your deployed vyom-api URL, e.g. https://vyom-api.onrender.com

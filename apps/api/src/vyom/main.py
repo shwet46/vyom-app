@@ -33,6 +33,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     reminder_task: asyncio.Task[None] | None = None
     polling_task: asyncio.Task[None] | None = None
+    worker_running: bool = False
 
     # 1. Connect to MongoDB
     try:
@@ -88,12 +89,30 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
         # reminder_task = asyncio.create_task(_periodic_10min_reminders_worker())
         reminder_task = None
+
+        # 5. Start background worker scheduler if enabled (useful for single-service deployments on Render)
+        if settings.run_worker_in_api:
+            from vyom.worker.scheduler import worker as bg_worker
+
+            bg_worker.setup_schedules(demo_mode=settings.demo_mode)
+            bg_worker.start()
+            worker_running = True
+            logger.info("in_process_worker_scheduler_started")
     except Exception as exc:
         logger.warning("vyom_db_init_warning", error=str(exc))
 
     yield
 
     # Shutdown
+    if worker_running:
+        try:
+            from vyom.worker.scheduler import worker as bg_worker
+
+            bg_worker.stop()
+            logger.info("in_process_worker_scheduler_stopped")
+        except Exception as stop_err:
+            logger.warning("in_process_worker_scheduler_stop_error", error=str(stop_err))
+
     if polling_task:
         polling_task.cancel()
         try:
@@ -121,13 +140,15 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # CORS configuration
+    # CORS configuration - supports comma-separated list of origins
+    allowed_origins = [o.strip() for o in settings.web_origin.split(",") if o.strip()]
+    for fallback_origin in ("http://localhost:3000", "http://127.0.0.1:3000"):
+        if fallback_origin not in allowed_origins:
+            allowed_origins.append(fallback_origin)
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            settings.web_origin,
-            "http://127.0.0.1:3000",
-        ],
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

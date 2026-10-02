@@ -98,6 +98,7 @@ class Settings(BaseSettings):
     ai_mode: Literal["live", "mock"] = "mock"
     demo_mode: bool = True
     demo_today: str | None = None  # ISO date, e.g. "2026-09-30"
+    run_worker_in_api: bool = False
 
     # ── Timezone ──────────────────────────────────────────────────────────────
     app_timezone: str = "Asia/Kolkata"

@@ -19,5 +19,4 @@ COPY apps/api/src ./apps/api/src
 
 RUN uv pip install --system -e ./apps/api
 
-EXPOSE 8000
-CMD ["uvicorn", "vyom.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn vyom.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
