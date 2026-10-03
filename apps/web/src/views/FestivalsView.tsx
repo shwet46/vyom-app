@@ -129,70 +129,7 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
       </div>
 
       {/* 3. Fasting & Puja Stock Kits Advice */}
-      <div className="comic-card" style={{ padding: 14 }}>
-        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-          <div className="flex items-center gap-1.5">
-            <Package className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
-            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
-              Vrat & Fasting Stock Advisory
-            </span>
-          </div>
-          <span className="comic-badge" style={{ background: '#BEF0D8', color: '#0E7A50' }}>
-            High Demand
-          </span>
-        </div>
-        <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 10, lineHeight: 1.4 }}>
-          Agale 10 dino mein in items ki mang 3.2x badhegi. Vyom ne wholesale stock list tayyar ki hai:
-        </p>
-
-        <div className="space-y-2">
-          {stockItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="flex items-center justify-between"
-              style={{
-                padding: '8px 10px',
-                background: 'var(--canvas)',
-                border: '1.5px solid var(--shadow-color)',
-                borderRadius: 10,
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{item.name}</div>
-                <div style={{ fontSize: 11, color: '#6B7280' }}>
-                  Current: <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{item.current}</span> • Suggested: <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{item.suggested}</span>
-                </div>
-              </div>
-              <span className="comic-badge tabular-nums" style={{ background: '#BEF0D8', color: '#0E7A50', fontSize: 11 }}>
-                {item.uplift} demand
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={handleCreateVratKit}
-          disabled={generatingKit || kitGenerated}
-          className="comic-btn w-full mt-3"
-          style={{
-            background: kitGenerated ? '#BEF0D8' : 'var(--shadow-color)',
-            color: kitGenerated ? '#0E7A50' : '#FFFFFF',
-            borderColor: kitGenerated ? '#0E7A50' : 'var(--shadow-color)',
-          }}
-        >
-          {generatingKit ? (
-            <span>Kit Create Ho Rahi Hai...</span>
-          ) : kitGenerated ? (
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4" /> Kit Campaign Tayyar!
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" style={{ color: 'var(--ai-fill)' }} /> 9-Day Vrat Kit Campaign Chalao
-            </span>
-          )}
-        </button>
-      </div>
+  
 
       {/* 4. Cultural Do's & Don'ts — Comic semantic cards stacked */}
       <div className="space-y-3">

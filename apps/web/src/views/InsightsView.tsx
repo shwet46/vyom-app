@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Calendar,
   AlertCircle,
-  ShoppingBag,
   Users,
   Clock,
   ArrowRight,
@@ -38,14 +37,6 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNaviga
     [3, 3, 0, 3, 4, 4], // Fri
     [4, 4, 1, 4, 4, 4], // Sat
     [4, 4, 1, 3, 4, 3], // Sun
-  ];
-
-  const topItems = [
-    { name: 'Aashirvaad Shuddh Chakki Atta (10kg)', soldCount: 142, revenue: 63900 },
-    { name: 'Fortune Sunlite Sunflower Oil (1L)', soldCount: 118, revenue: 16520 },
-    { name: 'Amul Butter Pasteurised (500g)', soldCount: 94, revenue: 26320 },
-    { name: 'Tata Salt Vacuum Evaporated (1kg)', soldCount: 180, revenue: 5040 },
-    { name: 'Wagh Bakri Premium Tea (500g)', soldCount: 76, revenue: 21280 },
   ];
 
   const salesTrendData = [
@@ -325,42 +316,6 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNaviga
         </div>
       </div>
 
-      {/* 6. Top Selling Products */}
-      <div className="comic-card" style={{ padding: 14 }}>
-        <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
-          <ShoppingBag className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
-          <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
-            Top Selling Products (This Week)
-          </h3>
-        </div>
-
-        <div className="space-y-2">
-          {topItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="flex items-center justify-between gap-2"
-              style={{
-                padding: '8px 10px',
-                background: 'var(--canvas)',
-                border: '1.5px solid var(--shadow-color)',
-                borderRadius: 10,
-              }}
-            >
-              <div className="min-w-0">
-                <div className="truncate" style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>
-                  {item.name}
-                </div>
-                <div style={{ fontSize: 10, color: '#6B7280', marginTop: 1 }}>
-                  {item.soldCount} units sold
-                </div>
-              </div>
-              <div className="tabular-nums text-right flex-shrink-0" style={{ fontSize: 13, fontWeight: 800, color: 'var(--ink)' }}>
-                {formatRupee(item.revenue)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

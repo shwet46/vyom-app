@@ -11,8 +11,9 @@ import {
   Download,
   Info,
 } from '../components/icons';
-import { Guardrails, Language, MemoryItem } from '../types';
+import { Language, Guardrails } from '../types';
 import { formatRupee } from '../utils/formatters';
+import { translations } from '../utils/i18n';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { SupportedCity } from '../data/cityFestivals';
 
@@ -36,6 +37,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [limits, setLimits] = useState<Guardrails>(guardrails);
   const [savedToast, setSavedToast] = useState(false);
   const { isInstallable, install, isIOS } = usePWAInstall();
+  const t = translations[lang] || translations.hinglish;
 
   useEffect(() => {
     setLimits(guardrails);
@@ -56,24 +58,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
           <ShieldCheck className="w-4 h-4" style={{ color: '#1565C0' }} />
           <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#1565C0' }}>
-            Meri Limits & Guardrails
+            {t.myLimitsTitle}
           </span>
         </div>
         <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>
-          Dukaan Ke Suraksha Niyam
+          {t.shopSafetyRules}
         </h1>
         <p style={{ fontSize: 12, color: '#1565C0', marginTop: 4, lineHeight: 1.4, fontWeight: 500 }}>
-          "Vyom in limits ke bahar kuch nahi karega. Har offer se pehle aapki 'haan' zaroori hai."
+          "{t.safetyQuote}"
         </p>
       </div>
 
       {/* 2. City Selector — Comic Card */}
       <div className="comic-card" style={{ padding: 14 }}>
         <label htmlFor="city-select" style={{ fontSize: 13, fontWeight: 800, color: 'var(--ink)', display: 'block', marginBottom: 2 }}>
-          Dukaan Ka Shehar
+          {t.shopCity}
         </label>
         <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 8 }}>
-          Festival Radar aur local signals ke liye apna city chunein.
+          {t.cityHelp}
         </p>
         <select
           id="city-select"
@@ -102,7 +104,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* 3. Main Limits Config Card */}
       <div className="comic-card" style={{ padding: 14 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)', marginBottom: 12 }}>
-          Campaign & Offer Limits
+          {t.campaignLimits}
         </div>
 
         {/* Weekly Budget Slider */}
@@ -110,10 +112,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', display: 'block' }}>
-                Max Campaign Budget (Per Week)
+                {t.weeklyBudget}
               </span>
               <span style={{ fontSize: 10, color: '#6B7280' }}>
-                WhatsApp marketing par ek hafte ka max kharch
+                {t.weeklyBudgetHelp}
               </span>
             </div>
             <span className="tabular-nums" style={{ fontSize: 14, fontWeight: 800, color: 'var(--ai-text)' }}>
@@ -132,9 +134,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             style={{ accentColor: 'var(--shadow-color)' }}
           />
           <div className="flex justify-between" style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>
-            <span>₹500 (Basic)</span>
-            <span>₹1,500 (Best)</span>
-            <span>₹5,000 (Max)</span>
+            <span>₹500 ({t.basic})</span>
+            <span>₹1,500 ({t.best})</span>
+            <span>₹5,000 ({t.max})</span>
           </div>
         </div>
 
@@ -143,10 +145,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', display: 'block' }}>
-                Max Discount % Allowed
+                {t.maxDiscount}
               </span>
               <span style={{ fontSize: 10, color: '#6B7280' }}>
-                Kisi bhi grahak ko isse zyada discount nahi milega
+                {t.maxDiscountHelp}
               </span>
             </div>
             <span className="tabular-nums" style={{ fontSize: 14, fontWeight: 800, color: 'var(--ai-text)' }}>
@@ -166,7 +168,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           />
           <div className="flex justify-between" style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>
             <span>0%</span>
-            <span>15% (Healthy)</span>
+            <span>15% ({t.healthy})</span>
             <span>30%</span>
           </div>
         </div>
@@ -176,10 +178,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', display: 'block' }}>
-                Spam Control (Max Messages)
+                {t.spamControl}
               </span>
               <span style={{ fontSize: 10, color: '#6B7280' }}>
-                Ek grahak ko ek hafte mein kitne messages
+                {t.spamHelp}
               </span>
             </div>
             <span
@@ -203,9 +205,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             style={{ accentColor: 'var(--shadow-color)' }}
           />
           <div className="flex justify-between" style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>
-            <span>1 (Safe)</span>
+            <span>1 ({t.safe})</span>
             <span>3</span>
-            <span>5 (Max)</span>
+            <span>5 ({t.max})</span>
           </div>
         </div>
 
@@ -214,10 +216,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', display: 'block' }}>
-                Quiet Hours (Shanti Samay)
+                {t.quietHours}
               </span>
               <span style={{ fontSize: 10, color: '#6B7280' }}>
-                Is dauran koi notification nahi bheja jayega
+                {t.quietHelp}
               </span>
             </div>
             <span
@@ -236,14 +238,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="comic-btn w-full"
           >
             <Check className="w-4 h-4" />
-            <span>Suraksha Niyam Update Karein</span>
+            <span>{t.saveLimits}</span>
           </button>
           {savedToast && (
             <div
               className="comic-card-mint text-center mt-2"
               style={{ padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#0E7A50', borderRadius: 8 }}
             >
-              Suraksha Niyam Safalta-purvak Save Hue! ✓
+              {t.limitsSaved}
             </div>
           )}
         </div>
@@ -255,11 +257,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center gap-2">
             <Smartphone className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
             <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
-              Connected Paytm Account
+              {t.paytmAccount}
             </h3>
           </div>
           <span className="comic-badge" style={{ background: '#BEF0D8', color: '#0E7A50', fontSize: 9 }}>
-            ● Active Sync
+            ● {t.activeSync}
           </span>
         </div>
 
@@ -274,19 +276,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           className="space-y-2"
         >
           <div className="flex justify-between">
-            <span style={{ color: '#6B7280' }}>Merchant:</span>
+            <span style={{ color: '#6B7280' }}>{t.merchant}:</span>
             <span style={{ fontWeight: 700, color: 'var(--ink)' }}>Sharma Kirana Store ({city})</span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: '#6B7280' }}>Merchant ID:</span>
+            <span style={{ color: '#6B7280' }}>{t.merchantId}:</span>
             <span className="font-mono tabular-nums" style={{ fontWeight: 600, color: 'var(--ink)' }}>982344192088</span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: '#6B7280' }}>Settlement:</span>
+            <span style={{ color: '#6B7280' }}>{t.settlement}:</span>
             <span style={{ fontWeight: 600, color: 'var(--ink)' }}>HDFC Bank ending 4402</span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: '#6B7280' }}>Soundbox Sync:</span>
+            <span style={{ color: '#6B7280' }}>{t.soundboxSync}:</span>
             <span style={{ fontWeight: 700, color: '#0E7A50' }}>Enabled (Hindi/Marathi)</span>
           </div>
         </div>
@@ -297,7 +299,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
           <Globe className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
           <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
-            App Ki Bhasha (Language)
+            {t.appLanguage}
           </h3>
         </div>
 

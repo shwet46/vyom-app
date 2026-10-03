@@ -151,7 +151,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
             </div>
           </div>
           <span className="comic-badge" style={{ background: '#BEF0D8', color: '#0E7A50' }}>
-            Profitable
+            {t.profitable}
           </span>
         </div>
 
@@ -291,7 +291,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
                           color: camp.status === 'running' ? '#0E7A50' : '#6B7280',
                         }}
                       >
-                        {camp.status === 'running' ? '● Chalu' : '✓ Pure Hue'}
+                        {camp.status === 'running' ? `● ${t.activeTab}` : `✓ ${t.historyTab}`}
                       </span>
                       <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>{camp.startDate}</span>
                     </div>

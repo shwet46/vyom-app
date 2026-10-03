@@ -143,7 +143,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="icon-chip" style={{ background: '#FFFFFF', width: 28, height: 28, borderRadius: 8 }}>
                 <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recovered</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t.recovered}</span>
             </div>
             <div className="text-hero tabular-nums" style={{ color: 'var(--ink)' }}>
               {formatRupee(animatedRecovered)}
@@ -151,7 +151,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <div className="text-right">
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-              <Users className="w-3 h-3 inline" style={{ marginRight: 4 }} />{wonBackVal} Won Back
+              <Users className="w-3 h-3 inline" style={{ marginRight: 4 }} />{wonBackVal} {t.wonBack}
             </div>
             <span
               className="comic-badge"
@@ -177,7 +177,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {formatRupee(todaySalesVal)}
           </div>
           <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
-            <span style={{ fontSize: 11, color: '#6B7280' }}>Kal: {formatRupee(yesterdaySalesVal)}</span>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>{t.yesterday}: {formatRupee(yesterdaySalesVal)}</span>
             <span
               style={{
                 float: 'right',
@@ -206,7 +206,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {formatRupee(udhaarCollectedVal)}
           </div>
           <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
-            <span style={{ fontSize: 11, color: '#6B7280' }}>Vasool</span>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>{t.vasool}</span>
             <span
               style={{
                 float: 'right',
@@ -218,7 +218,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 color: '#C62828',
               }}
             >
-              {udhaarStrip?.overdueCount ?? 2} Overdue
+              {udhaarStrip?.overdueCount ?? 2} {t.overdue}
             </span>
           </div>
         </div>
@@ -235,7 +235,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {formatRupee(campaignSpendVal)}
           </div>
           <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
-            <span style={{ fontSize: 11, color: '#6B7280' }}>Kharch</span>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>{t.kharch}</span>
             <span
               style={{
                 float: 'right',
@@ -247,7 +247,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 color: '#0E7A50',
               }}
             >
-              ₹14.2k return
+              ₹14.2k {t.return}
             </span>
           </div>
         </div>
@@ -258,85 +258,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="icon-chip" style={{ background: '#C7E8FF' }}>
               <Store className="w-3.5 h-3.5" style={{ color: '#1565C0' }} />
             </div>
-            <span className="text-caption" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>Orders</span>
+            <span className="text-caption" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>{t.orders}</span>
           </div>
           <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
             {metrics?.todayOrders ?? 24}
           </div>
           <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
-            <span style={{ fontSize: 11, color: '#6B7280' }}>Aaj ke orders</span>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>{t.todayOrders}</span>
           </div>
         </div>
       </div>
 
-      {/* 4. PEER COMPARE — Signature tile (sky-blue comic card) */}
-      <div className="comic-card-sky" style={{ padding: 14, position: 'relative' }}>
-        {/* "Sirf Paytm Data Se Possible" badge */}
-        <div
-          className="comic-badge"
-          style={{
-            position: 'absolute',
-            top: -10,
-            right: 12,
-            background: '#FFFFFF',
-            color: '#1565C0',
-            fontSize: 9,
-            boxShadow: '1px 1px 0px var(--shadow-color)',
-          }}
-        >
-          Sirf Paytm Data Se Possible
-        </div>
-
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 10 }}>
-          📊 Peer Compare — Aapki Dukaan vs Aas-paas
-        </div>
-
-        {/* Two-bar comparison */}
-        <div className="flex items-end gap-3" style={{ marginBottom: 8 }}>
-          <div className="flex-1">
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Aapki Dukaan</div>
-            <div
-              style={{
-                height: 20,
-                background: '#FFE4B8',
-                border: '1px solid var(--outline)',
-                borderRadius: 6,
-                width: '62%',
-              }}
-            />
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#B5610E', marginTop: 2 }}>-18%</div>
-          </div>
-          <div className="flex-1">
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Aas-paas ki Dukaane</div>
-            <div
-              style={{
-                height: 20,
-                background: '#BEF0D8',
-                border: '1px solid var(--outline)',
-                borderRadius: 6,
-                width: '88%',
-              }}
-            />
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50', marginTop: 2 }}>-4%</div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: 'var(--ink)',
-            padding: '8px 10px',
-            background: '#FFFFFF',
-            border: '1.5px solid var(--shadow-color)',
-            borderRadius: 10,
-          }}
-        >
-          Aapka -18%, Unka -4% — yeh sirf aapka issue hai
-        </div>
-      </div>
-
-      {/* 5. Festival Signal Banner (never truncated) */}
+      {/* 4. Festival Signal Banner (never truncated) */}
       {festivalBanner && (
         <div
           onClick={() => onNavigateToTab('festivals')}
@@ -357,7 +290,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </span>
                 {festivalBanner.daysToStart !== undefined && (
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#B5610E' }}>
-                    {festivalBanner.daysToStart}d left
+                    {festivalBanner.daysToStart} {t.daysLeft}
                   </span>
                 )}
               </div>
@@ -382,7 +315,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             className="flex items-center gap-0.5 cursor-pointer"
             style={{ fontSize: 13, fontWeight: 700, color: 'var(--ai-text)' }}
           >
-            <span>All ({activeOpportunities.length})</span>
+            <span>{t.allCount} ({activeOpportunities.length})</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -423,7 +356,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <div className="tabular-nums" style={{ fontSize: 15, fontWeight: 700, color: 'var(--ai-text)' }}>
                       {formatRupee(opp.potentialRevenue)}
                     </div>
-                    <div style={{ fontSize: 11, color: '#6B7280' }}>potential</div>
+                    <div style={{ fontSize: 11, color: '#6B7280' }}>{t.potential}</div>
                   </div>
                 </div>
 
@@ -443,7 +376,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       color: 'var(--ink)',
                     }}
                   >
-                    📅 7 din ka pattern
+                    📅 {t.dayPattern}
                   </span>
                   <span
                     style={{
@@ -459,7 +392,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       color: 'var(--ink)',
                     }}
                   >
-                    📍 {opp.customerCount} customers
+                    📍 {opp.customerCount} {t.customers}
                   </span>
                   {opp.type === 'festival' && (
                     <span
@@ -476,7 +409,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         color: 'var(--ink)',
                       }}
                     >
-                      🎉 Navratri 11 din door
+                      🎉 {festivalBanner?.headline?.split('.')[0] || 'Festival'}
                     </span>
                   )}
                 </div>
@@ -505,7 +438,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         ) : (
           <div className="comic-card" style={{ padding: 20, textAlign: 'center' }}>
             <p className="text-caption">
-              Sabhi mauke approve ho chuke hain! Naye transactions aate hi Vyom naye mauke dhoondega.
+              {t.noOpportunities}
             </p>
           </div>
         )}
