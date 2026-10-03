@@ -52,10 +52,9 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
   // Guardrail safety validations
   const isBudgetWithinLimit = opportunity.estimatedCost <= guardrails.maxWeeklyBudget;
   const isDiscountWithinLimit = discountPercent <= guardrails.maxDiscountPercent;
-  const isFrequencyWithinLimit = guardrails.maxMessagesPerCustomerPerWeek >= 1;
   const hasGuardrailViolation = !isDiscountWithinLimit || !isBudgetWithinLimit;
 
-  // Speak aloud explainable AI reasons using Kirana Voice Assistant
+  // Speak aloud explainable AI reasons
   const playReasonAudio = () => {
     const textToSpeak =
       opportunity.audioScript[lang] || opportunity.audioScript.hinglish;
@@ -69,17 +68,14 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
   };
 
   const handleApproveAction = () => {
-    // Fire confetti celebration
     try {
       confetti({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.7 },
-        colors: ['#6366F1', '#EEF2FF', '#111827', '#16A34A'],
+        colors: ['#00A9E8', '#BEF0D8', '#CBD5E1', '#FFE4B8'],
       });
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
 
     onApprove(opportunity, messageText, discountPercent);
     onClose();
@@ -110,110 +106,133 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/50 backdrop-blur-xs p-0 sm:p-4">
-      <div className="w-full max-w-xl max-h-[90vh] bg-paper rounded-t-3xl sm:rounded-3xl border border-line shadow-feature flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/60 backdrop-blur-xs p-0 sm:p-3">
+      <div
+        className="w-full max-w-[420px] max-h-[92vh] bg-surface rounded-t-2xl sm:rounded-2xl border-2 border-ink flex flex-col overflow-hidden animate-fade-slide-up"
+        style={{ boxShadow: '2px 2px 0px var(--shadow-color)' }}
+      >
         {/* Top Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-soft-line bg-paper/95 sticky top-0 z-10">
+        <div
+          className="flex items-center justify-between px-4 py-3 bg-surface sticky top-0 z-10"
+          style={{ borderBottom: '2px solid var(--shadow-color)' }}
+        >
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue" />
-            <h2 className="font-extrabold text-base text-obsidian tracking-tight">
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 999,
+                background: 'var(--ai-text)',
+                border: '1.5px solid var(--shadow-color)',
+              }}
+            />
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--ink)' }}>
               {t.detailSheetTitle}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-cloud border border-line flex items-center justify-center text-charcoal hover:text-ink cursor-pointer"
+            className="w-8 h-8 rounded-full border-2 border-ink bg-surface flex items-center justify-center text-ink cursor-pointer hover:bg-canvas transition"
+            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
-          {/* Main Opportunity Title & Revenue Pill */}
-          <div className="p-4 rounded-2xl bg-cloud border border-soft-line space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="font-bold text-base text-obsidian leading-snug">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
+          {/* Main Opportunity Card */}
+          <div className="comic-card-lavender" style={{ padding: 12 }}>
+            <div className="flex items-start justify-between gap-2">
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.25 }}>
                 {opportunity.title[lang] || opportunity.title.hinglish}
               </h3>
               <div className="text-right flex-shrink-0">
-                <span className="text-[11px] font-semibold text-charcoal block">Potential</span>
-                <span className="text-lg font-extrabold text-blue">
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Potential</span>
+                <div className="tabular-nums" style={{ fontSize: 18, fontWeight: 800, color: 'var(--ai-text)' }}>
                   {formatRupee(opportunity.potentialRevenue)}
-                </span>
+                </div>
               </div>
             </div>
-            <p className="text-xs text-charcoal leading-relaxed">
+            <p style={{ fontSize: 12, color: 'var(--ink)', marginTop: 4, lineHeight: 1.4 }}>
               {opportunity.description[lang] || opportunity.description.hinglish}
             </p>
           </div>
 
-          {/* Quick Metrics Strip */}
+          {/* Quick Metrics Strip — 3 comic boxes */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="p-3 rounded-2xl bg-white border border-line text-center">
-              <div className="text-[11px] text-slate font-medium flex items-center justify-center gap-1">
-                <Users className="w-3 h-3 text-blue" /> Target
+            <div className="comic-card text-center" style={{ padding: 8 }}>
+              <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                <Users className="w-3 h-3 text-ink" /> Target
               </div>
-              <div className="font-extrabold text-sm text-ink mt-0.5">
+              <div className="tabular-nums" style={{ fontSize: 13, fontWeight: 800, color: 'var(--ink)', marginTop: 2 }}>
                 {opportunity.customerCount} grahak
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white border border-line text-center">
-              <div className="text-[11px] text-slate font-medium flex items-center justify-center gap-1">
-                <IndianRupee className="w-3 h-3 text-emerald-600" /> Cost
+            <div className="comic-card text-center" style={{ padding: 8 }}>
+              <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                <IndianRupee className="w-3 h-3 text-ink" /> Cost
               </div>
-              <div className="font-extrabold text-sm text-ink mt-0.5">
+              <div className="tabular-nums" style={{ fontSize: 13, fontWeight: 800, color: 'var(--ink)', marginTop: 2 }}>
                 {formatRupee(opportunity.estimatedCost)}
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white border border-line text-center">
-              <div className="text-[11px] text-slate font-medium flex items-center justify-center gap-1">
-                <TrendingUp className="w-3 h-3 text-amber-600" /> Exp. ROI
+            <div className="comic-card-mint text-center" style={{ padding: 8 }}>
+              <div style={{ fontSize: 10, color: '#0E7A50', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+                <TrendingUp className="w-3 h-3 text-mint-text" /> Exp. ROI
               </div>
-              <div className="font-extrabold text-sm text-emerald-700 mt-0.5">
+              <div className="tabular-nums" style={{ fontSize: 13, fontWeight: 800, color: '#0E7A50', marginTop: 2 }}>
                 {opportunity.expectedRoi}
               </div>
             </div>
           </div>
 
-          {/* Proposed Customer WhatsApp Message (Editable) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-obsidian flex items-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+          {/* Proposed Customer WhatsApp Message */}
+          <div className="comic-card" style={{ padding: 12 }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <MessageCircle className="w-3.5 h-3.5" style={{ color: '#0E7A50' }} />
                 {t.proposedMessage}
               </label>
-              <span className="text-[10px] text-slate font-medium">Aap edit kar sakte hain</span>
+              <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>Aap edit kar sakte hain</span>
             </div>
 
-            {/* Live Telegram Bot Delivery Status Badge */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] text-emerald-800 font-semibold w-fit">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Live Telegram Bot & WhatsApp Delivery Enabled</span>
-            </div>
-
-            {/* Chat Bubble Representation */}
-            <div className="p-3.5 rounded-2xl bg-[#e7f7e9] border border-emerald-200/80 shadow-xs relative">
+            <div
+              style={{
+                padding: '10px 12px',
+                background: '#BEF0D8',
+                border: '1.5px solid var(--shadow-color)',
+                borderRadius: 12,
+              }}
+            >
               <textarea
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 rows={3}
-                className="w-full bg-transparent text-xs text-ink leading-relaxed font-normal focus:outline-none resize-none"
+                className="w-full bg-transparent text-xs leading-relaxed focus:outline-none resize-none"
+                style={{ color: '#0E7A50', fontWeight: 600 }}
               />
-              <div className="flex items-center justify-between mt-1 text-[10px] text-emerald-800 font-medium">
-                <span>Sharma Kirana Store • WhatsApp & Telegram Bot</span>
-                <span>Send dabate hi customer ko jayega ✓✓</span>
+              <div className="flex items-center justify-between mt-1" style={{ fontSize: 10, color: '#0E7A50', fontWeight: 700 }}>
+                <span>Sharma Kirana • WhatsApp Bot</span>
+                <span>Send dabate hi jayega ✓✓</span>
               </div>
             </div>
           </div>
 
-          {/* Discount / Offer Adjustment */}
-          <div className="p-3.5 rounded-2xl bg-cloud border border-line space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-obsidian">Discount Level (%):</span>
-              <span className={`text-xs font-extrabold ${isDiscountWithinLimit ? 'text-blue' : 'text-error'}`}>
+          {/* Discount Slider */}
+          <div className="comic-card" style={{ padding: 12 }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>Discount Level (%):</span>
+              <span
+                className="tabular-nums"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: isDiscountWithinLimit ? 'var(--shadow-color)' : '#C62828',
+                }}
+              >
                 {discountPercent}% {isDiscountWithinLimit ? '' : '(Limit se zyada!)'}
               </span>
             </div>
@@ -224,73 +243,59 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
               step={1}
               value={discountPercent}
               onChange={(e) => setDiscountPercent(Number(e.target.value))}
-              className="w-full accent-blue cursor-pointer"
+              className="w-full cursor-pointer"
+              style={{ accentColor: 'var(--shadow-color)' }}
             />
-            <div className="flex justify-between text-[10px] text-slate font-medium">
+            <div className="flex justify-between" style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, marginTop: 4 }}>
               <span>2% Chhota</span>
               <span>10% Recommended</span>
-              <span>Max Limit: {guardrails.maxDiscountPercent}%</span>
+              <span>Max: {guardrails.maxDiscountPercent}%</span>
             </div>
           </div>
 
-          {/* Guardrail Safety Checks Panel */}
-          <div className="p-3.5 rounded-2xl bg-white border border-line space-y-2.5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-obsidian flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          {/* Guardrails Check */}
+          <div className="comic-card" style={{ padding: 12 }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <ShieldCheck className="w-4 h-4" style={{ color: '#0E7A50' }} />
                 {t.guardrailsTitle}
               </span>
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">
+              <span className="comic-badge" style={{ background: '#BEF0D8', color: '#0E7A50', fontSize: 9 }}>
                 Protected
               </span>
             </div>
-
-            <div className="space-y-1.5 text-xs">
-              <div className="flex items-center justify-between text-charcoal">
-                <span>Budget: {formatRupee(opportunity.estimatedCost)}</span>
-                <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" /> Limit ₹{guardrails.maxWeeklyBudget} ke andar
-                </span>
+            <div className="space-y-1" style={{ fontSize: 11 }}>
+              <div className="flex items-center justify-between">
+                <span style={{ color: '#6B7280' }}>Budget Limit:</span>
+                <span style={{ color: '#0E7A50', fontWeight: 700 }}>✓ ₹{guardrails.maxWeeklyBudget} ke andar</span>
               </div>
-
-              <div className="flex items-center justify-between text-charcoal">
-                <span>Discount: {discountPercent}%</span>
+              <div className="flex items-center justify-between">
+                <span style={{ color: '#6B7280' }}>Discount Limit:</span>
                 {isDiscountWithinLimit ? (
-                  <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" /> Limit {guardrails.maxDiscountPercent}% ke andar
-                  </span>
+                  <span style={{ color: '#0E7A50', fontWeight: 700 }}>✓ {guardrails.maxDiscountPercent}% ke andar</span>
                 ) : (
-                  <span className="text-error font-bold flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5 text-error" /> {t.guardExceeded}
-                  </span>
+                  <span style={{ color: '#C62828', fontWeight: 800 }}>✗ {t.guardExceeded}</span>
                 )}
-              </div>
-
-              <div className="flex items-center justify-between text-charcoal">
-                <span>Frequency: Hafte mein 1 message</span>
-                <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" /> Spam protection OK
-                </span>
               </div>
             </div>
           </div>
 
-          {/* "Kyun suggest kiya?" Explainable AI Section with Audio */}
-          <div className="rounded-2xl border border-soft-line bg-cloud overflow-hidden">
+          {/* "Kyun suggest kiya?" Rule-tag Evidence */}
+          <div className="comic-card" style={{ padding: 12 }}>
             <button
               onClick={() => setShowReasons(!showReasons)}
-              className="w-full flex items-center justify-between p-3.5 text-left text-xs font-bold text-obsidian hover:bg-slate-100 transition cursor-pointer"
+              className="w-full flex items-center justify-between text-left cursor-pointer"
             >
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue" />
+              <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />
                 {t.whySuggested}
               </span>
-              {showReasons ? <ChevronUp className="w-4 h-4 text-slate" /> : <ChevronDown className="w-4 h-4 text-slate" />}
+              {showReasons ? <ChevronUp className="w-4 h-4 text-ink" /> : <ChevronDown className="w-4 h-4 text-ink" />}
             </button>
 
             {showReasons && (
-              <div className="px-3.5 pb-3.5 pt-1 space-y-2 border-t border-soft-line">
-                <ul className="space-y-1.5 text-xs text-charcoal list-disc pl-4 leading-relaxed">
+              <div className="pt-2 mt-2" style={{ borderTop: '1.5px solid rgba(148,163,184,0.28)' }}>
+                <ul className="space-y-1.5 pl-4 list-disc" style={{ fontSize: 12, color: 'var(--ink)', lineHeight: 1.4 }}>
                   {(opportunity.reasons[lang] || opportunity.reasons.hinglish).map((r, i) => (
                     <li key={i}>{r}</li>
                   ))}
@@ -300,19 +305,16 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
                 <div className="pt-2 flex items-center justify-between">
                   <button
                     onClick={playReasonAudio}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-line text-xs font-semibold text-blue hover:bg-sky/50 transition cursor-pointer shadow-xs"
+                    className="comic-btn-outline comic-btn-sm"
+                    style={{ fontSize: 11 }}
                   >
-                    <Volume2 className={`w-3.5 h-3.5 ${isPlayingAudio ? 'animate-bounce text-blue' : ''}`} />
+                    <Volume2 className={`w-3.5 h-3.5 ${isPlayingAudio ? 'animate-bounce' : ''}`} style={{ color: 'var(--ai-text)' }} />
                     <span>{isPlayingAudio ? t.stopAudio : t.listenReason}</span>
                   </button>
-
                   {isPlayingAudio && (
-                    <div className="flex items-center gap-1 text-[11px] text-blue font-semibold">
-                      <span className="inline-block w-1.5 h-3 bg-blue animate-pulse" />
-                      <span className="inline-block w-1.5 h-4 bg-blue animate-pulse delay-75" />
-                      <span className="inline-block w-1.5 h-2 bg-blue animate-pulse delay-150" />
-                      <span>Bol raha hai...</span>
-                    </div>
+                    <span style={{ fontSize: 11, color: 'var(--ai-text)', fontWeight: 700 }}>
+                      Bol raha hai...
+                    </span>
                   )}
                 </div>
               </div>
@@ -321,11 +323,16 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
         </div>
 
         {/* Sticky Bottom Approval Actions */}
-        <div className="p-4 border-t border-soft-line bg-paper space-y-2">
+        <div
+          className="p-3 bg-surface space-y-2"
+          style={{ borderTop: '2px solid var(--shadow-color)' }}
+        >
           {hasGuardrailViolation && (
-            <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-error font-semibold flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 text-error" />
-              <span>Discount aapki limit ({guardrails.maxDiscountPercent}%) se zyada hai. Slider ko kam karein.</span>
+            <div
+              className="comic-card-coral text-center"
+              style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#C62828', borderRadius: 8 }}
+            >
+              Discount limit ({guardrails.maxDiscountPercent}%) se zyada hai!
             </div>
           )}
 
@@ -335,7 +342,8 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
                 onDismiss(opportunity.id);
                 onClose();
               }}
-              className="flex-1 py-3 px-3 rounded-2xl border border-line text-xs font-bold text-charcoal hover:text-obsidian hover:bg-cloud transition cursor-pointer text-center"
+              className="comic-btn-outline flex-1"
+              style={{ fontSize: 13 }}
             >
               {t.declineFullBtn}
             </button>
@@ -343,45 +351,41 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
             <button
               onClick={handleApproveAction}
               disabled={hasGuardrailViolation}
-              className={`flex-2 py-3 px-4 rounded-2xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 shadow-button transition cursor-pointer ${
-                hasGuardrailViolation
-                  ? 'bg-slate/50 text-white/80 cursor-not-allowed'
-                  : 'bg-blue hover:bg-blue/95 active:scale-[0.98]'
-              }`}
+              className="comic-btn flex-2"
+              style={{
+                fontSize: 13,
+                opacity: hasGuardrailViolation ? 0.5 : 1,
+                cursor: hasGuardrailViolation ? 'not-allowed' : 'pointer',
+              }}
             >
               <Check className="w-4 h-4" />
-              <span>{t.approveFullBtn} (Send to Bot)</span>
+              <span>{t.approveFullBtn}</span>
             </button>
           </div>
 
-          {/* Voice Approval Alternative (Hold to speak "Haan") */}
-          <div className="relative pt-1 text-center">
-            <button
-              onMouseDown={handleHoldStart}
-              onMouseUp={handleHoldEnd}
-              onTouchStart={handleHoldStart}
-              onTouchEnd={handleHoldEnd}
-              disabled={hasGuardrailViolation}
-              className={`w-full py-2 px-3 rounded-xl border border-line text-[11px] font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer select-none ${
-                isHoldingVoice
-                  ? 'bg-blue text-white border-blue'
-                  : 'bg-cloud text-charcoal hover:bg-slate-100'
-              } ${hasGuardrailViolation ? 'opacity-40 cursor-not-allowed' : ''}`}
-            >
-              <Mic className={`w-3.5 h-3.5 ${isHoldingVoice ? 'animate-pulse' : 'text-blue'}`} />
-              <span>
-                {isHoldingVoice
-                  ? `Sun raha hai... (${voiceHoldProgress}%)`
-                  : t.holdToSpeak}
-              </span>
-            </button>
-            {isHoldingVoice && (
-              <div
-                className="absolute bottom-0 left-0 h-1 bg-emerald-500 rounded-full transition-all"
-                style={{ width: `${voiceHoldProgress}%` }}
-              />
-            )}
-          </div>
+          {/* Voice Approval Alternative */}
+          <button
+            onMouseDown={handleHoldStart}
+            onMouseUp={handleHoldEnd}
+            onTouchStart={handleHoldStart}
+            onTouchEnd={handleHoldEnd}
+            disabled={hasGuardrailViolation}
+            className="w-full flex items-center justify-center gap-1.5 rounded-xl border-2 border-ink py-2 cursor-pointer select-none"
+            style={{
+              background: isHoldingVoice ? 'var(--ai-text)' : 'var(--canvas)',
+              color: isHoldingVoice ? '#FFFFFF' : 'var(--shadow-color)',
+              fontSize: 11,
+              fontWeight: 700,
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+            }}
+          >
+            <Mic className="w-3.5 h-3.5" style={{ color: isHoldingVoice ? '#FFFFFF' : 'var(--ai-text)' }} />
+            <span>
+              {isHoldingVoice
+                ? `Sun raha hai... (${voiceHoldProgress}%)`
+                : t.holdToSpeak}
+            </span>
+          </button>
         </div>
       </div>
     </div>

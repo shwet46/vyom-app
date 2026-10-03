@@ -8,6 +8,7 @@ import {
   Users,
   AlertCircle,
   ArrowUpRight,
+  ChevronDown,
 } from '../components/icons';
 import { Language, Opportunity, OpportunityType } from '../types';
 import { formatRupee } from '../utils/formatters';
@@ -28,6 +29,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
 }) => {
   const t = translations[lang] || translations.hinglish;
   const [activeFilter, setActiveFilter] = useState<'all' | OpportunityType>('all');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filterChips: { id: 'all' | OpportunityType; label: string }[] = [
     { id: 'all', label: t.filterAll },
@@ -44,42 +46,115 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
 
   const totalPotential = activeOpps.reduce((sum, o) => sum + o.potentialRevenue, 0);
 
-  return (
-    <div className="space-y-4 pb-8 animate-in fade-in duration-150">
-      {/* Header Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky/50 via-cloud to-paper border border-line/70 shadow-feature flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div className="text-[11px] font-google font-extrabold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-blue" />
-            Vyom AI Opportunity Radar
-          </div>
-          <h1 className="text-xl sm:text-2xl font-google font-black text-obsidian tracking-tight mt-0.5">
-            Bikri Badhane Ke Mauke
-          </h1>
-          <p className="text-xs text-charcoal mt-0.5 font-sans">
-            Dukaan par jo paisa silent leak ho raha hai, use wapas layein
-          </p>
-        </div>
+  // Evidence chip data per opportunity type
+  const getEvidenceChips = (opp: Opportunity) => {
+    const chips: { icon: string; text: string; detail: string }[] = [];
+    if (opp.type === 'winback') {
+      chips.push(
+        { icon: '📅', text: '7 din ka pattern', detail: 'Yeh customers 7+ din se nahi aaye' },
+        { icon: '📉', text: 'Avg ₹480/visit chhoota', detail: 'In customers ki average visit value ₹480 thi' },
+      );
+    } else if (opp.type === 'deadhours') {
+      chips.push(
+        { icon: '☀️', text: 'Dopahar 2-4 PM suni', detail: 'Is time footfall 60% kam hai' },
+        { icon: '📊', text: 'Peer stores mein nahi', detail: 'Aas-paas ki dukaanon mein yeh pattern nahi hai' },
+      );
+    } else if (opp.type === 'festival') {
+      chips.push(
+        { icon: '🎉', text: 'Navratri 11 din door', detail: 'Navratri demand ka peak aane wala hai' },
+        { icon: '📦', text: 'Stock align karein', detail: 'Vrat items ki demand 3x hoti hai' },
+      );
+    } else {
+      chips.push(
+        { icon: '📉', text: 'Sales giraa hua', detail: 'Pichle hafte se 18% ki giravat' },
+        { icon: '👥', text: `${opp.customerCount} grahak`, detail: 'In customers tak pehle jayen' },
+      );
+    }
+    chips.push(
+      { icon: '💰', text: `ROI ${opp.expectedRoi}`, detail: `Estimated return on ₹${opp.estimatedCost} spend` },
+    );
+    return chips;
+  };
 
-        <div className="bg-white/95 px-4 py-2.5 rounded-xl border border-line/60 flex sm:flex-col justify-between items-center sm:items-end shadow-xs">
-          <span className="text-[10px] font-semibold text-slate font-sans uppercase tracking-wider">Kul Recovery Potential</span>
-          <span className="text-xl sm:text-2xl font-google font-black text-blue">{formatRupee(totalPotential)}</span>
+  return (
+    <div className="space-y-4 animate-fade-slide-up" style={{ paddingBottom: 8 }}>
+      {/* Sticky Header: Kul Recovery Potential — lavender comic-panel strip */}
+      <div
+        className="comic-card-lavender"
+        style={{
+          padding: '14px 16px',
+          position: 'sticky',
+          top: 58,
+          zIndex: 10,
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5" style={{ marginBottom: 2 }}>
+              <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Kul Recovery Potential
+              </span>
+            </div>
+            <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
+              {formatRupee(totalPotential)}
+            </div>
+          </div>
+          <span
+            className="comic-badge"
+            style={{ background: '#BEF0D8', color: '#0E7A50' }}
+          >
+            {activeOpps.length} Mauke
+          </span>
         </div>
       </div>
 
-      {/* Filter Chips */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+      {/* Peer Compare at top of Mauke */}
+      <div className="comic-card-sky" style={{ padding: 14, position: 'relative' }}>
+        <div
+          className="comic-badge"
+          style={{
+            position: 'absolute',
+            top: -10,
+            right: 12,
+            background: '#FFFFFF',
+            color: '#1565C0',
+            fontSize: 9,
+          }}
+        >
+          Sirf Paytm Data Se Possible
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
+          📊 Peer Compare
+        </div>
+        <div className="flex items-end gap-3">
+          <div className="flex-1">
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Aapki Dukaan</div>
+            <div style={{ height: 16, background: '#FFE4B8', border: '1px solid var(--outline)', borderRadius: 5, width: '62%' }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#B5610E' }}>-18%</span>
+          </div>
+          <div className="flex-1">
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Aas-paas</div>
+            <div style={{ height: 16, background: '#BEF0D8', border: '1px solid var(--outline)', borderRadius: 5, width: '88%' }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50' }}>-4%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Pills — pill-shaped, comic shadow, active = ink-filled */}
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar" style={{ paddingBottom: 2 }}>
         {filterChips.map((chip) => {
           const isSelected = activeFilter === chip.id;
           return (
             <button
               key={chip.id}
               onClick={() => setActiveFilter(chip.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer font-google ${
-                isSelected
-                  ? 'bg-blue text-white shadow-button'
-                  : 'bg-cloud border border-line/70 text-charcoal hover:text-obsidian hover:bg-slate-100'
-              }`}
+              className={`comic-pill ${isSelected ? 'comic-pill-active' : ''}`}
+              style={{
+                background: isSelected ? 'var(--shadow-color)' : '#FFFFFF',
+                color: isSelected ? '#FFFFFF' : 'var(--shadow-color)',
+                whiteSpace: 'nowrap',
+              }}
             >
               {chip.label}
             </button>
@@ -87,79 +162,140 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
         })}
       </div>
 
-      {/* Opportunities Grid: Responsive 2-column on md+ */}
+      {/* Opportunity Cards */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map((opp) => (
-            <div
-              key={opp.id}
-              className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature hover:border-blue/50 transition-all flex flex-col justify-between gap-3 group"
-            >
-              <div className="space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky text-blue font-google">
-                      {opp.type === 'winback'
-                        ? 'Win-back'
-                        : opp.type === 'deadhours'
-                        ? 'Dead hours'
-                        : opp.type === 'festival'
-                        ? 'Festival'
-                        : 'Sales drop'}
-                    </span>
-                    <span className="text-xs text-slate font-medium flex items-center gap-1">
-                      <Users className="w-3 h-3 text-slate" /> {opp.customerCount} customers
-                    </span>
-                  </div>
+        <div className="space-y-3">
+          {filtered.map((opp) => {
+            const chips = getEvidenceChips(opp);
+            const isExpanded = expandedId === opp.id;
 
+            return (
+              <div key={opp.id} className="comic-card" style={{ padding: 14 }}>
+                {/* Badge + Title Row */}
+                <div className="flex items-start justify-between gap-2" style={{ marginBottom: 6 }}>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap" style={{ marginBottom: 4 }}>
+                      <span
+                        className="comic-badge"
+                        style={{ background: 'var(--ai-fill)', color: 'var(--ai-text)', fontSize: 9 }}
+                      >
+                        {opp.type === 'winback'
+                          ? 'Win-back'
+                          : opp.type === 'deadhours'
+                          ? 'Dead hours'
+                          : opp.type === 'festival'
+                          ? 'Festival'
+                          : 'Sales drop'}
+                      </span>
+                      <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <Users className="w-3 h-3" /> {opp.customerCount} customers
+                      </span>
+                    </div>
+                    <h3
+                      onClick={() => onSelectOpportunity(opp)}
+                      className="cursor-pointer"
+                      style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.3 }}
+                    >
+                      {opp.title[lang] || opp.title.hinglish}
+                    </h3>
+                  </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="text-sm sm:text-base font-black text-blue font-google">
+                    <div className="tabular-nums" style={{ fontSize: 15, fontWeight: 700, color: 'var(--ai-text)' }}>
                       {formatRupee(opp.potentialRevenue)}
                     </div>
-                    <div className="text-[10px] text-emerald-700 font-bold">ROI: {opp.expectedRoi}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50' }}>ROI: {opp.expectedRoi}</div>
                   </div>
                 </div>
 
-                <h3
-                  onClick={() => onSelectOpportunity(opp)}
-                  className="font-google font-extrabold text-sm sm:text-base text-obsidian cursor-pointer group-hover:text-blue transition-colors leading-snug line-clamp-2"
-                >
-                  {opp.title[lang] || opp.title.hinglish}
-                </h3>
+                {/* Rule-Tag Evidence Chips (collapsed) */}
+                <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 8 }}>
+                  {chips.map((chip, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '3px 8px',
+                        borderRadius: 8,
+                        background: 'var(--canvas)',
+                        border: '1.5px solid rgba(148,163,184,0.35)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {chip.icon} {chip.text}
+                    </span>
+                  ))}
+                </div>
 
-                <p className="text-xs text-charcoal leading-relaxed line-clamp-3 font-sans">
-                  {opp.description[lang] || opp.description.hinglish}
-                </p>
-              </div>
-
-              {/* Action buttons */}
-              <div className="pt-2.5 border-t border-soft-line flex items-center justify-between gap-2 mt-auto">
+                {/* "Kyun?" expand button */}
                 <button
-                  onClick={() => onSelectOpportunity(opp)}
-                  className="text-xs font-bold text-charcoal hover:text-obsidian flex items-center gap-0.5 cursor-pointer py-1 font-google"
+                  onClick={() => setExpandedId(isExpanded ? null : opp.id)}
+                  className="flex items-center gap-1 cursor-pointer"
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--ai-text)',
+                    marginBottom: isExpanded ? 8 : 10,
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                  }}
                 >
-                  <span>Details</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate" />
+                  Kyun? <ChevronDown className="w-3.5 h-3.5" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                 </button>
 
-                <button
-                  onClick={() => onQuickApproveOpportunity(opp)}
-                  className="py-2 px-3.5 rounded-xl bg-blue hover:bg-blue-dark text-white text-xs font-extrabold shadow-button flex items-center gap-1.5 transition cursor-pointer font-google"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Haan, chalao</span>
-                </button>
+                {/* Expanded evidence detail */}
+                {isExpanded && (
+                  <div className="space-y-2 animate-fade-slide-up" style={{ marginBottom: 10 }}>
+                    {chips.map((chip, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: '8px 10px',
+                          background: 'var(--canvas)',
+                          border: '1.5px solid rgba(148,163,184,0.28)',
+                          borderRadius: 10,
+                        }}
+                      >
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{chip.icon} {chip.text}</div>
+                        <div style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>{chip.detail}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="flex items-center justify-between gap-2" style={{ paddingTop: 10, borderTop: '1.5px solid rgba(148,163,184,0.28)' }}>
+                  <button
+                    onClick={() => onSelectOpportunity(opp)}
+                    className="comic-btn-outline comic-btn-sm"
+                    style={{ fontSize: 13 }}
+                  >
+                    Details <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onQuickApproveOpportunity(opp)}
+                    className="comic-btn comic-btn-sm"
+                    style={{ fontSize: 13 }}
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    Haan, chalao
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
-        <div className="p-8 rounded-2xl bg-cloud border border-line/60 text-center space-y-2">
-          <div className="w-10 h-10 rounded-xl bg-white mx-auto flex items-center justify-center text-slate shadow-xs">
-            <Sparkles className="w-5 h-5 text-blue" />
+        <div className="comic-card" style={{ padding: 24, textAlign: 'center' }}>
+          <div className="icon-chip" style={{ width: 40, height: 40, margin: '0 auto 8px', background: 'var(--ai-fill)' }}>
+            <Sparkles className="w-5 h-5" style={{ color: 'var(--ai-text)' }} />
           </div>
-          <h3 className="font-extrabold text-sm text-obsidian font-google">Koi naya mauka baki nahi hai</h3>
-          <p className="text-xs text-charcoal max-w-xs mx-auto font-sans">
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>Koi naya mauka baki nahi hai</h3>
+          <p className="text-caption" style={{ maxWidth: 240, margin: '4px auto 0' }}>
             Aapne sabhi mauke check kar liye hain ya filter ke mutabiq koi entry nahi hai.
           </p>
         </div>

@@ -230,10 +230,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/75 backdrop-blur-xs p-3 sm:p-4">
-      <div className="w-full max-w-md bg-paper rounded-3xl border border-line shadow-feature overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/60 backdrop-blur-xs p-0 sm:p-2">
+      <div
+        className="w-full max-w-[420px] bg-surface rounded-t-2xl sm:rounded-2xl border-2 border-ink overflow-hidden flex flex-col max-h-[92vh] animate-fade-slide-up"
+        style={{ boxShadow: '2px 2px 0px var(--shadow-color)' }}
+      >
         {/* Brand Header */}
-        <div className="p-5 border-b border-soft-line bg-cloud/50 flex items-center justify-between">
+        <div className="p-4 border-b-2 border-ink bg-surface flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-blue text-white font-black text-xl flex items-center justify-center shadow-button">
               V

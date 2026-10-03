@@ -1,180 +1,373 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════
+   VYOM PAYTM-INSPIRED DESIGN SYSTEM
+   Light blue surfaces + soft grey outline/shadow + phone-only
+   ═══════════════════════════════════════════ */
+
 :root, .app-shell {
-  /* Indigo/violet product palette */
-  --obsidian: #111827;
-  --paper: #ffffff;
-  --cloud: #f7f8fc;
-  --sky: #eef2ff;
-  --charcoal: #6b7280;
-  --slate: #6b7280;
-  --ink: #111827;
-  --blue: #6366f1;
-  --blue-dark: #4f46e5;
-  --violet: #8b5cf6;
-  --line: #e5e7eb;
-  --soft-line: rgba(229, 231, 235, 0.72);
-  --error: #dc2626;
-  --success: #16a34a;
-  --warning: #f59e0b;
+  /* ─── Core Palette ─── */
+  --canvas:   #F5FAFD;
+  --surface:  #FFFFFF;
+  --ink:      #002970;
+  --outline:  #CBD5E1;
+  --shadow-color: rgba(148, 163, 184, 0.45);
 
-  /* Supporting accent palette */
-  --peach: #f5f3ff;
-  --lavender: #ede9fe;
-  --mint: #dcfce7;
-  --blush: #fee2e2;
-  --cream: #fef3c7;
-  --sky-blue: #eef2ff;
-  --coral: #8b5cf6;
-  --sage: #dcfce7;
+  /* ─── Paytm brand accent ─── */
+  --ai-fill:  #DDF7FF;
+  --ai-text:  #00A9E8;
 
-  /* Soft shadows with an indigo tint */
-  --feature-shadow: 0 1px 3px 0 rgba(17, 24, 39, 0.05), 0 8px 32px -4px rgba(99, 102, 241, 0.12);
-  --button-shadow: 0 2px 8px -1px rgba(99, 102, 241, 0.24), 0 1px 2px 0 rgba(17, 24, 39, 0.05);
-  --card-shadow: 0 2px 12px -2px rgba(17, 24, 39, 0.09), 0 0 0 1px rgba(17, 24, 39, 0.04);
-  --glow-shadow: 0 0 32px rgba(99, 102, 241, 0.22);
+  /* ─── Semantic: Money positive / recovered (mint) ─── */
+  --mint-fill: #BEF0D8;
+  --mint-text: #0E7A50;
+
+  /* ─── Semantic: At-risk / pending (peach) ─── */
+  --peach-fill: #FFE4B8;
+  --peach-text: #B5610E;
+
+  /* ─── Semantic: Overdue / urgent (coral) ─── */
+  --coral-fill: #FFC9C9;
+  --coral-text: #C62828;
+
+  /* ─── Semantic: Info / udhaar-neutral (sky) ─── */
+  --sky-fill:  #C7E8FF;
+  --sky-text:  #1565C0;
+
+  /* ─── Muted caption text ─── */
+  --muted: #6B7280;
+
+  /* ─── Soft grey shadow ─── */
+  --comic-shadow: 2px 2px 0px var(--shadow-color);
+  --comic-shadow-sm: 1px 1px 0px var(--shadow-color);
+  --comic-shadow-pressed: 1px 1px 0px var(--shadow-color);
+
+  /* ─── Typography stacks ─── */
+  --font-ui:       'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', system-ui, sans-serif;
+  --font-hero:     'Instrument Serif', Georgia, serif;
+  --font-deva:     'Noto Sans Devanagari', 'Noto Sans', sans-serif;
+  --font-body:     'Noto Sans', 'Instrument Sans', sans-serif;
 }
 
 @theme {
-  --color-obsidian: var(--obsidian);
-  --color-paper: var(--paper);
-  --color-cloud: var(--cloud);
-  --color-sky: var(--sky);
-  --color-charcoal: var(--charcoal);
-  --color-slate: var(--slate);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
   --color-ink: var(--ink);
-  --color-blue: var(--blue);
-  --color-blue-dark: var(--blue-dark);
-  --color-violet: var(--violet);
-  --color-line: var(--line);
-  --color-soft-line: var(--soft-line);
-  --color-error: var(--error);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-peach: var(--peach);
-  --color-lavender: var(--lavender);
-  --color-mint: var(--mint);
-  --color-blush: var(--blush);
-  --color-cream: var(--cream);
-  --color-sky-blue: var(--sky-blue);
-  --color-coral: var(--coral);
-  --color-sage: var(--sage);
-  --font-sans: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
-  --font-google: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+  --color-ai-fill: var(--ai-fill);
+  --color-ai-text: var(--ai-text);
+  --color-mint-fill: var(--mint-fill);
+  --color-mint-text: var(--mint-text);
+  --color-peach-fill: var(--peach-fill);
+  --color-peach-text: var(--peach-text);
+  --color-coral-fill: var(--coral-fill);
+  --color-coral-text: var(--coral-text);
+  --color-sky-fill: var(--sky-fill);
+  --color-sky-text: var(--sky-text);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-ui);
+  --font-heading: var(--font-ui);
+  --font-google: var(--font-ui);
 }
 
-/* Smooth rendering for modern feel */
+/* ═══════════════════════════════════════════
+   PHONE-ONLY LAYOUT FRAME
+   ═══════════════════════════════════════════ */
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  font-family: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', system-ui, sans-serif;
+  font-family: var(--font-ui);
+  background: #E7EEF4; /* Neutral muted bg outside phone frame */
+}
+
+body {
+  margin: 0;
+  background: #E7EEF4;
+}
+
+/* The outer phone frame wrapper — locks everything to max 420px */
+.phone-frame {
+  max-width: 420px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--canvas);
+  position: relative;
+  /* Subtle side border on desktop to delineate the frame */
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.28);
 }
 
 .app-shell {
   min-height: 100vh;
   min-height: 100dvh;
-  background: linear-gradient(160deg, #ffffff 0%, #f7f8fc 60%, #eef2ff 100%);
-  color: var(--obsidian);
-  font-family: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-ui);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   letter-spacing: -0.01em;
 }
 
-.font-google, .font-heading, .font-sans {
-  font-family: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+/* ═══════════════════════════════════════════
+   TYPOGRAPHY SCALE
+   30 / 20 / 15 / 13 — nothing else
+   ═══════════════════════════════════════════ */
+
+.text-hero {
+  font-family: var(--font-hero);
+  font-size: 30px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
-.font-lora {
-  font-family: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+.text-section {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-/* Custom utility shadows matching the design specification */
-.shadow-feature {
-  box-shadow: var(--feature-shadow);
+.text-body {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
-.shadow-button {
-  box-shadow: var(--button-shadow);
+.text-caption {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
-.shadow-glow-blue {
-  box-shadow: var(--glow-shadow);
+/* Tabular numerals for money */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-.shadow-card {
-  box-shadow: var(--card-shadow);
+/* ═══════════════════════════════════════════
+   COMIC-PANEL COMPONENT STYLES
+   ═══════════════════════════════════════════ */
+
+/* Standard card */
+.comic-card {
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow);
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
 }
 
-/* Glassmorphism card style */
-.glass-card {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(16px) saturate(1.6);
-  -webkit-backdrop-filter: blur(16px) saturate(1.6);
-  border: 1px solid rgba(229, 231, 235, 0.9);
-  box-shadow: var(--card-shadow);
+.comic-card:active {
+  box-shadow: var(--comic-shadow-pressed);
+  transform: translate(2px, 2px);
 }
 
-/* Pastel gradient cards */
-.card-pastel-lavender {
-  background: linear-gradient(135deg, rgba(237, 233, 254, 0.72) 0%, rgba(255, 255, 255, 0.96) 100%);
+/* Semantic-colored cards */
+.comic-card-mint {
+  background: var(--mint-fill);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow);
 }
 
-.card-pastel-mint {
-  background: linear-gradient(135deg, rgba(220, 252, 231, 0.28) 0%, rgba(254, 254, 254, 0.92) 100%);
+.comic-card-peach {
+  background: var(--peach-fill);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow);
 }
 
-.card-pastel-peach {
-  background: linear-gradient(135deg, rgba(245, 243, 255, 0.72) 0%, rgba(255, 255, 255, 0.96) 100%);
+.comic-card-coral {
+  background: var(--coral-fill);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow);
 }
 
-.card-pastel-blush {
-  background: linear-gradient(135deg, rgba(254, 226, 226, 0.14) 0%, rgba(255, 255, 255, 0.94) 100%);
+.comic-card-sky {
+  background: var(--sky-fill);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow);
 }
 
-.card-pastel-coral {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(255, 255, 255, 0.94) 100%);
+.comic-card-lavender {
+  background: var(--ai-fill);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow);
 }
 
-.card-pastel-sage {
-  background: linear-gradient(135deg, rgba(220, 252, 231, 0.22) 0%, rgba(254, 254, 254, 0.92) 100%);
+/* Proof Strip dashed card */
+.comic-card-proof {
+  background: var(--surface);
+  border: 1px dashed var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow-sm);
 }
 
-.card-pastel-cream {
-  background: linear-gradient(135deg, rgba(254, 243, 226, 0.35) 0%, rgba(254, 254, 254, 0.92) 100%);
+/* Primary button: ink fill, white text */
+.comic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--ink);
+  color: #FFFFFF;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  box-shadow: var(--comic-shadow);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+  min-height: 44px;
 }
 
-/* Pulsing voice ripple */
-@keyframes voice-pulse {
+.comic-btn:active {
+  box-shadow: var(--comic-shadow-pressed);
+  transform: translate(2px, 2px);
+}
+
+/* Secondary/outline button */
+.comic-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #FFFFFF;
+  color: var(--ink);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  box-shadow: var(--comic-shadow);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+  min-height: 44px;
+}
+
+.comic-btn-outline:active {
+  box-shadow: var(--comic-shadow-pressed);
+  transform: translate(2px, 2px);
+}
+
+/* Small button variant */
+.comic-btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  min-height: 36px;
+  border-radius: 12px;
+}
+
+/* Pill-shaped chips/tags (status, filters) */
+.comic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 1px 1px 0px var(--shadow-color);
+  cursor: pointer;
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+  min-height: 32px;
+}
+
+.comic-pill:active {
+  box-shadow: 1px 1px 0px var(--shadow-color);
+  transform: translate(1px, 1px);
+}
+
+.comic-pill-active {
+  background: var(--ink);
+  color: #FFFFFF;
+}
+
+/* Icon chip (small semantic-colored circle/rounded-square for icons) */
+.icon-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--outline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── Badge ─── */
+.comic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 1px 1px 0px var(--shadow-color);
+}
+
+/* ─── Input ─── */
+.comic-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  box-shadow: var(--comic-shadow-sm);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+  min-height: 44px;
+}
+
+.comic-input:focus {
+  box-shadow: var(--comic-shadow), 0 0 0 2px var(--ai-fill);
+}
+
+.comic-input::placeholder {
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════
+   VOICE / MIC ANIMATIONS
+   ═══════════════════════════════════════════ */
+
+@keyframes voice-ring-expand {
   0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.35;
+    transform: scale(0.8);
+    opacity: 0.6;
   }
   100% {
-    transform: scale(1.35);
+    transform: scale(2.2);
     opacity: 0;
   }
 }
 
 .animate-voice-ring-1 {
-  animation: voice-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  animation: voice-ring-expand 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
-
 .animate-voice-ring-2 {
-  animation: voice-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite 0.7s;
+  animation: voice-ring-expand 2s cubic-bezier(0.22, 1, 0.36, 1) infinite 0.6s;
 }
-
 .animate-voice-ring-3 {
-  animation: voice-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite 1.4s;
+  animation: voice-ring-expand 2s cubic-bezier(0.22, 1, 0.36, 1) infinite 1.2s;
 }
 
-/* Voice Equalizer Visualizer Bars */
+/* Sound bars */
 @keyframes sound-bar-1 { 0%, 100% { height: 10px; } 50% { height: 36px; } }
 @keyframes sound-bar-2 { 0%, 100% { height: 24px; } 50% { height: 44px; } }
 @keyframes sound-bar-3 { 0%, 100% { height: 14px; } 50% { height: 32px; } }
@@ -187,51 +380,10 @@ html {
 .animate-sound-4 { animation: sound-bar-4 0.65s ease-in-out infinite; }
 .animate-sound-5 { animation: sound-bar-5 0.9s ease-in-out infinite; }
 
-/* Subtle float animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-}
+/* ═══════════════════════════════════════════
+   UTILITY ANIMATIONS
+   ═══════════════════════════════════════════ */
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Shimmer gradient animation */
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-.animate-shimmer {
-  background-size: 200% auto;
-  animation: shimmer 3s linear infinite;
-}
-
-/* Custom scrollbar for horizontal chip rows */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* PWA safe area responsive helpers */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-/* Mobile-first responsive text sizing */
-@media (max-width: 380px) {
-  .app-shell {
-    font-size: 14px;
-  }
-}
-
-/* Smooth page transitions */
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
@@ -247,12 +399,131 @@ html {
   animation: fadeSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* Card hover lift effect */
-.hover-lift {
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px -4px rgba(99, 102, 241, 0.12);
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════
+   SCROLL HELPERS
+   ═══════════════════════════════════════════ */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ═══════════════════════════════════════════
+   PWA SAFE AREA
+   ═══════════════════════════════════════════ */
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SPEECH BUBBLE (voice moment)
+   ═══════════════════════════════════════════ */
+
+.speech-bubble {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--comic-shadow-sm);
+  padding: 12px 16px;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  right: 24px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid var(--ink);
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  right: 26px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid var(--surface);
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════
+   LEGACY TAILWIND CLASS COMPATIBILITY
+   Backward-compat aliases so existing code
+   that still uses old class names renders
+   ═══════════════════════════════════════════ */
+
+.shadow-feature { box-shadow: var(--comic-shadow); }
+.shadow-button  { box-shadow: var(--comic-shadow); }
+.shadow-card    { box-shadow: var(--comic-shadow); }
+.shadow-glow-blue { box-shadow: var(--comic-shadow), 0 0 0 3px var(--ai-fill); }
+.shadow-xs { box-shadow: 1px 1px 0px var(--shadow-color); }
+.shadow-2xs { box-shadow: 1px 1px 0px var(--shadow-color); }
+
+/* Glass card → comic card */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  box-shadow: var(--comic-shadow);
+  border-radius: 16px;
+}
+
+/* Old pastel card aliases → flat fills, no gradients */
+.card-pastel-lavender { background: var(--ai-fill); }
+.card-pastel-mint { background: var(--mint-fill); }
+.card-pastel-peach { background: var(--peach-fill); }
+.card-pastel-blush { background: var(--coral-fill); }
+.card-pastel-coral { background: var(--ai-fill); }
+.card-pastel-sage { background: var(--mint-fill); }
+.card-pastel-cream { background: var(--peach-fill); }
+
+/* Remove hover-lift (was translateY + soft shadow) — not comic style */
+.hover-lift {
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+}
+.hover-lift:active {
+  box-shadow: var(--comic-shadow-pressed);
+  transform: translate(2px, 2px);
+}
+
+/* Old color token aliases for backward compat in Tailwind classes */
+.text-obsidian { color: var(--ink); }
+.text-charcoal { color: var(--muted); }
+.text-slate { color: var(--muted); }
+.text-blue { color: var(--ai-text); }
+.bg-obsidian { background: var(--ink); }
+.bg-blue { background: var(--ai-text); }
+.bg-paper { background: var(--surface); }
+.bg-cloud { background: var(--canvas); }
+.bg-sky { background: var(--sky-fill); }
+.bg-lavender { background: var(--ai-fill); }
+.bg-mint { background: var(--mint-fill); }
+.bg-blush { background: var(--coral-fill); }
+.bg-cream { background: var(--peach-fill); }
+.border-line { border-color: var(--outline); }
+.border-soft-line { border-color: rgba(148, 163, 184, 0.35); }
+
+.font-google, .font-heading, .font-sans {
+  font-family: var(--font-ui);
 }

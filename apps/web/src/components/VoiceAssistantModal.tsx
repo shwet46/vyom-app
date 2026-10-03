@@ -29,6 +29,7 @@ import { ChatMessage, GenUiData, Language } from '../types';
 import { translations } from '../utils/i18n';
 import { formatRupee } from '../utils/formatters';
 import { speakWithShubh, stopSpeech } from '../utils/speech';
+import { askCopilot } from '../services/api';
 
 interface VoiceAssistantModalProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
   const recognitionRef = useRef<any>(null);
   const dictationRef = useRef<any>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const copilotSessionIdRef = useRef<string | undefined>(undefined);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -205,6 +207,48 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
   const generateBotResponse = (prompt: string): ChatMessage => {
     const q = prompt.toLowerCase();
     const timeNow = 'Abhi';
+
+    // Keep common operational questions useful even when the API is offline.
+    if (
+      q.includes('aaj ki bikri') ||
+      q.includes('today sales') ||
+      q.includes('aaj ka sale') ||
+      q.includes('sales today') ||
+      q.includes('aaj kitna bika')
+    ) {
+      return {
+        id: `bot-${Date.now()}`,
+        sender: 'vyom',
+        text:
+          lang === 'english'
+            ? 'Today’s sales are ₹7,420 from 24 orders, which is ₹540 higher than yesterday (+8%). Open the Home dashboard for the hourly breakdown.'
+            : lang === 'hindi'
+            ? 'आज की बिक्री ₹7,420 है और 24 ऑर्डर आए हैं। कल से ₹540 ज़्यादा, यानी 8% बढ़ोतरी। घंटे के हिसाब से विवरण Home पर देखें।'
+            : lang === 'marathi'
+            ? 'आजची विक्री ₹7,420 आहे आणि 24 ऑर्डर आले आहेत. कालपेक्षा ₹540 जास्त, म्हणजे 8% वाढ. तासानुसार तपशील Home वर पहा.'
+            : 'Aaj ki bikri ₹7,420 hai aur 24 orders aaye hain. Kal se ₹540 zyada, yani 8% growth. Hourly breakup Home dashboard par dekhein.',
+        timestamp: timeNow,
+      };
+    }
+
+    if (
+      q.includes('help') ||
+      q.includes('kya kar sakte') ||
+      q.includes('what can you do') ||
+      q === 'hi' ||
+      q === 'hello' ||
+      q.includes('namaste')
+    ) {
+      return {
+        id: `bot-${Date.now()}`,
+        sender: 'vyom',
+        text:
+          lang === 'english'
+            ? 'I can help with today’s sales, stock planning, offers, festival preparation, and overdue udhaar. Ask me a specific question and I’ll guide you.'
+            : 'Namaste Ramesh bhai! Aap aaj ki sales, stock, offers, festival preparation ya overdue udhaar ke baare mein seedha pooch sakte hain.',
+        timestamp: timeNow,
+      };
+    }
 
     // 1. Udhaar query -> Generates interactive Overdue Ledger & Quick Settlement Card
     if (
@@ -446,12 +490,25 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
     setIsListening(false);
     setIsDictatingInput(false);
 
-    // Simulated thinking
-    setTimeout(() => {
-      const botReply = generateBotResponse(promptText);
-      setMessages((prev) => [...prev, botReply]);
-      speakText(botReply.text);
-    }, 600);
+    // Prefer the real copilot so the answer follows the exact merchant query.
+    // Keep the local response engine available for offline/demo mode.
+    void askCopilot(promptText, copilotSessionIdRef.current)
+      .then((reply) => {
+        copilotSessionIdRef.current = reply.session_id;
+        const botReply: ChatMessage = {
+          id: `bot-${Date.now()}`,
+          sender: 'vyom',
+          text: reply.text,
+          timestamp: 'Abhi',
+        };
+        setMessages((prev) => [...prev, botReply]);
+        speakText(botReply.text);
+      })
+      .catch(() => {
+        const botReply = generateBotResponse(promptText);
+        setMessages((prev) => [...prev, botReply]);
+        speakText(botReply.text);
+      });
   };
 
   const handleMicToggle = () => {
@@ -509,9 +566,13 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-paper">
-      {/* Top Header */}
-      <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur-md border-b border-soft-line px-4 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/60 backdrop-blur-xs p-0 sm:p-2">
+      <div
+        className="w-full max-w-[420px] h-full sm:h-[92vh] bg-surface sm:rounded-2xl border-2 border-ink flex flex-col overflow-hidden animate-fade-slide-up"
+        style={{ boxShadow: '2px 2px 0px var(--shadow-color)' }}
+      >
+        {/* Top Header */}
+        <header className="sticky top-0 z-20 bg-surface border-b-2 border-ink px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-2xl bg-blue text-white flex items-center justify-center font-google font-black text-xl shadow-button">
             V
@@ -1201,5 +1262,6 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         </div>
       </div>
     </div>
+  </div>
   );
 };

@@ -48,7 +48,7 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
         particleCount: 75,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#16A34A', '#6366F1', '#FFFFFF'],
+        colors: ['#0E7A50', '#BEF0D8', '#00A9E8', '#CBD5E1'],
       });
     } catch (e) {}
 
@@ -74,79 +74,86 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
   const firmMessage = `Namaste ${customer.name} ji, Sharma Kirana Store se zaroori reminder. Aapka ₹${customer.amount} ka ration hisaab pichle ${customer.daysOverdue} dino se overdue hai. Dukaan ke agle stock ke liye kripya aaj hi clear karein: paytm.me/sharma-kirana 🙏`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/60 backdrop-blur-xs p-0 sm:p-4">
-      <div className="w-full max-w-lg bg-paper rounded-t-3xl sm:rounded-3xl border border-line shadow-feature flex flex-col overflow-hidden max-h-[92vh] animate-in slide-in-from-bottom duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/60 backdrop-blur-xs p-0 sm:p-3">
+      <div
+        className="w-full max-w-[420px] max-h-[92vh] bg-surface rounded-t-2xl sm:rounded-2xl border-2 border-ink flex flex-col overflow-hidden animate-fade-slide-up"
+        style={{ boxShadow: '2px 2px 0px var(--shadow-color)' }}
+      >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-soft-line bg-paper flex items-center justify-between">
+        <div
+          className="p-4 bg-surface flex items-center justify-between"
+          style={{ borderBottom: '2px solid var(--shadow-color)' }}
+        >
           <div className="flex items-center gap-3">
             <div
-              className={`w-11 h-11 rounded-2xl font-google font-black text-sm flex items-center justify-center flex-shrink-0 ${
-                isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-cloud text-blue border border-line'
-              }`}
+              className="w-10 h-10 rounded-xl font-bold text-sm flex items-center justify-center flex-shrink-0"
+              style={{
+                border: '1px solid var(--outline)',
+                background: isPaid ? '#BEF0D8' : 'var(--canvas)',
+                color: isPaid ? '#0E7A50' : 'var(--shadow-color)',
+                boxShadow: '1px 1px 0px var(--shadow-color)',
+              }}
             >
               {customer.initials}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-google font-black text-base sm:text-lg text-obsidian tracking-tight">
+                <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>
                   {customer.name}
                 </h2>
                 {customer.trustScore && (
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    ⭐ {customer.trustScore}%
+                  <span
+                    className="comic-badge"
+                    style={{ background: '#BEF0D8', color: '#0E7A50', fontSize: 10 }}
+                  >
+                    ⭐ {customer.trustScore}% Trust
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-charcoal font-sans">
+              <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
                 <span>{customer.phone}</span>
-                {customer.address && (
-                  <>
-                    <span>•</span>
-                    <span className="truncate max-w-[140px]">{customer.address}</span>
-                  </>
-                )}
+                {customer.address && <span> • {customer.address}</span>}
               </div>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-cloud border border-line flex items-center justify-center text-charcoal hover:text-ink cursor-pointer"
+            className="w-8 h-8 rounded-full border-2 border-ink bg-surface flex items-center justify-center text-ink cursor-pointer hover:bg-canvas transition"
+            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 font-sans">
-          {/* Clean Bahi-Khata Customer Header */}
-          <div className="p-3.5 rounded-2xl bg-cloud border border-line shadow-xs flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-blue" />
-              <span className="font-google text-xs font-bold text-obsidian">
-                Grahak Khata Panna • Customer Account Record
-              </span>
-            </div>
-            <button
-              onClick={handleCopyStatement}
-              className="text-[11px] font-google font-bold text-blue hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <Download className="w-3 h-3" />
-              <span>Parchi Share</span>
-            </button>
-          </div>
-
-          {/* Amount Balance Card */}
-          <div className="p-4 rounded-3xl bg-cloud border border-line space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
+          {/* Amount Balance Card — Red/Green debt pattern */}
+          <div
+            className={isPaid ? 'comic-card-mint' : isOverdue30 ? 'comic-card-coral' : 'comic-card'}
+            style={{ padding: 14 }}
+          >
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold text-charcoal uppercase tracking-wider block font-google">
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: isPaid ? '#0E7A50' : isOverdue30 ? '#C62828' : '#6B7280',
+                  }}
+                >
                   Kul Baki Balance (वर्तमान बकाया)
                 </span>
                 <div
-                  className={`font-google font-black text-2xl sm:text-3xl tracking-tight mt-0.5 ${
-                    isPaid ? 'text-emerald-700' : isOverdue30 ? 'text-error' : 'text-obsidian'
-                  }`}
+                  className="tabular-nums"
+                  style={{
+                    fontSize: 26,
+                    fontWeight: 800,
+                    marginTop: 2,
+                    color: isPaid ? '#0E7A50' : isOverdue30 ? '#C62828' : 'var(--shadow-color)',
+                  }}
                 >
                   {formatRupee(customer.amount)}
                 </div>
@@ -154,13 +161,12 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
 
               <div className="text-right">
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-google font-extrabold ${
-                    isPaid
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : isOverdue30
-                      ? 'bg-rose-100 text-error'
-                      : 'bg-amber-100 text-amber-800'
-                  }`}
+                  className="comic-badge"
+                  style={{
+                    background: isPaid ? '#FFFFFF' : isOverdue30 ? '#FFFFFF' : '#FFE4B8',
+                    color: isPaid ? '#0E7A50' : isOverdue30 ? '#C62828' : '#B5610E',
+                    fontSize: 11,
+                  }}
                 >
                   {isPaid
                     ? 'Poora Chukta ✓'
@@ -169,24 +175,41 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
                     : `${customer.daysOverdue} din se baki`}
                 </span>
                 {customer.promisedDate && (
-                  <div className="text-[11px] text-slate mt-1 font-medium">
+                  <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, marginTop: 4 }}>
                     Wada: {customer.promisedDate}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Total Given vs Total Received lifetime */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-soft-line text-xs font-sans">
-              <div className="p-2 rounded-xl bg-white border border-soft-line">
-                <span className="text-[10px] text-slate block">Kul Udhaar Diya (Total Given)</span>
-                <span className="font-google font-extrabold text-rose-700">
+            {/* Total Given vs Repaid Lifetime */}
+            <div
+              className="grid grid-cols-2 gap-2 pt-2 mt-2"
+              style={{ borderTop: '1.5px solid var(--shadow-color)' }}
+            >
+              <div
+                style={{
+                  padding: 8,
+                  background: '#FFFFFF',
+                  border: '1.5px solid var(--shadow-color)',
+                  borderRadius: 10,
+                }}
+              >
+                <span style={{ fontSize: 10, color: '#6B7280', display: 'block' }}>Kul Udhaar Diya</span>
+                <span className="tabular-nums" style={{ fontSize: 13, fontWeight: 800, color: '#C62828' }}>
                   {formatRupee(customer.totalUdhaarEver || customer.amount)}
                 </span>
               </div>
-              <div className="p-2 rounded-xl bg-white border border-soft-line">
-                <span className="text-[10px] text-slate block">Kul Jama Kiya (Total Repaid)</span>
-                <span className="font-google font-extrabold text-emerald-700">
+              <div
+                style={{
+                  padding: 8,
+                  background: '#FFFFFF',
+                  border: '1.5px solid var(--shadow-color)',
+                  borderRadius: 10,
+                }}
+              >
+                <span style={{ fontSize: 10, color: '#6B7280', display: 'block' }}>Kul Jama Repaid</span>
+                <span className="tabular-nums" style={{ fontSize: 13, fontWeight: 800, color: '#0E7A50' }}>
                   {formatRupee(customer.totalJamaEver || 0)}
                 </span>
               </div>
@@ -194,48 +217,63 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
           </div>
 
           {/* LEDGER ENTRIES TABLE (Authentic Indian Khata) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-google font-extrabold text-obsidian px-1">
-              <span>Bahi-Khata Entries (लेनदेन इतिहास)</span>
-              <span className="text-[10px] font-normal text-slate">Dual-entry record</span>
+          <div className="comic-card" style={{ padding: 12 }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>
+                Bahi-Khata Ledger Entries
+              </span>
+              <button
+                onClick={handleCopyStatement}
+                className="text-link flex items-center gap-1 cursor-pointer"
+                style={{ fontSize: 11, fontWeight: 700, color: 'var(--ai-text)' }}
+              >
+                <Download className="w-3 h-3" />
+                <span>Parchi Share</span>
+              </button>
             </div>
 
-            <div className="rounded-2xl border border-line bg-white overflow-hidden shadow-xs">
+            <div
+              style={{
+                borderRadius: 10,
+                border: '1.5px solid var(--shadow-color)',
+                overflow: 'hidden',
+              }}
+            >
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-cloud border-b border-soft-line text-[10px] font-google font-bold text-slate">
-                    <th className="py-2 px-3">Date</th>
-                    <th className="py-2 px-3 text-right">Udhaar (+)</th>
-                    <th className="py-2 px-3 text-right">Jama (-)</th>
-                    <th className="py-2 px-3 text-right">Balance</th>
+                  <tr style={{ background: 'var(--canvas)', borderBottom: '1.5px solid var(--shadow-color)', fontSize: 10, fontWeight: 800, color: 'var(--ink)' }}>
+                    <th style={{ padding: '6px 8px' }}>Date</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right' }}>Udhaar (+)</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right' }}>Jama (-)</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right' }}>Balance</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-soft-line">
+                <tbody>
                   {customer.entries && customer.entries.length > 0 ? (
                     customer.entries.map((entry) => (
-                      <tr key={entry.id} className="hover:bg-slate-50 transition">
-                        <td className="py-2 px-3 text-[11px] font-medium text-slate whitespace-nowrap">
+                      <tr key={entry.id} style={{ borderBottom: '1px solid rgba(148,163,184,0.20)' }}>
+                        <td style={{ padding: '6px 8px', fontSize: 11, color: '#6B7280' }}>
                           {entry.date}
                         </td>
-                        <td className="py-2 px-3 text-right font-google font-bold text-rose-700">
+                        <td className="tabular-nums" style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 800, color: '#C62828' }}>
                           {entry.type === 'udhaar' ? formatRupee(entry.amount) : '—'}
                         </td>
-                        <td className="py-2 px-3 text-right font-google font-bold text-emerald-700">
+                        <td className="tabular-nums" style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 800, color: '#0E7A50' }}>
                           {entry.type === 'jama' ? formatRupee(entry.amount) : '—'}
                           {entry.soundboxVerified && (
-                            <span className="ml-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded">
+                            <span style={{ marginLeft: 3, fontSize: 8, fontWeight: 800, color: '#0E7A50', background: '#BEF0D8', padding: '1px 3px', borderRadius: 4 }}>
                               Soundbox ✓
                             </span>
                           )}
                         </td>
-                        <td className="py-2 px-3 text-right font-google font-black text-ink">
+                        <td className="tabular-nums" style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 800, color: 'var(--ink)' }}>
                           {formatRupee(entry.balanceAfter)}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-3 px-3 text-center text-slate text-xs">
+                      <td colSpan={4} style={{ padding: 12, textAlign: 'center', color: '#6B7280' }}>
                         Pura hisaab darj hai.
                       </td>
                     </tr>
@@ -247,76 +285,110 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
 
           {/* Tone Selector & WhatsApp Preview */}
           {!isPaid && (
-            <div className="p-3.5 rounded-2xl bg-white border border-line space-y-2.5 shadow-xs">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-google font-bold text-obsidian">
+            <div className="comic-card" style={{ padding: 12 }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>
                   Takada Reminder Tone:
                 </label>
-                <span className="text-[11px] text-slate">
-                  {tone === 'soft' ? 'Shubh / Namrata se' : 'Zaroori / Pukhta'}
+                <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>
+                  {tone === 'soft' ? 'Shubh / Namrata' : 'Zaroori / Pukhta'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2" style={{ marginBottom: 8 }}>
                 <button
                   onClick={() => setTone('soft')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-google font-bold transition cursor-pointer text-center ${
-                    tone === 'soft'
-                      ? 'bg-sky/60 border-blue text-blue'
-                      : 'bg-cloud border-line text-charcoal hover:bg-slate-100'
-                  }`}
+                  className="cursor-pointer"
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 10,
+                    border: '1px solid var(--outline)',
+                    background: tone === 'soft' ? 'var(--shadow-color)' : '#FFFFFF',
+                    color: tone === 'soft' ? '#FFFFFF' : 'var(--shadow-color)',
+                    boxShadow: '1px 1px 0px var(--shadow-color)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                  }}
                 >
                   Soft Tone
                 </button>
 
                 <button
                   onClick={() => setTone('firm')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-google font-bold transition cursor-pointer text-center ${
-                    tone === 'firm'
-                      ? 'bg-rose-50 border-error text-error'
-                      : 'bg-cloud border-line text-charcoal hover:bg-slate-100'
-                  }`}
+                  className="cursor-pointer"
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 10,
+                    border: '1px solid var(--outline)',
+                    background: tone === 'firm' ? '#FFC9C9' : '#FFFFFF',
+                    color: tone === 'firm' ? '#C62828' : 'var(--shadow-color)',
+                    boxShadow: '1px 1px 0px var(--shadow-color)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                  }}
                 >
                   Firm Tone (Overdue)
                 </button>
               </div>
 
               {/* Message Preview */}
-              <div className="p-3 rounded-2xl bg-[#e7f7e9] text-xs text-ink leading-relaxed border border-emerald-200">
-                <div className="text-[10px] font-bold text-emerald-800 mb-1">
+              <div
+                style={{
+                  padding: 10,
+                  background: '#BEF0D8',
+                  borderRadius: 10,
+                  border: '1.5px solid var(--shadow-color)',
+                  fontSize: 11,
+                  color: '#0E7A50',
+                  lineHeight: 1.4,
+                }}
+              >
+                <div style={{ fontSize: 10, fontWeight: 800, marginBottom: 2 }}>
                   WhatsApp Preview (Paytm UPI Link Samet):
                 </div>
-                <p className="text-[11px]">{tone === 'soft' ? softMessage : firmMessage}</p>
+                <p>{tone === 'soft' ? softMessage : firmMessage}</p>
               </div>
             </div>
           )}
 
           {/* Paytm Payment QR Toggle */}
           {showQR && (
-            <div className="p-4 rounded-3xl bg-sky/30 border border-blue text-center space-y-2 animate-in zoom-in-95">
-              <div className="font-google font-extrabold text-xs text-obsidian">
+            <div className="comic-card-sky text-center space-y-2" style={{ padding: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>
                 Paytm Dynamic Soundbox QR for {customer.name}
               </div>
-              <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl border border-line flex items-center justify-center shadow-xs">
+              <div
+                className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl border-2 border-ink flex items-center justify-center"
+                style={{ boxShadow: '2px 2px 0px var(--shadow-color)' }}
+              >
                 <QrCode className="w-28 h-28 text-ink" />
               </div>
-              <p className="text-[11px] text-charcoal">
-                Scan karte hi Sharma Kirana Soundbox bolege: "Paytm par {formatRupee(customer.amount)} prapt hue"
+              <p style={{ fontSize: 11, color: '#1565C0', fontWeight: 600 }}>
+                Scan karte hi Sharma Kirana Soundbox bolega: "Paytm par {formatRupee(customer.amount)} prapt hue"
               </p>
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-soft-line bg-paper space-y-2">
+        <div
+          className="p-3 bg-surface space-y-2"
+          style={{ borderTop: '2px solid var(--shadow-color)' }}
+        >
           {reminderSentToast && (
-            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold text-center border border-emerald-200 font-sans">
+            <div
+              className="comic-card-mint text-center"
+              style={{ padding: '6px 12px', fontSize: 11, fontWeight: 700, color: '#0E7A50', borderRadius: 8 }}
+            >
               WhatsApp Takada safalta-purvak bhej diya gaya! ✓
             </div>
           )}
 
           {statementCopiedToast && (
-            <div className="p-2.5 rounded-xl bg-sky text-blue text-xs font-bold text-center border border-sky font-sans">
+            <div
+              className="comic-card-sky text-center"
+              style={{ padding: '6px 12px', fontSize: 11, fontWeight: 700, color: '#1565C0', borderRadius: 8 }}
+            >
               Khata Parchi WhatsApp ke liye taiyaar ho gayi! ✓
             </div>
           )}
@@ -324,8 +396,10 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowQR(!showQR)}
-              className="p-3 rounded-2xl border border-line bg-cloud text-ink text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
+              className="comic-btn-outline"
+              style={{ padding: '8px 12px', minHeight: 44 }}
               title="Show Paytm QR Code"
+              aria-label="Show Paytm QR Code"
             >
               <QrCode className="w-4 h-4" />
             </button>
@@ -333,9 +407,10 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
             {!isPaid && (
               <button
                 onClick={handleSendReminderClick}
-                className="flex-1 py-3 px-3 rounded-2xl border border-line text-xs font-google font-bold text-blue bg-sky/40 hover:bg-sky/80 flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="comic-btn-outline flex-1"
+                style={{ fontSize: 12, minHeight: 44, color: '#C62828', borderColor: 'var(--shadow-color)' }}
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
                 <span>Takada Bhejo</span>
               </button>
             )}
@@ -343,13 +418,23 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
             {!isPaid ? (
               <button
                 onClick={handleMarkPaidClick}
-                className="flex-1 py-3 px-3 rounded-2xl bg-emerald-700 text-white text-xs font-google font-black shadow-button hover:bg-emerald-800 flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="comic-btn flex-1"
+                style={{
+                  fontSize: 12,
+                  minHeight: 44,
+                  background: '#BEF0D8',
+                  color: '#0E7A50',
+                  borderColor: 'var(--shadow-color)',
+                }}
               >
                 <Check className="w-4 h-4" />
                 <span>Paisa Jama Hua ✓</span>
               </button>
             ) : (
-              <div className="flex-1 py-2.5 px-3 rounded-2xl bg-emerald-50 text-emerald-800 text-xs font-google font-bold text-center border border-emerald-200">
+              <div
+                className="comic-card-mint flex-1 text-center font-bold"
+                style={{ padding: '10px 12px', fontSize: 12, color: '#0E7A50' }}
+              >
                 Pura Khata Clear Hai ✓
               </div>
             )}

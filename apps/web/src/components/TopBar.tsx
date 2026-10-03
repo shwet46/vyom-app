@@ -35,52 +35,92 @@ export const TopBar: React.FC<TopBarProps> = ({
   const currentLangLabel = langNames.find((l) => l.id === currentLang)?.native || 'Hinglish';
 
   return (
-    <header className="sticky top-0 z-30 bg-paper/80 backdrop-blur-xl border-b border-soft-line px-3 sm:px-6 h-14 flex items-center transition-all">
-      <div className="w-full max-w-[1480px] mx-auto flex items-center justify-between gap-2">
+    <header
+      className="sticky top-0 z-30"
+      style={{
+        background: '#FFFFFF',
+        borderBottom: '2px solid var(--shadow-color)',
+        padding: '0 12px',
+        height: 56,
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <div className="w-full flex items-center justify-between gap-2">
         {/* Left: Brand */}
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-white font-heading font-bold shadow-button flex-shrink-0 text-sm">
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 10,
+              background: 'var(--ai-text)',
+              border: '1px solid var(--outline)',
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+              color: '#FFFFFF',
+              fontFamily: 'var(--font-ui)',
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
             V
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-heading font-bold text-obsidian text-sm tracking-tight">VYOM</span>
-              <span className="hidden sm:inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider bg-lavender/50 text-blue px-1.5 py-0.5 rounded-full">
+              <span style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>VYOM</span>
+              <span
+                className="inline-flex items-center gap-0.5"
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  background: 'var(--ai-fill)',
+                  color: 'var(--ai-text)',
+                  padding: '2px 6px',
+                  borderRadius: 999,
+                  border: '1.5px solid var(--shadow-color)',
+                }}
+              >
                 <Sparkles className="w-2.5 h-2.5" /> AI Saathi
               </span>
             </div>
             <button
               onClick={onOpenOnboarding}
-              className="text-left text-[11px] text-charcoal hover:text-blue flex items-center gap-1 truncate transition-colors"
+              className="text-left flex items-center gap-1 truncate"
+              style={{ fontSize: 11, color: '#6B7280', fontFamily: 'var(--font-ui)', fontWeight: 600 }}
               title="View / re-configure shop details"
             >
-              <span className="font-semibold text-ink truncate font-heading">Sharma Kirana</span>
-              <span className="text-[10px] text-slate hidden xs:inline">• {city}</span>
+              <span style={{ color: 'var(--ink)', fontWeight: 600 }} className="truncate">Sharma Kirana</span>
+              <span style={{ fontSize: 10, color: '#6B7280' }}>• {city}</span>
             </button>
           </div>
         </div>
 
         {/* Right Actions */}
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={onOpenOnboarding}
-            className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-cloud/80 border border-line text-obsidian hover:bg-lavender/30 transition-colors cursor-pointer"
-            title="Open business profile"
-          >
-            <Store className="w-3.5 h-3.5 text-blue" />
-            <span>Profile</span>
-          </button>
-
           {/* Language Switcher */}
           <div className="relative">
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-cloud/80 border border-line text-[11px] font-semibold text-ink hover:bg-lavender/30 transition cursor-pointer"
+              className="flex items-center gap-1 cursor-pointer"
+              style={{
+                padding: '6px 8px',
+                borderRadius: 10,
+                border: '1px solid var(--outline)',
+                background: '#FFFFFF',
+                boxShadow: '1px 1px 0px var(--shadow-color)',
+                fontSize: 11,
+                fontWeight: 600,
+                color: 'var(--ink)',
+                fontFamily: 'var(--font-ui)',
+                minHeight: 32,
+              }}
               aria-label="Change Language"
             >
-              <span className="text-blue font-bold">🌐</span>
-              <span className="font-semibold hidden sm:inline">{currentLangLabel}</span>
-              <span className="text-[10px] text-slate">▾</span>
+              <span>🌐</span>
+              <span style={{ fontSize: 10, color: '#6B7280' }}>▾</span>
             </button>
 
             {showLangMenu && (
@@ -89,8 +129,19 @@ export const TopBar: React.FC<TopBarProps> = ({
                   className="fixed inset-0 z-40"
                   onClick={() => setShowLangMenu(false)}
                 />
-                <div className="absolute right-0 mt-1.5 w-40 bg-white/95 backdrop-blur-xl rounded-2xl border border-line shadow-feature py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                  <div className="px-3 py-1 text-[10px] font-bold text-slate uppercase tracking-wider">
+                <div
+                  className="absolute right-0 z-50"
+                  style={{
+                    marginTop: 6,
+                    width: 160,
+                    background: '#FFFFFF',
+                    border: '1px solid var(--outline)',
+                    borderRadius: 16,
+                    boxShadow: '2px 2px 0px var(--shadow-color)',
+                    padding: '6px 0',
+                  }}
+                >
+                  <div style={{ padding: '4px 12px', fontSize: 10, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Language
                   </div>
                   {langNames.map((l) => (
@@ -100,17 +151,21 @@ export const TopBar: React.FC<TopBarProps> = ({
                         onLanguageChange(l.id);
                         setShowLangMenu(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition cursor-pointer ${
-                        currentLang === l.id
-                          ? 'bg-lavender/40 text-blue font-semibold'
-                          : 'text-ink hover:bg-cloud/50'
-                      }`}
+                      className="w-full flex items-center justify-between cursor-pointer"
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: 12,
+                        fontWeight: currentLang === l.id ? 700 : 500,
+                        background: currentLang === l.id ? 'var(--ai-fill)' : 'transparent',
+                        color: currentLang === l.id ? 'var(--ai-text)' : 'var(--shadow-color)',
+                        transition: 'background 0.15s ease',
+                      }}
                     >
                       <div className="flex flex-col text-left">
-                        <span className="font-semibold text-obsidian">{l.native}</span>
-                        <span className="text-[10px] text-slate">{l.label}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{l.native}</span>
+                        <span style={{ fontSize: 10, color: '#6B7280' }}>{l.label}</span>
                       </div>
-                      {currentLang === l.id && <Check className="w-3.5 h-3.5 text-blue" />}
+                      {currentLang === l.id && <Check className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />}
                     </button>
                   ))}
                 </div>
@@ -121,12 +176,35 @@ export const TopBar: React.FC<TopBarProps> = ({
           {/* Notification Bell */}
           <button
             onClick={onOpenNotifications}
-            className="relative w-8 h-8 rounded-xl bg-cloud/80 border border-line flex items-center justify-center text-charcoal hover:text-ink hover:bg-lavender/30 transition cursor-pointer"
+            className="relative flex items-center justify-center cursor-pointer"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 10,
+              border: '1px solid var(--outline)',
+              background: '#FFFFFF',
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+              color: 'var(--ink)',
+            }}
             aria-label="Notifications"
           >
             <Bell className="w-3.5 h-3.5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span
+                className="absolute flex items-center justify-center"
+                style={{
+                  top: -4,
+                  right: -4,
+                  width: 16,
+                  height: 16,
+                  borderRadius: 999,
+                  background: '#C62828',
+                  color: '#FFFFFF',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  border: '2px solid #FFFFFF',
+                }}
+              >
                 {unreadCount}
               </span>
             )}
@@ -136,20 +214,24 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* iOS Install Guidance Modal */}
       {showIOSModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-feature border border-line animate-in zoom-in-95">
-            <div className="w-12 h-12 rounded-2xl bg-sky flex items-center justify-center text-blue mb-4">
-              <Download className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,41,112,0.35)' }}>
+          <div className="w-full comic-card p-6" style={{ maxWidth: 340 }}>
+            <div
+              className="icon-chip"
+              style={{ width: 48, height: 48, borderRadius: 14, background: '#C7E8FF', marginBottom: 16 }}
+            >
+              <Download className="w-6 h-6" style={{ color: '#1565C0' }} />
             </div>
-            <h3 className="text-lg font-bold text-obsidian font-heading">iPhone par Vyom install karein</h3>
-            <p className="mt-2 text-xs text-charcoal leading-relaxed">
+            <h3 className="text-section" style={{ color: 'var(--ink)' }}>iPhone par Vyom install karein</h3>
+            <p className="text-caption" style={{ marginTop: 8, lineHeight: 1.6 }}>
               1. Safari browser ke neeche <strong>Share (तीर वाला आइकन)</strong> dabayein.<br />
               2. Neeche scroll karke <strong>Add to Home Screen</strong> select karein.<br />
               3. Vyom aapke phone par bina internet ke bhi tez chalega.
             </p>
             <button
               onClick={() => setShowIOSModal(false)}
-              className="mt-5 w-full rounded-xl bg-blue py-2.5 text-xs font-bold text-white shadow-button hover:bg-blue-dark transition cursor-pointer"
+              className="comic-btn w-full"
+              style={{ marginTop: 20 }}
             >
               Samajh Gaya (Close)
             </button>

@@ -300,8 +300,11 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
     .reduce((sum, r) => sum + r.amount, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/75 backdrop-blur-xs p-3 sm:p-4">
-      <div className="w-full max-w-lg bg-paper rounded-3xl border border-line shadow-feature overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/60 backdrop-blur-xs p-0 sm:p-2">
+      <div
+        className="w-full max-w-[420px] bg-surface rounded-t-2xl sm:rounded-2xl border-2 border-ink overflow-hidden flex flex-col max-h-[92vh] animate-fade-slide-up"
+        style={{ boxShadow: '2px 2px 0px var(--shadow-color)' }}
+      >
         {/* Hidden inputs */}
         <input
           type="file"
@@ -320,7 +323,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
         />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-soft-line bg-paper">
+        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-ink bg-surface">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-blue/10 flex items-center justify-center text-blue shadow-xs">
               <Scan className="w-4 h-4" />

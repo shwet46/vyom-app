@@ -84,6 +84,15 @@ export interface FestivalContextResponse {
   recent: FestivalContextItem[];
 }
 
+export interface CopilotChatResponse {
+  session_id: string;
+  text: string;
+  audio_base64?: string | null;
+  transcript?: string | null;
+  tool_calls?: Array<{ name: string; args?: Record<string, unknown> }>;
+  pending_action?: unknown;
+}
+
 // Universal fetch helper with timeout & error handling
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const controller = new AbortController();
@@ -117,6 +126,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 // ----------------- HOME -----------------
 export async function getHomeDashboard(): Promise<HomeResponse> {
   return request<HomeResponse>('/home');
+}
+
+export async function askCopilot(query: string, sessionId?: string): Promise<CopilotChatResponse> {
+  return request<CopilotChatResponse>('/copilot/chat', {
+    method: 'POST',
+    body: JSON.stringify({ query, session_id: sessionId }),
+  });
 }
 
 // ----------------- OPPORTUNITIES -----------------

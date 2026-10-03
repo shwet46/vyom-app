@@ -55,75 +55,171 @@ export const FestivalsView: React.FC<FestivalsViewProps> = ({
   };
 
   return (
-    <div className="space-y-5 pb-8 animate-in fade-in duration-150">
-      {/* 1. Header Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 via-sky/30 to-cloud border border-line/70 shadow-feature space-y-1.5">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          <span className="text-[11px] font-google font-extrabold uppercase tracking-wider text-charcoal">
+    <div className="space-y-4 animate-fade-slide-up" style={{ paddingBottom: 8 }}>
+      {/* 1. Header Banner — Comic peach card */}
+      <div className="comic-card-peach" style={{ padding: 14 }}>
+        <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 999,
+              background: '#B5610E',
+              display: 'inline-block',
+            }}
+            className="animate-pulse-gentle"
+          />
+          <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#B5610E' }}>
             Cultural Intelligence Engine
           </span>
         </div>
-        <h1 className="font-google font-black text-xl sm:text-2xl text-obsidian tracking-tight">
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>
           {cityProfile.radarTitle}
         </h1>
-        <p className="text-xs text-charcoal max-w-xl leading-relaxed font-sans">
+        <p style={{ fontSize: 12, color: 'var(--ink)', marginTop: 4, lineHeight: 1.4 }}>
           Drik Panchang verified calendar. Vyom auto-adjusts customer messages with respectful regional tone and stock advisor.
         </p>
       </div>
 
-      {/* 2. Festival Timeline Cards */}
-      <div className="space-y-2.5">
-        <h2 className="font-google font-black text-xs text-obsidian uppercase tracking-wider">
+      {/* 2. Festival Timeline Cards — Single column phone layout */}
+      <div className="space-y-2">
+        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {cityProfile.timelineTitle}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        </div>
+        <div className="space-y-2.5">
           {festivals.map((fest) => {
             const isSelected = selectedFestival === fest.key;
             return (
               <div
                 key={fest.key}
                 onClick={() => setSelectedFestival(fest.key)}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all ${
-                  isSelected
-                    ? 'bg-white ring-2 ring-blue border-transparent shadow-feature'
-                    : 'bg-white hover:bg-cloud border-line/70 shadow-xs'
-                }`}
+                className={isSelected ? 'comic-card' : 'comic-card'}
+                style={{
+                  padding: 12,
+                  background: isSelected ? 'var(--canvas)' : '#FFFFFF',
+                  borderColor: isSelected ? 'var(--ai-text)' : 'var(--shadow-color)',
+                  boxShadow: isSelected ? '4px 4px 0px var(--ai-text)' : '4px 4px 0px var(--shadow-color)',
+                  cursor: 'pointer',
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-google font-extrabold uppercase ${fest.color}`}>
+                <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                  <span
+                    className="comic-badge"
+                    style={{
+                      background: fest.phase === 'UPCOMING' ? '#FFE4B8' : 'var(--canvas)',
+                      color: fest.phase === 'UPCOMING' ? '#B5610E' : '#6B7280',
+                    }}
+                  >
                     {fest.phase}
                   </span>
-                  <span className="text-xs text-slate font-medium">{fest.dates}</span>
+                  <span className="tabular-nums" style={{ fontSize: 11, color: '#6B7280', fontWeight: 600 }}>
+                    {fest.dates}
+                  </span>
                 </div>
-                <h3 className="font-google font-black text-base text-obsidian mt-2">{fest.name}</h3>
-                <p className="text-xs text-charcoal mt-1 line-clamp-2 leading-relaxed font-sans">{fest.desc}</p>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.3 }}>
+                  {fest.name}
+                </h3>
+                <p style={{ fontSize: 12, color: '#6B7280', marginTop: 4, lineHeight: 1.4 }}>
+                  {fest.desc}
+                </p>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* 4. Cultural Do's & Don'ts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="p-4 rounded-3xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
-          <span className="text-xs font-google font-extrabold text-emerald-900 uppercase flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            Cultural DO's (Vyom Enforced)
+      {/* 3. Fasting & Puja Stock Kits Advice */}
+      <div className="comic-card" style={{ padding: 14 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+          <div className="flex items-center gap-1.5">
+            <Package className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
+              Vrat & Fasting Stock Advisory
+            </span>
+          </div>
+          <span className="comic-badge" style={{ background: '#BEF0D8', color: '#0E7A50' }}>
+            High Demand
           </span>
-          <ul className="text-xs text-charcoal space-y-1.5 list-disc pl-4 leading-relaxed font-sans">
+        </div>
+        <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 10, lineHeight: 1.4 }}>
+          Agale 10 dino mein in items ki mang 3.2x badhegi. Vyom ne wholesale stock list tayyar ki hai:
+        </p>
+
+        <div className="space-y-2">
+          {stockItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between"
+              style={{
+                padding: '8px 10px',
+                background: 'var(--canvas)',
+                border: '1.5px solid var(--shadow-color)',
+                borderRadius: 10,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{item.name}</div>
+                <div style={{ fontSize: 11, color: '#6B7280' }}>
+                  Current: <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{item.current}</span> • Suggested: <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{item.suggested}</span>
+                </div>
+              </div>
+              <span className="comic-badge tabular-nums" style={{ background: '#BEF0D8', color: '#0E7A50', fontSize: 11 }}>
+                {item.uplift} demand
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleCreateVratKit}
+          disabled={generatingKit || kitGenerated}
+          className="comic-btn w-full mt-3"
+          style={{
+            background: kitGenerated ? '#BEF0D8' : 'var(--shadow-color)',
+            color: kitGenerated ? '#0E7A50' : '#FFFFFF',
+            borderColor: kitGenerated ? '#0E7A50' : 'var(--shadow-color)',
+          }}
+        >
+          {generatingKit ? (
+            <span>Kit Create Ho Rahi Hai...</span>
+          ) : kitGenerated ? (
+            <span className="flex items-center gap-1.5">
+              <Check className="w-4 h-4" /> Kit Campaign Tayyar!
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" style={{ color: 'var(--ai-fill)' }} /> 9-Day Vrat Kit Campaign Chalao
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* 4. Cultural Do's & Don'ts — Comic semantic cards stacked */}
+      <div className="space-y-3">
+        {/* DO's: Mint card */}
+        <div className="comic-card-mint" style={{ padding: 14 }}>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
+            <CheckCircle2 className="w-4 h-4" style={{ color: '#0E7A50' }} />
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0E7A50' }}>
+              Cultural DO's (Vyom Enforced)
+            </span>
+          </div>
+          <ul className="space-y-1.5 pl-4 list-disc" style={{ fontSize: 12, color: '#0E7A50', lineHeight: 1.4 }}>
             <li>Highlight fasting (vrat) staples together as convenient pantry bundles.</li>
             <li>Offer Ghatasthapana puja kits (kalash items, kumkum, akshat, supari).</li>
             <li>Use respectful, warm wording ("Vrat Samagri", "Upvas Special").</li>
           </ul>
         </div>
 
-        <div className="p-4 rounded-3xl bg-red-50/70 border border-red-200/80 space-y-2">
-          <span className="text-xs font-google font-extrabold text-red-900 uppercase flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            Cultural DON'Ts (Code-Banned)
-          </span>
-          <ul className="text-xs text-charcoal space-y-1.5 list-disc pl-4 leading-relaxed font-sans">
+        {/* DON'Ts: Coral card */}
+        <div className="comic-card-coral" style={{ padding: 14 }}>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
+            <AlertTriangle className="w-4 h-4" style={{ color: '#C62828' }} />
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#C62828' }}>
+              Cultural DON'Ts (Code-Banned)
+            </span>
+          </div>
+          <ul className="space-y-1.5 pl-4 list-disc" style={{ fontSize: 12, color: '#C62828', lineHeight: 1.4 }}>
             <li>Never promote onion/garlic, egg, or non-veg during Navratri or Pitru Paksha.</li>
             <li>No aggressive "Mega Dhamaka" discount noise during solemn periods.</li>
             <li>Never infer customer caste or religion from their names.</li>

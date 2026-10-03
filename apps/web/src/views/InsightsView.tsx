@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   Sparkles,
   Store,
@@ -24,11 +24,12 @@ interface InsightsViewProps {
 export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNavigateToTab }) => {
   const cityProfile = cityFestivalProfiles[city];
   const secondaryFestival = cityProfile.festivals[1];
-  // Peak hours heatmap grid: 7 days × 6 representative slots
+
+  // Peak hours heatmap grid: 7 days × 6 slots
   const days = ['Som (Mon)', 'Mangal', 'Budh', 'Guru', 'Shukra', 'Shani', 'Ravi (Sun)'];
   const timeSlots = ['8–11 AM', '11–2 PM', '2–4 PM (Dead)', '4–6 PM', '6–8 PM (Peak)', '8–10 PM'];
 
-  // Intensity matrix (0: empty, 1: low, 2: medium, 3: high, 4: super peak)
+  // Intensity matrix (0: dead, 1: low, 2: medium, 3: high, 4: super peak)
   const heatmapData = [
     [2, 3, 0, 2, 4, 3], // Mon
     [2, 2, 0, 2, 3, 3], // Tue
@@ -51,264 +52,313 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNaviga
     { day: 'Day 1', sales: 6800 },
     { day: 'Day 2', sales: 7100 },
     { day: 'Day 3', sales: 6900 },
-    { day: 'Day 4', sales: 6200 }, // Falling
-    { day: 'Day 5', sales: 6050 }, // Alert
+    { day: 'Day 4', sales: 6200 },
+    { day: 'Day 5', sales: 6050 },
     { day: 'Day 6', sales: 6850 },
     { day: 'Day 7', sales: 7420 },
   ];
 
   return (
-    <div className="space-y-4 pb-8 animate-in fade-in duration-150">
-      {/* Profile Overview */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky/40 via-cloud to-paper border border-line/70 shadow-feature">
+    <div className="space-y-4 animate-fade-slide-up" style={{ paddingBottom: 8 }}>
+      {/* 1. Profile Overview — Comic Sky Card */}
+      <div className="comic-card-sky" style={{ padding: 14 }}>
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-white border border-line/80 text-blue font-extrabold text-lg flex items-center justify-center shadow-xs font-google">
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: '#FFFFFF',
+              border: '1px solid var(--outline)',
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+              fontWeight: 800,
+              fontSize: 16,
+              color: '#1565C0',
+            }}
+          >
             SK
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-black text-obsidian tracking-tight font-google">Sharma Kirana Store</h1>
-              <span className="text-[10px] font-bold text-blue bg-sky px-2 py-0.5 rounded-full uppercase font-google">
+              <h1 style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>
+                Sharma Kirana Store
+              </h1>
+              <span
+                className="comic-badge"
+                style={{ background: '#FFFFFF', color: '#1565C0', fontSize: 9 }}
+              >
                 {city}
               </span>
             </div>
-            <p className="text-xs text-charcoal mt-0.5 font-sans">
+            <p style={{ fontSize: 11, color: '#1565C0', marginTop: 2, fontWeight: 600 }}>
               Paytm POS Terminal #982344 • 480 Monthly Active Kirana Shoppers
             </p>
           </div>
         </div>
       </div>
 
-      {/* 3 Key Store Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature">
-          <div className="text-[11px] text-slate font-medium font-google">Avg Ticket Size</div>
-          <div className="text-xl sm:text-2xl font-black text-obsidian tracking-tight font-google mt-0.5">
+      {/* 2. Key Store Metrics — 3 Comic Cards in Single Column or Clean Grid */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="comic-card" style={{ padding: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>Avg Ticket</div>
+          <div className="tabular-nums" style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)', marginTop: 2 }}>
             {formatRupee(340)}
           </div>
-          <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">+₹32 vs city avg</div>
+          <div style={{ fontSize: 9, color: '#0E7A50', fontWeight: 700, marginTop: 2 }}>
+            +₹32 vs city
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-line/70 shadow-feature">
-          <div className="text-[11px] text-slate font-medium font-google">Repeat Grahak %</div>
-          <div className="text-xl sm:text-2xl font-black text-blue tracking-tight font-google mt-0.5">
+        <div className="comic-card" style={{ padding: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>Repeat Grahak</div>
+          <div className="tabular-nums" style={{ fontSize: 16, fontWeight: 800, color: 'var(--ai-text)', marginTop: 2 }}>
             68%
           </div>
-          <div className="text-[10px] text-charcoal mt-0.5">High loyalty store</div>
+          <div style={{ fontSize: 9, color: 'var(--ai-text)', fontWeight: 700, marginTop: 2 }}>
+            High loyalty
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-sky/40 border border-blue/20 shadow-feature">
-          <div className="text-[11px] text-blue font-bold font-google">Dead Hours Alert</div>
-          <div className="text-base sm:text-lg font-black text-obsidian tracking-tight font-google mt-0.5">
-            2 PM – 4 PM
+        <div className="comic-card-coral" style={{ padding: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 10, color: '#C62828', fontWeight: 700 }}>Dead Hours</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#C62828', marginTop: 2 }}>
+            2–4 PM
           </div>
-          <div className="text-[10px] text-blue font-medium mt-0.5">82% footfall drop</div>
+          <div style={{ fontSize: 9, color: '#C62828', fontWeight: 700, marginTop: 2 }}>
+            -82% footfall
+          </div>
         </div>
       </div>
 
-      {/* 2-Column Responsive Dashboard on Desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left Column: 7-Day Trend + Local Signals */}
-        <div className="space-y-4">
-          {/* Sales Trend Line Chart with Annotation */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
-                  7-Day Sales Trend & Churn Signal
-                </h3>
-                <p className="text-[11px] text-charcoal font-sans">
-                  Vyom detected dip on Day 4–5 and triggered win-back
-                </p>
-              </div>
-            </div>
-
-            <div className="h-36 w-full pt-1">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
-                    contentStyle={{
-                      backgroundColor: '#111827',
-                      borderRadius: '10px',
-                      color: '#ffffff',
-                      fontSize: '11px',
-                      border: 'none',
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="sales"
-                    stroke="#6366F1"
-                    strokeWidth={2.5}
-                    dot={{ fill: '#6366F1', r: 3 }}
-                    activeDot={{ r: 5 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center gap-2 text-[11px] text-amber-900">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-              <span>
-                <strong>AI Note:</strong> Win-back offer launch hone ke baad Day 7 tak bikri ₹7,420 wapas pahunch gayi!
-              </span>
-            </div>
-          </div>
-
-          {/* Local Signals */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue" />
-                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
-                  {cityProfile.localSignalTitle}
-                </h3>
-              </div>
-              <span className="text-[10px] text-slate font-medium">Auto-detected</span>
-            </div>
-
-            <div className="space-y-2">
-              <div
-                onClick={() => onNavigateToTab('opportunities')}
-                className="p-2.5 rounded-xl bg-sky/30 border border-sky/70 hover:border-blue transition cursor-pointer flex items-center justify-between gap-2"
-              >
-                <div>
-                  <div className="font-bold text-xs text-obsidian">
-                    🌙 {cityProfile.primaryFestival} ({cityProfile.primaryDaysToStart} Din Baki)
-                  </div>
-                  <div className="text-[11px] text-charcoal mt-0.5">
-                    {cityProfile.primaryDemand}
-                  </div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />
-              </div>
-
-              <div
-                onClick={() => onNavigateToTab('opportunities')}
-                className="p-2.5 rounded-xl bg-sky/30 border border-sky/70 hover:border-blue transition cursor-pointer flex items-center justify-between gap-2"
-              >
-                <div>
-                  <div className="font-bold text-xs text-obsidian">
-                    🌦️ {secondaryFestival.name}
-                  </div>
-                  <div className="text-[11px] text-charcoal mt-0.5">
-                    {secondaryFestival.desc}
-                  </div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-blue flex-shrink-0" />
-              </div>
-            </div>
+      {/* 3. 7-Day Sales Trend Line Chart */}
+      <div className="comic-card" style={{ padding: 14 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
+          <div>
+            <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
+              7-Day Sales Trend & Churn Signal
+            </h3>
+            <p style={{ fontSize: 11, color: '#6B7280' }}>
+              Vyom detected dip on Day 4–5 and triggered win-back
+            </p>
           </div>
         </div>
 
-        {/* Right Column: Heatmap + Top Selling Products */}
-        <div className="space-y-4">
-          {/* Peak Hours Heatmap */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue" />
-                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
-                  Dukaan Footfall Heatmap (7 Days)
-                </h3>
+        <div style={{ height: 140, width: '100%', marginTop: 8 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -22, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.22)" vertical={false} />
+              <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--shadow-color)', fontWeight: 600 }} axisLine={{ stroke: 'var(--shadow-color)' }} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+              <Tooltip
+                formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
+                contentStyle={{
+                  backgroundColor: 'var(--ink)',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  fontSize: '11px',
+                  border: '1px solid var(--outline)',
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="sales"
+                stroke="var(--ai-text)"
+                strokeWidth={2.5}
+                dot={{ fill: 'var(--ai-text)', r: 4, stroke: 'var(--shadow-color)', strokeWidth: 1.5 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div
+          className="comic-card-mint flex items-center gap-2 mt-2"
+          style={{ padding: '8px 10px', borderRadius: 10 }}
+        >
+          <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#0E7A50' }} />
+          <span style={{ fontSize: 11, color: '#0E7A50', fontWeight: 600 }}>
+            Win-back offer launch hone ke baad Day 7 tak bikri ₹7,420 wapas pahunch gayi!
+          </span>
+        </div>
+      </div>
+
+      {/* 4. Local Signals — Comic Card */}
+      <div className="comic-card" style={{ padding: 14 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
+            <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
+              {cityProfile.localSignalTitle}
+            </h3>
+          </div>
+          <span className="comic-badge" style={{ background: '#C7E8FF', color: '#1565C0', fontSize: 9 }}>
+            Auto-detected
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <div
+            onClick={() => onNavigateToTab('opportunities')}
+            className="flex items-center justify-between gap-2 cursor-pointer"
+            style={{
+              padding: '10px 12px',
+              background: 'var(--canvas)',
+              border: '1.5px solid var(--shadow-color)',
+              borderRadius: 12,
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>
+                🌙 {cityProfile.primaryFestival} ({cityProfile.primaryDaysToStart} Din Baki)
               </div>
-              <span className="text-[10px] text-slate font-medium">Paytm Soundbox Times</span>
+              <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
+                {cityProfile.primaryDemand}
+              </div>
             </div>
-
-            <div className="overflow-x-auto no-scrollbar">
-              <div className="min-w-[280px]">
-                {/* Header row */}
-                <div className="grid grid-cols-7 gap-1 text-[9px] font-bold text-slate mb-1">
-                  <div className="text-left">Day</div>
-                  {timeSlots.map((ts, idx) => (
-                    <div key={idx} className="text-center truncate">
-                      {ts.split(' ')[0]}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Day rows */}
-                {days.map((d, dIdx) => (
-                  <div key={dIdx} className="grid grid-cols-7 gap-1 mb-1 items-center">
-                    <div className="text-[10px] font-semibold text-charcoal truncate">{d.split(' ')[0]}</div>
-                    {heatmapData[dIdx].map((intensity, sIdx) => {
-                      let bg = 'bg-cloud border border-soft-line text-slate';
-                      if (intensity === 0) bg = 'bg-rose-50 text-error border border-rose-100 font-bold';
-                      else if (intensity === 1) bg = 'bg-sky/30 border border-sky/50';
-                      else if (intensity === 2) bg = 'bg-sky text-blue font-bold';
-                      else if (intensity === 3) bg = 'bg-blue text-white font-bold';
-                      else if (intensity === 4) bg = 'bg-blue-dark text-white font-black';
-
-                      return (
-                        <div
-                          key={sIdx}
-                          className={`h-6 rounded-md flex items-center justify-center text-[9px] ${bg}`}
-                          title={`${d} at ${timeSlots[sIdx]}`}
-                        >
-                          {intensity === 0 ? 'Dead' : intensity >= 3 ? 'Peak' : 'Norm'}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-[10px] text-slate pt-2 border-t border-soft-line">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-rose-50 border border-rose-200" />
-                <span>Dead (2-4 PM)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-sky" />
-                <span>Normal</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded bg-blue" />
-                <span>Peak (6-8 PM)</span>
-              </div>
-            </div>
+            <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink)' }} />
           </div>
 
-          {/* Top Selling Items Table */}
-          {/* <div className="p-4 sm:p-5 rounded-2xl bg-white border border-line/70 shadow-feature space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4 text-blue" />
-                <h3 className="font-extrabold text-sm text-obsidian tracking-tight font-google">
-                  Top Selling Products
-                </h3>
+          <div
+            onClick={() => onNavigateToTab('opportunities')}
+            className="flex items-center justify-between gap-2 cursor-pointer"
+            style={{
+              padding: '10px 12px',
+              background: 'var(--canvas)',
+              border: '1.5px solid var(--shadow-color)',
+              borderRadius: 12,
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink)' }}>
+                🌦️ {secondaryFestival.name}
+              </div>
+              <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
+                {secondaryFestival.desc}
               </div>
             </div>
+            <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink)' }} />
+          </div>
+        </div>
+      </div>
 
-            <div className="space-y-1.5">
-              {topItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="p-2.5 rounded-xl bg-cloud border border-soft-line flex items-center justify-between gap-2"
-                >
-                  <div className="min-w-0">
-                    <div className="font-bold text-xs text-obsidian truncate">{item.name}</div>
-                    <div className="text-[10px] text-slate mt-0.5">
-                      {item.soldCount} units sold
-                    </div>
-                  </div>
+      {/* 5. Dukaan Footfall Heatmap (Compact single column) */}
+      <div className="comic-card" style={{ padding: 14 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
+            <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
+              Footfall Heatmap (7 Days)
+            </h3>
+          </div>
+          <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600 }}>Paytm Soundbox Times</span>
+        </div>
 
-                  <div className="text-right flex-shrink-0">
-                    <div className="font-black text-xs text-ink font-google">{formatRupee(item.revenue)}</div>
-                    {item.alert && (
-                      <span className="text-[9px] font-bold text-error bg-rose-100 px-1 py-0.2 rounded">
-                        {item.alert}
-                      </span>
-                    )}
+        <div className="space-y-1">
+          {/* Header row */}
+          <div className="grid grid-cols-7 gap-1 text-[9px] font-bold text-center" style={{ color: '#6B7280', marginBottom: 2 }}>
+            <div className="text-left">Day</div>
+            {timeSlots.map((ts, idx) => (
+              <div key={idx} className="truncate">
+                {ts.split(' ')[0]}
+              </div>
+            ))}
+          </div>
+
+          {/* Day rows */}
+          {days.map((d, dIdx) => (
+            <div key={dIdx} className="grid grid-cols-7 gap-1 items-center">
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink)' }} className="truncate">
+                {d.split(' ')[0]}
+              </div>
+              {heatmapData[dIdx].map((intensity, sIdx) => {
+                let bg = 'var(--canvas)';
+                let color = '#6B7280';
+                let label = 'Norm';
+                if (intensity === 0) {
+                  bg = '#FFC9C9';
+                  color = '#C62828';
+                  label = 'Dead';
+                } else if (intensity >= 3) {
+                  bg = '#BEF0D8';
+                  color = '#0E7A50';
+                  label = 'Peak';
+                }
+
+                return (
+                  <div
+                    key={sIdx}
+                    className="flex items-center justify-center font-bold"
+                    style={{
+                      height: 22,
+                      borderRadius: 6,
+                      background: bg,
+                      color: color,
+                      fontSize: 8,
+                      border: '1px solid var(--shadow-color)',
+                    }}
+                    title={`${d} at ${timeSlots[sIdx]}`}
+                  >
+                    {label}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div> */}
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between pt-2 mt-2" style={{ borderTop: '1.5px solid rgba(148,163,184,0.28)', fontSize: 10 }}>
+          <div className="flex items-center gap-1">
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: '#FFC9C9', border: '1px solid var(--shadow-color)', display: 'inline-block' }} />
+            <span style={{ color: '#C62828', fontWeight: 700 }}>Dead (2-4 PM)</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--canvas)', border: '1px solid var(--shadow-color)', display: 'inline-block' }} />
+            <span style={{ color: '#6B7280', fontWeight: 600 }}>Normal</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: '#BEF0D8', border: '1px solid var(--shadow-color)', display: 'inline-block' }} />
+            <span style={{ color: '#0E7A50', fontWeight: 700 }}>Peak (6-8 PM)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Top Selling Products */}
+      <div className="comic-card" style={{ padding: 14 }}>
+        <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
+          <ShoppingBag className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
+          <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>
+            Top Selling Products (This Week)
+          </h3>
+        </div>
+
+        <div className="space-y-2">
+          {topItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between gap-2"
+              style={{
+                padding: '8px 10px',
+                background: 'var(--canvas)',
+                border: '1.5px solid var(--shadow-color)',
+                borderRadius: 10,
+              }}
+            >
+              <div className="min-w-0">
+                <div className="truncate" style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>
+                  {item.name}
+                </div>
+                <div style={{ fontSize: 10, color: '#6B7280', marginTop: 1 }}>
+                  {item.soldCount} units sold
+                </div>
+              </div>
+              <div className="tabular-nums text-right flex-shrink-0" style={{ fontSize: 13, fontWeight: 800, color: 'var(--ink)' }}>
+                {formatRupee(item.revenue)}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -51,8 +51,6 @@ import {
 } from './services/api';
 import { TopBar } from './components/TopBar';
 import { BottomNav, TabKey } from './components/BottomNav';
-import { DesktopSidebar } from './components/DesktopSidebar';
-import { DesktopActivityFeed } from './components/DesktopActivityFeed';
 import { VoiceAssistantModal } from './components/VoiceAssistantModal';
 import { OpportunityDetailSheet } from './components/OpportunityDetailSheet';
 import { KhataScannerModal } from './components/KhataScannerModal';
@@ -140,7 +138,7 @@ export default function App() {
   // Network & Server connectivity status
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
 
-  // Live Activity Feed for desktop & background tracking
+  // Live Activity Feed for background tracking
   const [activityFeed, setActivityFeed] = useState<ActivityFeedItem[]>([
     {
       id: 'act-1',
@@ -181,6 +179,9 @@ export default function App() {
   const [selectedUdhaarCustomer, setSelectedUdhaarCustomer] = useState<UdhaarCustomer | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  // Voice speech bubble state
+  const [voiceBubbleText, setVoiceBubbleText] = useState<string | null>(null);
 
   // Global Notification / Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -448,7 +449,7 @@ export default function App() {
         particleCount: 85,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#6366F1', '#EDE9FE', '#DCFCE7', '#16A34A'],
+        colors: ['#00A9E8', '#DDF7FF', '#BEF0D8', '#0E7A50'],
       });
     } catch {}
 
@@ -795,32 +796,22 @@ export default function App() {
   ).length;
 
   return (
-    <div className="app-shell min-h-screen min-h-dvh flex flex-col text-obsidian">
-      {/* Top Header Bar */}
-      <TopBar
-        currentLang={lang}
-        city={city}
-        onLanguageChange={setLang}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
-        unreadCount={activeOppCount + 1}
-        onOpenOnboarding={() => setIsOnboardingOpen(true)}
-        isOnline={isOnline}
-      />
-
-      {/* Main Body Layout: Sidebar (desktop) + Main View + Activity Feed (desktop) */}
-      <div className="flex-1 max-w-[1480px] mx-auto w-full flex justify-center">
-        {/* Left Sidebar on Desktop */}
-        <DesktopSidebar
-          currentTab={currentTab}
-          onSelectTab={setCurrentTab}
-          lang={lang}
-          opportunitiesCount={activeOppCount}
-          pendingUdhaarCount={pendingUdhaarCount}
-          onOpenVoice={() => setIsVoiceOpen(true)}
+    /* Phone frame: centered, max-420px, muted BG outside */
+    <div className="phone-frame">
+      <div className="app-shell flex flex-col" style={{ minHeight: '100vh' }}>
+        {/* Top Header Bar */}
+        <TopBar
+          currentLang={lang}
+          city={city}
+          onLanguageChange={setLang}
+          onOpenNotifications={() => setIsNotificationsOpen(true)}
+          unreadCount={activeOppCount + 1}
+          onOpenOnboarding={() => setIsOnboardingOpen(true)}
+          isOnline={isOnline}
         />
 
-        {/* Central Content Area */}
-        <main className="flex-1 min-w-0 px-3 sm:px-5 lg:px-8 py-3 sm:py-5 pb-24 md:pb-6 max-w-5xl mx-auto w-full">
+        {/* Central Content Area — single column phone layout */}
+        <main className="flex-1 px-3 py-3" style={{ paddingBottom: 'calc(56px + 60px + 16px)' }}>
           {currentTab === 'home' && (
             <HomeView
               lang={lang}
@@ -885,15 +876,11 @@ export default function App() {
 
           {currentTab === 'more' && (
             <div className="space-y-4">
-              {/* Sub-tab switcher: Dukaan Insights, Festival Radar, and Guardrails */}
-              <div className="flex items-center p-1 rounded-2xl bg-cloud/60 border border-line">
+              {/* Sub-tab switcher: comic-pill style */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button
                   onClick={() => setMoreSubTab('insights')}
-                  className={`flex-1 py-2 text-[11px] font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                    moreSubTab === 'insights'
-                      ? 'bg-white text-blue shadow-xs font-bold'
-                      : 'text-charcoal hover:text-ink'
-                  }`}
+                  className={`comic-pill whitespace-nowrap ${moreSubTab === 'insights' ? 'comic-pill-active' : 'bg-white'}`}
                 >
                   <BarChart3 className="w-4 h-4" />
                   <span>Dukaan Insights</span>
@@ -901,11 +888,7 @@ export default function App() {
 
                 <button
                   onClick={() => setMoreSubTab('festivals')}
-                  className={`flex-1 py-2 text-[11px] font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                    moreSubTab === 'festivals'
-                      ? 'bg-white text-blue shadow-xs font-bold'
-                      : 'text-charcoal hover:text-ink'
-                  }`}
+                  className={`comic-pill whitespace-nowrap ${moreSubTab === 'festivals' ? 'comic-pill-active' : 'bg-white'}`}
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Festival Radar</span>
@@ -913,11 +896,7 @@ export default function App() {
 
                 <button
                   onClick={() => setMoreSubTab('settings')}
-                  className={`flex-1 py-2 text-[11px] font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                    moreSubTab === 'settings'
-                      ? 'bg-white text-blue shadow-xs font-bold'
-                      : 'text-charcoal hover:text-ink'
-                  }`}
+                  className={`comic-pill whitespace-nowrap ${moreSubTab === 'settings' ? 'comic-pill-active' : 'bg-white'}`}
                 >
                   <Sliders className="w-4 h-4" />
                   <span>Meri Limits</span>
@@ -960,142 +939,154 @@ export default function App() {
           )}
         </main>
 
-        {/* Right Activity Feed on Desktop */}
-        <DesktopActivityFeed items={activityFeed} />
-      </div>
+        {/* Bottom Navigation Bar */}
+        <BottomNav
+          currentTab={currentTab}
+          onSelectTab={setCurrentTab}
+          lang={lang}
+          opportunitiesCount={activeOppCount}
+          pendingUdhaarCount={pendingUdhaarCount}
+        />
 
-      {/* Mobile Bottom Navigation Bar (5 Items) */}
-      <BottomNav
-        currentTab={currentTab}
-        onSelectTab={setCurrentTab}
-        lang={lang}
-        opportunitiesCount={activeOppCount}
-        pendingUdhaarCount={pendingUdhaarCount}
-      />
+        {/* Floating Action: Mic + Camera — comic style */}
+        <div className="fixed z-40 flex items-center gap-2 animate-fade-slide-up" style={{ bottom: '76px', right: 'max(12px, calc((100vw - 420px) / 2 + 12px))' }}>
+          {/* Bahi-Khata Camera Button */}
+          <button
+            onClick={() => setIsKhataScanOpen(true)}
+            className="comic-btn-outline comic-btn-sm"
+            title="Bahi-Khata Register Scan Karein"
+            aria-label="Scan Bahi-Khata"
+          >
+            <Camera className="w-4 h-4" />
+            <span className="text-caption">Scan</span>
+          </button>
 
-      {/* Floating Action Companion: Bot / Mic + Bahi-Khata Camera (Mobile only) */}
-      <div className="fixed bottom-[68px] md:hidden right-3 z-40 flex items-center gap-1.5 animate-fade-slide-up">
-        {/* Bahi-Khata Camera Button */}
-        <button
-          onClick={() => setIsKhataScanOpen(true)}
-          className="h-9 px-2.5 rounded-full bg-white/90 backdrop-blur-xl text-obsidian border border-line/60 shadow-card hover:border-blue/30 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer group"
-          title="Bahi-Khata Register Scan Karein"
-          aria-label="Scan Bahi-Khata"
-        >
-          <div className="w-5 h-5 rounded-full bg-cloud/70 flex items-center justify-center text-blue group-hover:bg-lavender/30 transition-colors">
-            <Camera className="w-3.5 h-3.5 text-blue" />
-          </div>
-          <span className="font-heading font-semibold text-[10px] text-obsidian hidden sm:inline">
-            Scan
-          </span>
-        </button>
-
-        {/* Floating Vyom AI Bot / Mic Button */}
-        <button
-          onClick={() => setIsVoiceOpen(true)}
-          className="h-9 px-3 rounded-full bg-gradient-to-r from-blue to-blue-dark text-white shadow-button hover:shadow-glow-blue transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer relative overflow-hidden group"
-          title="Vyom AI Bot - Bolke Poochhein"
-          aria-label="Open Vyom Voice Assistant"
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="absolute -inset-0.5 rounded-full bg-white/30 animate-ping opacity-60" />
-            <Mic className="w-4 h-4 text-white relative z-10" />
-          </div>
-          <span className="font-heading font-bold text-[10px] text-white tracking-tight">
-            Vyom AI
-          </span>
-        </button>
-      </div>
-
-      {/* Global Floating Action Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-[68px] md:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-obsidian/90 backdrop-blur-xl text-white text-[11px] font-semibold shadow-feature flex items-center gap-1.5 border border-white/5 animate-fade-slide-up pointer-events-none">
-          <Check className="w-4 h-4 text-emerald-400" />
-          <span>{toastMessage}</span>
+          {/* Vyom AI Voice Mic — lavender comic-panel circle */}
+          <button
+            onClick={() => setIsVoiceOpen(true)}
+            className="relative flex items-center gap-2 px-4 py-2 rounded-full border-2 border-ink bg-ai-fill text-ink font-bold text-caption"
+            style={{ boxShadow: '2px 2px 0px var(--shadow-color)', minHeight: '44px' }}
+            title="Vyom AI Bot - Bolke Poochhein"
+            aria-label="Open Vyom Voice Assistant"
+          >
+            {/* Pulse rings on the mic icon */}
+            <div className="relative flex items-center justify-center">
+              <span className="absolute inset-0 rounded-full bg-ai-text/20 animate-voice-ring-1" style={{ width: 20, height: 20 }} />
+              <Mic className="w-4 h-4 relative z-10" style={{ color: 'var(--ai-text)' }} />
+            </div>
+            <span style={{ color: 'var(--ai-text)', fontWeight: 700 }}>Vyom AI</span>
+          </button>
         </div>
-      )}
 
-      {/* Voice Assistant Overlay Modal */}
-      <VoiceAssistantModal
-        isOpen={isVoiceOpen}
-        onClose={() => setIsVoiceOpen(false)}
-        lang={lang}
-        onNavigateToTab={setCurrentTab}
-        onQuickApproveFromBot={(title, revenue) => {
-          const matchingOpp =
-            opportunities.find((o) => o.title.hinglish.toLowerCase().includes(title.toLowerCase()) || title.toLowerCase().includes(o.title.hinglish.toLowerCase())) ||
-            opportunities.find((o) => o.status === 'new') ||
-            opportunities[0];
-          handleApproveOpportunity(
-            matchingOpp,
-            matchingOpp.draftedMessage[lang] || matchingOpp.draftedMessage.hinglish,
-            matchingOpp.discountPercent
-          );
-        }}
-        onSendReminderFromBot={(custName) => {
-          const matchingCustomer =
-            udhaarCustomers.find(
-              (c) =>
-                c.name.toLowerCase().includes(custName.toLowerCase()) ||
-                custName.toLowerCase().includes(c.name.toLowerCase())
-            ) || udhaarCustomers[0];
-          if (matchingCustomer) {
-            handleSendManualReminder(matchingCustomer.id, 'soft');
-          } else {
-            showToast(`${custName} ko WhatsApp aur Telegram takada reminder bhej diya gaya! ✓`);
-          }
-        }}
-        onOpenKhataScanFromBot={() => {
-          setIsKhataScanOpen(true);
-        }}
-      />
+        {/* Voice Speech Bubble (when voice response plays back) */}
+        {voiceBubbleText && (
+          <div
+            className="fixed z-50 animate-fade-slide-up"
+            style={{ bottom: '130px', right: 'max(12px, calc((100vw - 420px) / 2 + 12px))', maxWidth: '280px' }}
+          >
+            <div className="speech-bubble">
+              <p className="text-caption" style={{ color: 'var(--ink)' }}>{voiceBubbleText}</p>
+            </div>
+          </div>
+        )}
 
-      {/* Opportunity Detail & Approval Sheet */}
-      <OpportunityDetailSheet
-        opportunity={selectedOpportunity}
-        onClose={() => setSelectedOpportunity(null)}
-        onApprove={handleApproveOpportunity}
-        onDismiss={handleDismissOpportunity}
-        guardrails={guardrails}
-        lang={lang}
-      />
+        {/* Global Floating Toast — comic style */}
+        {toastMessage && (
+          <div
+            className="fixed z-50 left-1/2 -translate-x-1/2 animate-fade-slide-up pointer-events-none"
+            style={{ bottom: '76px', maxWidth: '380px', width: 'calc(100% - 32px)' }}
+          >
+            <div
+              className="px-4 py-2.5 rounded-xl border-2 border-ink bg-ink text-white flex items-center gap-2"
+              style={{ boxShadow: '3px 3px 0px rgba(148,163,184,0.45)', fontSize: '13px', fontWeight: 600 }}
+            >
+              <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#BEF0D8' }} />
+              <span>{toastMessage}</span>
+            </div>
+          </div>
+        )}
 
-      {/* Handwritten Khata Scanner Modal */}
-      <KhataScannerModal
-        isOpen={isKhataScanOpen}
-        onClose={() => setIsKhataScanOpen(false)}
-        onSaveToLedger={handleSaveScannedToLedger}
-      />
+        {/* Voice Assistant Overlay Modal */}
+        <VoiceAssistantModal
+          isOpen={isVoiceOpen}
+          onClose={() => setIsVoiceOpen(false)}
+          lang={lang}
+          onNavigateToTab={setCurrentTab}
+          onQuickApproveFromBot={(title, revenue) => {
+            const matchingOpp =
+              opportunities.find((o) => o.title.hinglish.toLowerCase().includes(title.toLowerCase()) || title.toLowerCase().includes(o.title.hinglish.toLowerCase())) ||
+              opportunities.find((o) => o.status === 'new') ||
+              opportunities[0];
+            handleApproveOpportunity(
+              matchingOpp,
+              matchingOpp.draftedMessage[lang] || matchingOpp.draftedMessage.hinglish,
+              matchingOpp.discountPercent
+            );
+          }}
+          onSendReminderFromBot={(custName) => {
+            const matchingCustomer =
+              udhaarCustomers.find(
+                (c) =>
+                  c.name.toLowerCase().includes(custName.toLowerCase()) ||
+                  custName.toLowerCase().includes(c.name.toLowerCase())
+              ) || udhaarCustomers[0];
+            if (matchingCustomer) {
+              handleSendManualReminder(matchingCustomer.id, 'soft');
+            } else {
+              showToast(`${custName} ko WhatsApp aur Telegram takada reminder bhej diya gaya! ✓`);
+            }
+          }}
+          onOpenKhataScanFromBot={() => {
+            setIsKhataScanOpen(true);
+          }}
+        />
 
-      {/* Udhaar Customer Detail Sheet */}
-      <UdhaarDetailSheet
-        customer={selectedUdhaarCustomer}
-        onClose={() => setSelectedUdhaarCustomer(null)}
-        onMarkPaid={handleMarkPaid}
-        onSendManualReminder={handleSendManualReminder}
-        lang={lang}
-      />
+        {/* Opportunity Detail & Approval Sheet */}
+        <OpportunityDetailSheet
+          opportunity={selectedOpportunity}
+          onClose={() => setSelectedOpportunity(null)}
+          onApprove={handleApproveOpportunity}
+          onDismiss={handleDismissOpportunity}
+          guardrails={guardrails}
+          lang={lang}
+        />
 
-      {/* Onboarding Walkthrough Modal */}
-      <OnboardingModal
-        isOpen={isOnboardingOpen}
-        onClose={() => setIsOnboardingOpen(false)}
-        lang={lang}
-        onLanguageSelect={setLang}
-        guardrails={guardrails}
-        onUpdateGuardrails={handleUpdateGuardrails}
-        onSaveStoreDescription={apiUpdateStoreDescription}
-        city={city}
-        onCityChange={setCity}
-      />
+        {/* Handwritten Khata Scanner Modal */}
+        <KhataScannerModal
+          isOpen={isKhataScanOpen}
+          onClose={() => setIsKhataScanOpen(false)}
+          onSaveToLedger={handleSaveScannedToLedger}
+        />
 
-      {/* Notification Drawer */}
-      <NotificationDrawer
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-        onNavigateToTab={setCurrentTab}
-      />
+        {/* Udhaar Customer Detail Sheet */}
+        <UdhaarDetailSheet
+          customer={selectedUdhaarCustomer}
+          onClose={() => setSelectedUdhaarCustomer(null)}
+          onMarkPaid={handleMarkPaid}
+          onSendManualReminder={handleSendManualReminder}
+          lang={lang}
+        />
 
+        {/* Onboarding Walkthrough Modal */}
+        <OnboardingModal
+          isOpen={isOnboardingOpen}
+          onClose={() => setIsOnboardingOpen(false)}
+          lang={lang}
+          onLanguageSelect={setLang}
+          guardrails={guardrails}
+          onUpdateGuardrails={handleUpdateGuardrails}
+          onSaveStoreDescription={apiUpdateStoreDescription}
+          city={city}
+          onCityChange={setCity}
+        />
+
+        {/* Notification Drawer */}
+        <NotificationDrawer
+          isOpen={isNotificationsOpen}
+          onClose={() => setIsNotificationsOpen(false)}
+          onNavigateToTab={setCurrentTab}
+        />
+      </div>
     </div>
   );
 }

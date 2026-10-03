@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import datetime
+import re
 from typing import Annotated, Any
 
 from fastapi import APIRouter, File, Response, UploadFile
@@ -20,6 +21,78 @@ from vyom.models.copilot import (
 from vyom.models.enums import ActionStatus, CopilotMessageKind, CopilotRole
 
 router = APIRouter(prefix="/copilot", tags=["Copilot"])
+
+
+def _build_copilot_reply(query: str, merchant_name: str) -> tuple[str, list[dict[str, Any]], str | None]:
+    """Return a query-specific answer without inventing an unrelated action."""
+    normalized = re.sub(r"\s+", " ", query.casefold()).strip()
+    tool_calls: list[dict[str, Any]] = []
+
+    if any(term in normalized for term in ("aaj ki bikri", "today sales", "aaj ka sale", "sales today", "aaj kitna bika")):
+        return (
+            f"{merchant_name} ji, aaj ki bikri ₹7,420 hai aur 24 orders aaye hain. "
+            "Kal ke mukable ₹540 zyada hai, yani lagbhag 8% growth. "
+            "Aap Home dashboard par hourly breakup dekh sakte hain.",
+            [{"name": "get_home_sales", "args": {}}],
+            None,
+        )
+
+    if any(term in normalized for term in ("stock", "inventory", "samaan", "kya mangau", "kya rakhu", "reorder")):
+        if any(term in normalized for term in ("navratri", "vrat", "festival", "tyohar")):
+            return (
+                "Navratri 11 din mein shuru ho rahi hai. Sabudana, Singhara Atta, Sendha Namak aur Pure Ghee "
+                "ka stock badhaiye; in items ke liye 85 units ka reorder plan tayyar hai. "
+                "Aap Opportunities tab mein plan review karke approve kar sakte hain.",
+                [{"name": "get_stock_advice", "args": {"festival": "navratri"}}],
+                "approve_festival_kit",
+            )
+        return (
+            "Aapke liye abhi fast-moving staples par focus karna sahi rahega: Atta, Oil, Rice aur Sugar. "
+            "Main exact reorder quantity nikalne ke liye aaj ki sales ya kisi festival ka naam bata sakta hoon.",
+            [{"name": "get_catalog_summary", "args": {}}],
+            None,
+        )
+
+    if any(term in normalized for term in ("udhaar", "udhari", "baki", "baaki", "credit", "takada", "reminder")):
+        return (
+            "Aapke 5 customers ka udhaar overdue hai, total ₹14,200. "
+            "Sabse pehle bade overdue accounts ko polite WhatsApp reminder bhejna behtar rahega. "
+            "Agar aap kahen to main reminders tayyar kar doon; bhejne se pehle aapki confirmation loonga.",
+            [{"name": "list_overdue_udhaar", "args": {"limit": 5}}],
+            "send_udhaar_reminders",
+        )
+
+    if any(term in normalized for term in ("offer", "discount", "campaign", "promotion", "sale", "deal")):
+        return (
+            "Aapke store ke liye Navratri Vrat Essentials combo achha campaign rahega: "
+            "Sabudana, Singhara Atta aur Ghee. 8–12% discount ke beech margin safe rahega. "
+            "Main campaign draft bana sakta hoon, ya aap discount percentage bata dein.",
+            [{"name": "draft_campaign", "args": {"campaign": "navratri_vrat_essentials"}}],
+            None,
+        )
+
+    if any(term in normalized for term in ("pitru", "shradh", "shraadh")):
+        return (
+            "Pitru Paksha ke dauran respectful communication rakhein. Kala Til, Jau aur Shuddh Ghee "
+            "jaise Shraddha samagri ko counter par clearly display karein; loud sale language avoid karein.",
+            [{"name": "get_festival_guidance", "args": {"festival": "pitru_paksha"}}],
+            None,
+        )
+
+    if any(term in normalized for term in ("hello", "hi", "namaste", "help", "kya kar sakte", "what can you do")):
+        return (
+            f"Namaste {merchant_name} ji! Main aapki aaj ki sales, stock, offers aur udhaar mein madad kar sakta hoon. "
+            "Seedha poochhiye, jaise: “Aaj ki bikri kitni hai?”, “Navratri ke liye kya stock karun?” ya “Kiska udhaar baaki hai?”",
+            [],
+            None,
+        )
+
+    return (
+        f"{merchant_name} ji, aapne poocha: “{query}”. "
+        "Iska sahi jawab dene ke liye thoda context chahiye—kya aap sales, stock, campaign, festival ya udhaar ke baare mein pooch rahe hain?",
+        [],
+        None,
+    )
 
 
 class CopilotChatRequest(BaseModel):
@@ -55,20 +128,13 @@ async def copilot_chat(
     now_dt = Clock.now()
     session_id = payload.session_id or f"copilot_sess_{merchant.id}"
 
-    query_lower = payload.query.lower()
     tool_calls: list[dict[str, Any]] = []
     pending_action: CopilotPendingAction | None = None
 
-    # Contextual intent routing
-    if "navratri" in query_lower or "stock" in query_lower or "samaan" in query_lower:
-        reply_text = (
-            "Navratri 11 dino mein shuru ho rahi hai. "
-            "Aapke paas Sabudana, Singhara Atta aur Pure Cow Ghee ki demand lagbhag 2.5 guna badhegi. "
-            "Maine 85 packets ka reorder plan aur ek Vrat Essentials Kit tayyar ki hai. Kya ise approve karein?"
-        )
-        tool_calls.append({"name": "get_stock_advice", "args": {"festival": "navratri"}})
+    reply_text, tool_calls, action_type = _build_copilot_reply(payload.query, merchant.owner_name)
 
-        # Create two-phase confirmation pending action
+    # Create two-phase confirmation only for actions that the answer explicitly offers.
+    if action_type == "approve_festival_kit":
         pending_action = CopilotPendingAction(
             merchant_id=merchant.id,
             session_id=session_id,
@@ -80,14 +146,7 @@ async def copilot_chat(
         )
         await db.copilot_pending_actions.insert_one(pending_action.to_mongo())
 
-    elif "udhaar" in query_lower or "reminder" in query_lower:
-        reply_text = (
-            "Aapke paas 5 customers ka udhaar overdue hai, total ₹14,200. "
-            "Pitru Paksha chal raha hai, isliye maine bilkul polite aur respectful tone set ki hai. "
-            "Kya main abhi inhein yaad-dehani bhej doon?"
-        )
-        tool_calls.append({"name": "list_overdue_udhaar", "args": {"limit": 5}})
-
+    elif action_type == "send_udhaar_reminders":
         pending_action = CopilotPendingAction(
             merchant_id=merchant.id,
             session_id=session_id,
@@ -98,18 +157,6 @@ async def copilot_chat(
             status=ActionStatus.PENDING,
         )
         await db.copilot_pending_actions.insert_one(pending_action.to_mongo())
-
-    elif "pitru" in query_lower or "shradh" in query_lower:
-        reply_text = (
-            "Pitru Paksha chal raha hai (10 October tak). "
-            "Is dauran 'sale' ya 'dhamaka' bolna theek nahi lagta. "
-            "Shraddha samagri jaise Kala Til, Jau aur Shuddh Ghee counter par samne rakhein."
-        )
-    else:
-        reply_text = (
-            f"Namaste {merchant.owner_name}! Main Vyom Copilot hoon. "
-            "Main aapki bikri badhane, festival stock plan karne aur udhaar vasooli mein madad kar sakta hoon."
-        )
 
     # Record message history
     user_msg = CopilotMessage(

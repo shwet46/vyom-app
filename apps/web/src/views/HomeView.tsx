@@ -86,355 +86,429 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const activeOpportunities = opportunities.filter((o) => o.status === 'new');
 
   return (
-    <div className="space-y-4 sm:space-y-5 pb-8 animate-fade-slide-up">
-      {/* 1. Compact Greeting + AI Voice CTA */}
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl font-heading font-bold text-obsidian tracking-tight leading-tight">
-            {t.greeting}
-          </h1>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[11px] font-semibold text-charcoal">Sharma Kirana</span>
-            <span className="text-slate text-[10px]">•</span>
-            <span className="text-[10px] text-slate">{city}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-            </span>
+    <div className="space-y-4 animate-fade-slide-up" style={{ paddingBottom: 8 }}>
+      {/* 1. Compact Identity Row: Avatar + Name + Live Dot */}
+      <div className="flex items-center justify-between gap-3" style={{ paddingTop: 4 }}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 12,
+              background: 'var(--ai-fill)',
+              border: '1px solid var(--outline)',
+              boxShadow: '1px 1px 0px var(--shadow-color)',
+              fontFamily: 'var(--font-ui)',
+              fontWeight: 700,
+              fontSize: 13,
+              color: 'var(--ink)',
+            }}
+          >
+            RS
+          </div>
+          <div className="min-w-0">
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
+              {t.greeting}
+            </div>
+            <div className="flex items-center gap-1.5" style={{ marginTop: 1 }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#6B7280' }}>Sharma Kirana</span>
+              <span style={{ fontSize: 10, color: '#6B7280' }}>•</span>
+              <span style={{ fontSize: 10, color: '#6B7280' }}>{city}</span>
+              <span
+                className="inline-flex items-center gap-1"
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: '#0E7A50',
+                  background: '#BEF0D8',
+                  padding: '1px 6px',
+                  borderRadius: 999,
+                  border: '1.5px solid var(--shadow-color)',
+                }}
+              >
+                <span style={{ width: 5, height: 5, borderRadius: 999, background: '#0E7A50', display: 'inline-block' }} className="animate-pulse-gentle" />
+                Live
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* Voice CTA pill */}
-        <button
-          onClick={onOpenVoice}
-          className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-gradient-to-r from-blue to-blue-dark text-white shadow-button hover:shadow-glow-blue transition-all active:scale-95 cursor-pointer"
-          aria-label="Open Vyom Voice"
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="absolute -inset-0.5 rounded-full bg-white/25 animate-ping opacity-50" />
-            <Mic className="w-4 h-4 text-white relative z-10" />
-          </div>
-          <span className="text-xs font-bold tracking-tight hidden xs:inline">Vyom AI</span>
-        </button>
       </div>
 
-      {/* 2. KPI Grid — 4 Compact Visual Cards with pastel gradients */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        {/* Card 1: Recovered */}
-        <div className="p-3 sm:p-3.5 rounded-2xl card-pastel-lavender border border-lavender/40 shadow-card hover-lift flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-6 h-6 rounded-lg bg-blue/12 flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-blue" />
+      {/* 2. Hero ₹ Recovered — Instrument Serif on lavender comic card */}
+      <div className="comic-card-lavender" style={{ padding: '16px 16px 14px' }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5" style={{ marginBottom: 4 }}>
+              <div className="icon-chip" style={{ background: '#FFFFFF', width: 28, height: 28, borderRadius: 8 }}>
+                <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recovered</span>
             </div>
-            <span className="text-[10px] font-bold text-charcoal uppercase tracking-wider">Recovered</span>
+            <div className="text-hero tabular-nums" style={{ color: 'var(--ink)' }}>
+              {formatRupee(animatedRecovered)}
+            </div>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-obsidian tracking-tight font-heading">
-            {formatRupee(animatedRecovered)}
-          </div>
-          <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-lavender/30">
-            <span className="flex items-center gap-1 text-[10px] text-blue font-medium">
-              <Users className="w-2.5 h-2.5" /> {wonBackVal} Won Back
+          <div className="text-right">
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
+              <Users className="w-3 h-3 inline" style={{ marginRight: 4 }} />{wonBackVal} Won Back
+            </div>
+            <span
+              className="comic-badge"
+              style={{ background: '#BEF0D8', color: '#0E7A50', marginTop: 4, display: 'inline-flex' }}
+            >
+              12.8x ROI
             </span>
-            <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded-full">12.8x ROI</span>
           </div>
         </div>
+      </div>
 
-        {/* Card 2: Today Sales */}
-        <div className="p-3 sm:p-3.5 rounded-2xl card-pastel-mint border border-mint/40 shadow-card hover-lift flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/12 flex items-center justify-center">
-              <TrendingUp className="w-3 h-3 text-emerald-600" />
+      {/* 3. 2×2 Stat Grid — white cards, colored icon chips, comic shadow */}
+      <div className="grid grid-cols-2 gap-2.5">
+        {/* Today Sales */}
+        <div className="comic-card" style={{ padding: 12 }}>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 6 }}>
+            <div className="icon-chip" style={{ background: '#BEF0D8' }}>
+              <TrendingUp className="w-3.5 h-3.5" style={{ color: '#0E7A50' }} />
             </div>
-            <span className="text-[10px] font-bold text-charcoal uppercase tracking-wider">{t.todaySales}</span>
+            <span className="text-caption" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>{t.todaySales}</span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-obsidian tracking-tight font-heading">
+          <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
             {formatRupee(todaySalesVal)}
           </div>
-          <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-mint/30">
-            <span className="text-[10px] text-slate font-medium">Kal: {formatRupee(yesterdaySalesVal)}</span>
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-              salesDelta >= 0
-                ? 'text-emerald-700 bg-emerald-50/80'
-                : 'text-amber-700 bg-amber-50/80'
-            }`}>
+          <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>Kal: {formatRupee(yesterdaySalesVal)}</span>
+            <span
+              style={{
+                float: 'right',
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '1px 6px',
+                borderRadius: 999,
+                background: salesDelta >= 0 ? '#BEF0D8' : '#FFE4B8',
+                color: salesDelta >= 0 ? '#0E7A50' : '#B5610E',
+              }}
+            >
               {salesDelta >= 0 ? `+${formatRupee(salesDelta)}` : formatRupee(salesDelta)}
             </span>
           </div>
         </div>
 
-        {/* Card 3: Udhaar Collected */}
-        <div className="p-3 sm:p-3.5 rounded-2xl card-pastel-peach border border-peach/40 shadow-card hover-lift flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-6 h-6 rounded-lg bg-orange-500/12 flex items-center justify-center">
-              <IndianRupee className="w-3 h-3 text-orange-600" />
+        {/* Udhaar Collected */}
+        <div className="comic-card" style={{ padding: 12 }}>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 6 }}>
+            <div className="icon-chip" style={{ background: '#FFE4B8' }}>
+              <IndianRupee className="w-3.5 h-3.5" style={{ color: '#B5610E' }} />
             </div>
-            <span className="text-[10px] font-bold text-charcoal uppercase tracking-wider">{t.udhaarCollected}</span>
+            <span className="text-caption" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>{t.udhaarCollected}</span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-emerald-700 tracking-tight font-heading">
+          <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: '#0E7A50', fontFamily: 'var(--font-ui)' }}>
             {formatRupee(udhaarCollectedVal)}
           </div>
-          <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-peach/30">
-            <span className="text-[10px] text-charcoal font-medium">Vasool</span>
-            <span className="text-[9px] font-bold text-amber-700 bg-amber-50/80 px-1.5 py-0.5 rounded-full">
+          <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>Vasool</span>
+            <span
+              style={{
+                float: 'right',
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '1px 6px',
+                borderRadius: 999,
+                background: '#FFC9C9',
+                color: '#C62828',
+              }}
+            >
               {udhaarStrip?.overdueCount ?? 2} Overdue
             </span>
           </div>
         </div>
 
-        {/* Card 4: Campaign Spend */}
-        <div className="p-3 sm:p-3.5 rounded-2xl card-pastel-blush border border-blush/40 shadow-card hover-lift flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-6 h-6 rounded-lg bg-amber-500/12 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-amber-600" />
+        {/* Campaign Spend */}
+        <div className="comic-card" style={{ padding: 12 }}>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 6 }}>
+            <div className="icon-chip" style={{ background: 'var(--ai-fill)' }}>
+              <Zap className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />
             </div>
-            <span className="text-[10px] font-bold text-charcoal uppercase tracking-wider">{t.campaignSpend}</span>
+            <span className="text-caption" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>{t.campaignSpend}</span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-obsidian tracking-tight font-heading">
+          <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
             {formatRupee(campaignSpendVal)}
           </div>
-          <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-blush/30">
-            <span className="text-[10px] text-slate font-medium">Kharch</span>
-            <span className="text-[9px] font-bold text-amber-700 bg-amber-50/80 px-1.5 py-0.5 rounded-full">₹14.2k return</span>
+          <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>Kharch</span>
+            <span
+              style={{
+                float: 'right',
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '1px 6px',
+                borderRadius: 999,
+                background: '#BEF0D8',
+                color: '#0E7A50',
+              }}
+            >
+              ₹14.2k return
+            </span>
+          </div>
+        </div>
+
+        {/* Today Orders */}
+        <div className="comic-card" style={{ padding: 12 }}>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 6 }}>
+            <div className="icon-chip" style={{ background: '#C7E8FF' }}>
+              <Store className="w-3.5 h-3.5" style={{ color: '#1565C0' }} />
+            </div>
+            <span className="text-caption" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>Orders</span>
+          </div>
+          <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
+            {metrics?.todayOrders ?? 24}
+          </div>
+          <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.28)' }}>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>Aaj ke orders</span>
           </div>
         </div>
       </div>
 
-      {/* 3. Festival Signal Banner (Compact Pill) */}
+      {/* 4. PEER COMPARE — Signature tile (sky-blue comic card) */}
+      <div className="comic-card-sky" style={{ padding: 14, position: 'relative' }}>
+        {/* "Sirf Paytm Data Se Possible" badge */}
+        <div
+          className="comic-badge"
+          style={{
+            position: 'absolute',
+            top: -10,
+            right: 12,
+            background: '#FFFFFF',
+            color: '#1565C0',
+            fontSize: 9,
+            boxShadow: '1px 1px 0px var(--shadow-color)',
+          }}
+        >
+          Sirf Paytm Data Se Possible
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 10 }}>
+          📊 Peer Compare — Aapki Dukaan vs Aas-paas
+        </div>
+
+        {/* Two-bar comparison */}
+        <div className="flex items-end gap-3" style={{ marginBottom: 8 }}>
+          <div className="flex-1">
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Aapki Dukaan</div>
+            <div
+              style={{
+                height: 20,
+                background: '#FFE4B8',
+                border: '1px solid var(--outline)',
+                borderRadius: 6,
+                width: '62%',
+              }}
+            />
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#B5610E', marginTop: 2 }}>-18%</div>
+          </div>
+          <div className="flex-1">
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Aas-paas ki Dukaane</div>
+            <div
+              style={{
+                height: 20,
+                background: '#BEF0D8',
+                border: '1px solid var(--outline)',
+                borderRadius: 6,
+                width: '88%',
+              }}
+            />
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50', marginTop: 2 }}>-4%</div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--ink)',
+            padding: '8px 10px',
+            background: '#FFFFFF',
+            border: '1.5px solid var(--shadow-color)',
+            borderRadius: 10,
+          }}
+        >
+          Aapka -18%, Unka -4% — yeh sirf aapka issue hai
+        </div>
+      </div>
+
+      {/* 5. Festival Signal Banner (never truncated) */}
       {festivalBanner && (
         <div
           onClick={() => onNavigateToTab('festivals')}
-          className="p-3 rounded-2xl bg-gradient-to-r from-amber-50/80 via-cream/40 to-transparent border border-amber-200/50 shadow-card flex items-center justify-between gap-3 cursor-pointer hover:border-amber-300 transition-all hover-lift"
+          className="comic-card-peach cursor-pointer"
+          style={{ padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-              <Calendar className="w-3.5 h-3.5" />
+            <div className="icon-chip" style={{ background: '#FFFFFF', width: 36, height: 36, borderRadius: 12 }}>
+              <Calendar className="w-4 h-4" style={{ color: '#B5610E' }} />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-100/80 text-amber-800 px-1.5 py-0.5 rounded-full">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span
+                  className="comic-badge"
+                  style={{ background: '#FFFFFF', color: '#B5610E', fontSize: 9 }}
+                >
                   {festivalBanner.phase}
                 </span>
                 {festivalBanner.daysToStart !== undefined && (
-                  <span className="text-[10px] text-amber-700 font-semibold">
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#B5610E' }}>
                     {festivalBanner.daysToStart}d left
                   </span>
                 )}
               </div>
-              <p className="text-[11px] font-medium text-obsidian mt-0.5 line-clamp-1">
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginTop: 4, lineHeight: 1.4 }}>
                 {festivalBanner.headline}
               </p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: '#B5610E' }} />
         </div>
       )}
 
-      {/* 4. Main Dashboard — 2 Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Opportunities */}
-        <div className="lg:col-span-7 space-y-3 min-w-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-heading font-bold text-obsidian tracking-tight flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-blue" />
-              {t.opportunitiesTitle}
-            </h2>
-            <button
-              onClick={() => onNavigateToTab('opportunities')}
-              className="text-[11px] font-bold text-blue hover:underline flex items-center gap-0.5 cursor-pointer"
-            >
-              <span>All ({activeOpportunities.length})</span>
-              <ChevronRight className="w-3 h-3" />
-            </button>
+      {/* 6. Opportunity Cards with Rule-Tag Evidence Chips */}
+      <div>
+        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+          <div className="text-section" style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Sparkles className="w-4 h-4" style={{ color: 'var(--ai-text)' }} />
+            {t.opportunitiesTitle}
           </div>
-
-          {activeOpportunities.length > 0 ? (
-            <div className="space-y-2.5">
-              {activeOpportunities.slice(0, 3).map((opp, idx) => {
-                const cardStyles = [
-                  'card-pastel-lavender border-lavender/30',
-                  'card-pastel-mint border-mint/30',
-                  'card-pastel-peach border-peach/30',
-                ];
-                return (
-                  <div
-                    key={opp.id}
-                    className={`p-3.5 sm:p-4 rounded-2xl border shadow-card hover-lift transition-all flex flex-col gap-2.5 group ${cardStyles[idx % 3]}`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue/8 text-blue inline-block mb-1">
-                          {opp.type === 'winback'
-                            ? 'Win-back'
-                            : opp.type === 'deadhours'
-                            ? 'Dead hours'
-                            : opp.type === 'festival'
-                            ? 'Festival'
-                            : 'Sales drop'}
-                        </span>
-                        <h3
-                          onClick={() => onSelectOpportunity(opp)}
-                          className="font-heading font-bold text-sm text-obsidian leading-snug cursor-pointer group-hover:text-blue transition-colors"
-                        >
-                          {opp.title[lang] || opp.title.hinglish}
-                        </h3>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-sm sm:text-base font-bold text-blue font-heading">
-                          {formatRupee(opp.potentialRevenue)}
-                        </div>
-                        <div className="text-[9px] text-slate">potential</div>
-                      </div>
-                    </div>
-
-                    {/* Action Row */}
-                    <div className="flex items-center justify-between gap-2">
-                      <button
-                        onClick={() => onSelectOpportunity(opp)}
-                        className="py-1.5 px-3 rounded-xl border border-line/60 text-[11px] font-semibold text-charcoal hover:bg-cloud/50 transition cursor-pointer"
-                      >
-                        {t.laterBtn}
-                      </button>
-                      <button
-                        onClick={() => onQuickApproveOpportunity(opp)}
-                        className="py-1.5 px-3.5 rounded-xl bg-blue hover:bg-blue-dark text-white text-[11px] font-bold shadow-button flex items-center gap-1 transition cursor-pointer active:scale-95"
-                      >
-                        <Check className="w-3 h-3" />
-                        <span>{t.approveBtn}</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-5 rounded-2xl glass-card text-center text-xs text-charcoal">
-              Sabhi mauke approve ho chuke hain! Naye transactions aate hi Vyom naye mauke dhoondega.
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Chart + Udhaar Quick Strip */}
-        <div className="lg:col-span-5 space-y-3 min-w-0">
-          {/* Sales Velocity Chart */}
-          <div className="p-3.5 sm:p-4 rounded-2xl glass-card space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[10px] font-bold text-charcoal uppercase tracking-wider font-heading">
-                  Sales Velocity
-                </div>
-                <div className="text-lg font-bold text-obsidian tracking-tight font-heading mt-0.5">
-                  {formatRupee(todaySalesVal)}
-                </div>
-              </div>
-              <span className="text-[9px] text-blue font-bold bg-sky/60 px-2 py-0.5 rounded-full">
-                Peak 6–8 PM
-              </span>
-            </div>
-
-            <div className="h-28 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="todayGradHome" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#6366F1" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="hour" tick={{ fontSize: 9, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
-                    contentStyle={{
-                      backgroundColor: '#111827',
-                      borderRadius: '12px',
-                      color: '#ffffff',
-                      fontSize: '11px',
-                      border: 'none',
-                      padding: '6px 10px',
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="today"
-                    stroke="#6366F1"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#todayGradHome)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="yesterday"
-                    stroke="#6B7280"
-                    strokeWidth={1.5}
-                    strokeDasharray="3 3"
-                    fill="none"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="flex items-center justify-between text-[9px] text-slate pt-1.5 border-t border-soft-line">
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-0.5 bg-blue rounded-full" /> Today
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-0.5 bg-slate/50 rounded-full" /> Yesterday
-              </span>
-              <span className="text-emerald-700 font-semibold">{salesDelta >= 0 ? `+${formatRupee(salesDelta)}` : ''}</span>
-            </div>
-          </div>
-
-          {/* Udhaar Quick Strip */}
-          <div
-            onClick={() => onNavigateToTab('udhaar')}
-            className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-sky/30 via-paper to-lavender/20 border border-blue/10 hover:border-blue/30 shadow-card transition cursor-pointer flex items-center justify-between gap-3 group hover-lift"
+          <button
+            onClick={() => onNavigateToTab('opportunities')}
+            className="flex items-center gap-0.5 cursor-pointer"
+            style={{ fontSize: 13, fontWeight: 700, color: 'var(--ai-text)' }}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-blue/10 border border-blue/15 flex items-center justify-center text-blue flex-shrink-0">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="font-semibold text-[11px] text-obsidian block truncate font-heading">
-                  {udhaarStrip?.recommendedAction || t.autonomousStrip}
-                </span>
-                <span className="text-[10px] text-charcoal">
-                  {udhaarStrip ? `${formatRupee(udhaarStrip.totalOutstanding)} pending` : 'Soundbox Synced'}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              {udhaarStrip && udhaarStrip.overdueCount > 0 && (
-                <span className="text-[9px] bg-amber-100/80 text-amber-800 font-bold px-1.5 py-0.5 rounded-full">
-                  {udhaarStrip.overdueCount}
-                </span>
-              )}
-              <ArrowRight className="w-3.5 h-3.5 text-blue group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </div>
-
-          {/* Voice Copilot Quick Suggestions (mobile compact) */}
-          <div className="p-3 rounded-2xl glass-card lg:hidden">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-blue animate-pulse" />
-              <span className="text-[11px] font-bold text-obsidian font-heading">Ask Vyom</span>
-            </div>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-              {[
-                { label: '📊 Aaj Ki Bikri' },
-                { label: '⚠️ Overdue' },
-                { label: '🎉 Festival Stock' },
-                { label: '💡 Naye Mauke' },
-              ].map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={onOpenVoice}
-                  className="px-2.5 py-1 rounded-lg bg-sky/40 hover:bg-sky text-[10px] font-medium text-charcoal hover:text-blue border border-soft-line whitespace-nowrap transition cursor-pointer"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
+            <span>All ({activeOpportunities.length})</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
+
+        {activeOpportunities.length > 0 ? (
+          <div className="space-y-3">
+            {activeOpportunities.slice(0, 2).map((opp) => (
+              <div key={opp.id} className="comic-card" style={{ padding: 14 }}>
+                <div className="flex items-start justify-between gap-2" style={{ marginBottom: 8 }}>
+                  <div className="min-w-0 flex-1">
+                    <span
+                      className="comic-badge"
+                      style={{
+                        background: 'var(--ai-fill)',
+                        color: 'var(--ai-text)',
+                        fontSize: 9,
+                        marginBottom: 6,
+                        display: 'inline-flex',
+                      }}
+                    >
+                      {opp.type === 'winback'
+                        ? 'Win-back'
+                        : opp.type === 'deadhours'
+                        ? 'Dead hours'
+                        : opp.type === 'festival'
+                        ? 'Festival'
+                        : 'Sales drop'}
+                    </span>
+                    <h3
+                      onClick={() => onSelectOpportunity(opp)}
+                      className="cursor-pointer"
+                      style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.3, fontFamily: 'var(--font-ui)' }}
+                    >
+                      {opp.title[lang] || opp.title.hinglish}
+                    </h3>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="tabular-nums" style={{ fontSize: 15, fontWeight: 700, color: 'var(--ai-text)' }}>
+                      {formatRupee(opp.potentialRevenue)}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6B7280' }}>potential</div>
+                  </div>
+                </div>
+
+                {/* Rule-Tag Evidence Chips */}
+                <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 10 }}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '3px 8px',
+                      borderRadius: 8,
+                      background: 'var(--canvas)',
+                      border: '1.5px solid rgba(148,163,184,0.40)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    📅 7 din ka pattern
+                  </span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '3px 8px',
+                      borderRadius: 8,
+                      background: 'var(--canvas)',
+                      border: '1.5px solid rgba(148,163,184,0.40)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    📍 {opp.customerCount} customers
+                  </span>
+                  {opp.type === 'festival' && (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '3px 8px',
+                        borderRadius: 8,
+                        background: 'var(--canvas)',
+                        border: '1.5px solid rgba(148,163,184,0.40)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      🎉 Navratri 11 din door
+                    </span>
+                  )}
+                </div>
+
+                {/* Action Row */}
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => onSelectOpportunity(opp)}
+                    className="comic-btn-outline comic-btn-sm"
+                    style={{ fontSize: 13 }}
+                  >
+                    {t.laterBtn}
+                  </button>
+                  <button
+                    onClick={() => onQuickApproveOpportunity(opp)}
+                    className="comic-btn comic-btn-sm"
+                    style={{ fontSize: 13 }}
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{t.approveBtn}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="comic-card" style={{ padding: 20, textAlign: 'center' }}>
+            <p className="text-caption">
+              Sabhi mauke approve ho chuke hain! Naye transactions aate hi Vyom naye mauke dhoondega.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

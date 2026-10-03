@@ -53,42 +53,84 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-paper/90 backdrop-blur-xl border-t border-soft-line md:hidden safe-bottom shadow-[0_-2px_20px_rgba(108,99,255,0.06)]">
-      <div className="flex items-center justify-around h-[60px] max-w-lg mx-auto">
-        {tabs.map((tab) => {
-          const isActive = currentTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => onSelectTab(tab.key)}
-              className={`relative flex flex-col items-center justify-center flex-1 h-full min-h-[48px] min-w-[48px] py-1 transition-all duration-200 cursor-pointer ${
-                isActive ? 'text-blue' : 'text-charcoal/70 hover:text-ink'
-              }`}
-              aria-label={tab.label}
-            >
-              <div className="relative">
-                <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
-                  {tab.icon}
-                </div>
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-blue text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
-                    {tab.badge}
-                  </span>
-                )}
-              </div>
-              <span
-                className={`text-[10px] tracking-tight mt-0.5 truncate ${
-                  isActive ? 'font-bold text-blue' : 'font-medium text-charcoal/70'
-                }`}
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-30 safe-bottom"
+      style={{ maxWidth: 420, margin: '0 auto', left: 0, right: 0 }}
+    >
+      <div
+        style={{
+          background: '#FFFFFF',
+          borderTop: '2px solid var(--shadow-color)',
+          boxShadow: '0 -1px 0 var(--outline)',
+        }}
+      >
+        <div className="flex items-center justify-around" style={{ height: 60 }}>
+          {tabs.map((tab) => {
+            const isActive = currentTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => onSelectTab(tab.key)}
+                className="relative flex flex-col items-center justify-center flex-1 cursor-pointer"
+                style={{
+                  minHeight: 48,
+                  minWidth: 48,
+                  color: isActive ? 'var(--ai-text)' : '#6B7280',
+                  transition: 'color 0.15s ease',
+                }}
+                aria-label={tab.label}
               >
-                {tab.label}
-              </span>
-              {isActive && (
-                <span className="absolute bottom-1 w-4 h-[3px] rounded-full bg-gradient-to-r from-blue to-blue-dark" />
-              )}
-            </button>
-          );
-        })}
+                <div className="relative">
+                  <div style={{ transform: isActive ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.15s ease' }}>
+                    {tab.icon}
+                  </div>
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span
+                      className="absolute flex items-center justify-center"
+                      style={{
+                        top: -6,
+                        right: -10,
+                        minWidth: 16,
+                        height: 16,
+                        padding: '0 4px',
+                        borderRadius: 999,
+                        background: 'var(--shadow-color)',
+                        color: '#FFFFFF',
+                        fontSize: 9,
+                        fontWeight: 700,
+                        border: '2px solid #FFFFFF',
+                      }}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </div>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: isActive ? 700 : 500,
+                    marginTop: 2,
+                    fontFamily: 'var(--font-ui)',
+                  }}
+                >
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <span
+                    className="absolute"
+                    style={{
+                      bottom: 4,
+                      width: 16,
+                      height: 3,
+                      borderRadius: 999,
+                      background: 'var(--ai-text)',
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
