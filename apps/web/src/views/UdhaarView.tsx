@@ -478,7 +478,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
 
       {/* VIEW MODE 2: TRADITIONAL INDIAN BAHI-KHATA LEDGER */}
       {viewMode === 'ledger' && (
-        <div className="rounded-[2rem] bg-[#fffdfb] border border-line shadow-feature overflow-hidden animate-in fade-in">
+        <div className="rounded-[2rem] bg-paper border border-line shadow-feature overflow-hidden animate-in fade-in">
           {/* Clean Ledger Top Ribbon */}
           <div className="bg-obsidian text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-soft-line">
             <div className="flex items-center gap-2">

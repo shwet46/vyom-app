@@ -175,17 +175,17 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
           <div className="h-28 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyImpactData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
-                <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#8b8b8b' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
                 <Tooltip
                   formatter={(val: any) => [formatRupee(Number(val)), 'Recovered']}
                   contentStyle={{
-                    backgroundColor: '#070709',
+                    backgroundColor: '#111827',
                     borderRadius: '12px',
                     color: '#ffffff',
                     fontSize: '11px',
                   }}
                 />
-                <Bar dataKey="recovered" fill="#2597d0" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="recovered" fill="#6366F1" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -434,15 +434,15 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
                           <AreaChart data={camp.chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
                             <defs>
                               <linearGradient id={`campGrad-${camp.id}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#2597d0" stopOpacity={0.35} />
-                                <stop offset="95%" stopColor="#2597d0" stopOpacity={0.0} />
+                                <stop offset="5%" stopColor="#6366F1" stopOpacity={0.35} />
+                                <stop offset="95%" stopColor="#6366F1" stopOpacity={0.0} />
                               </linearGradient>
                             </defs>
-                            <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#8b8b8b' }} axisLine={false} tickLine={false} />
+                            <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
                             <Tooltip
                               formatter={(val: any) => [formatRupee(Number(val)), 'Revenue']}
                               contentStyle={{
-                                backgroundColor: '#070709',
+                                backgroundColor: '#111827',
                                 borderRadius: '12px',
                                 color: '#ffffff',
                                 fontSize: '11px',
@@ -451,7 +451,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({
                             <Area
                               type="monotone"
                               dataKey="revenue"
-                              stroke="#2597d0"
+                              stroke="#6366F1"
                               strokeWidth={2.5}
                               fillOpacity={1}
                               fill={`url(#campGrad-${camp.id})`}

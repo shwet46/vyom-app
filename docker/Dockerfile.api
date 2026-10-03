@@ -9,14 +9,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
+# Install uv using the official installer
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
+# Copy dependency manifests first (layer-cache friendly)
 COPY pyproject.toml ./
 COPY apps/api/pyproject.toml ./apps/api/
+
+# Copy application source
 COPY apps/api/src ./apps/api/src
 
+# Install the package and all its dependencies into the system Python
 RUN uv pip install --system -e ./apps/api
 
-CMD ["sh", "-c", "uvicorn vyom.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# IMPORTANT: Use --workers 1 (single process).
+# Long-polling mode embeds the aiogram dispatcher as an asyncio task inside
+# uvicorn's event loop. Multiple workers would each try to poll independently,
+# causing Telegram's "409 Conflict" error.  Single worker + async = correct.
+CMD ["sh", "-c", "uvicorn vyom.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

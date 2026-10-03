@@ -184,8 +184,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Card 4: Campaign Spend */}
         <div className="p-3 sm:p-3.5 rounded-2xl card-pastel-blush border border-blush/40 shadow-card hover-lift flex flex-col min-w-0">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-6 h-6 rounded-lg bg-purple-500/12 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-purple-600" />
+            <div className="w-6 h-6 rounded-lg bg-amber-500/12 flex items-center justify-center">
+              <Zap className="w-3 h-3 text-amber-600" />
             </div>
             <span className="text-[10px] font-bold text-charcoal uppercase tracking-wider">{t.campaignSpend}</span>
           </div>
@@ -194,7 +194,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-blush/30">
             <span className="text-[10px] text-slate font-medium">Kharch</span>
-            <span className="text-[9px] font-bold text-purple-700 bg-purple-50/80 px-1.5 py-0.5 rounded-full">₹14.2k return</span>
+            <span className="text-[9px] font-bold text-amber-700 bg-amber-50/80 px-1.5 py-0.5 rounded-full">₹14.2k return</span>
           </div>
         </div>
       </div>
@@ -336,15 +336,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="todayGradHome" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6c63ff" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#6c63ff" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#6366F1" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="hour" tick={{ fontSize: 9, fill: '#9d9dae' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="hour" tick={{ fontSize: 9, fill: '#6B7280' }} axisLine={false} tickLine={false} />
                   <Tooltip
                     formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
                     contentStyle={{
-                      backgroundColor: '#1a1a2e',
+                      backgroundColor: '#111827',
                       borderRadius: '12px',
                       color: '#ffffff',
                       fontSize: '11px',
@@ -355,7 +355,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Area
                     type="monotone"
                     dataKey="today"
-                    stroke="#6c63ff"
+                    stroke="#6366F1"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#todayGradHome)"
@@ -363,7 +363,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Area
                     type="monotone"
                     dataKey="yesterday"
-                    stroke="#9d9dae"
+                    stroke="#6B7280"
                     strokeWidth={1.5}
                     strokeDasharray="3 3"
                     fill="none"

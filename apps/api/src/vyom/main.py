@@ -48,19 +48,37 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             from vyom.bot.app import create_bot_and_dispatcher
 
             async def _bot_polling_worker() -> None:
-                """Run aiogram polling inside the same event loop as FastAPI."""
-                try:
-                    _bot, _dp = create_bot_and_dispatcher(settings)
-                    await _bot.delete_webhook(drop_pending_updates=False)
-                    logger.info(
-                        "telegram_bot_polling_started",
-                        username=settings.bot_username or "configured",
-                    )
-                    await _dp.start_polling(_bot, handle_signals=False)
-                except asyncio.CancelledError:
-                    logger.info("telegram_bot_polling_stopped")
-                except Exception as poll_err:
-                    logger.warning("telegram_bot_polling_error", error=str(poll_err))
+                """Run aiogram polling inside the same event loop as FastAPI.
+
+                Automatically retries with exponential backoff on transient errors
+                so the bot stays alive even after Render cold-start network blips.
+                """
+                _backoff = 2.0
+                _max_backoff = 60.0
+                while True:
+                    try:
+                        _bot, _dp = create_bot_and_dispatcher(settings)
+                        # Remove any stale webhook so polling works immediately
+                        await _bot.delete_webhook(drop_pending_updates=False)
+                        logger.info(
+                            "telegram_bot_polling_started",
+                            username=settings.bot_username or "configured",
+                        )
+                        # handle_signals=False: let uvicorn own SIGINT/SIGTERM
+                        await _dp.start_polling(_bot, handle_signals=False)
+                        # start_polling returned normally → clean shutdown
+                        break
+                    except asyncio.CancelledError:
+                        logger.info("telegram_bot_polling_stopped")
+                        raise
+                    except Exception as poll_err:
+                        logger.warning(
+                            "telegram_bot_polling_error",
+                            error=str(poll_err),
+                            retry_in=_backoff,
+                        )
+                        await asyncio.sleep(_backoff)
+                        _backoff = min(_backoff * 2, _max_backoff)
 
             polling_task = asyncio.create_task(_bot_polling_worker())
             logger.info("telegram_bot_polling_task_scheduled")

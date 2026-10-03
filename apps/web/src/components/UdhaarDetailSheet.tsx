@@ -48,7 +48,7 @@ export const UdhaarDetailSheet: React.FC<UdhaarDetailSheetProps> = ({
         particleCount: 75,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#10b981', '#2597d0', '#ffffff'],
+        colors: ['#16A34A', '#6366F1', '#FFFFFF'],
       });
     } catch (e) {}
 

@@ -55,7 +55,7 @@ export const InstallPromptBanner: React.FC = () => {
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
               onClick={handleInstallClick}
-              className="py-2 px-3 rounded-xl bg-blue hover:bg-[#1a85b9] text-white text-xs font-google font-extrabold flex items-center gap-1 shadow-button transition active:scale-95 cursor-pointer"
+              className="py-2 px-3 rounded-xl bg-blue hover:bg-blue-dark text-white text-xs font-google font-extrabold flex items-center gap-1 shadow-button transition active:scale-95 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Install</span>

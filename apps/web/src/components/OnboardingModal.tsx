@@ -452,7 +452,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <button
                   onClick={handleConnectPaytm}
                   disabled={isConnectingPaytm}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-[#002e6e] text-white font-extrabold text-xs shadow-button hover:opacity-95 transition cursor-pointer"
+                  className="w-full py-3.5 px-4 rounded-2xl bg-blue text-white font-extrabold text-xs shadow-button hover:bg-blue-dark transition cursor-pointer"
                 >
                   {isConnectingPaytm
                     ? copy.connecting

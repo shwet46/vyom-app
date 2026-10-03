@@ -526,7 +526,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                   </div>
                 )}
                 {/* Laser bar */}
-                <div className="absolute left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-blue to-transparent shadow-[0_0_14px_#2597d0] animate-[bounce_1.8s_infinite]" />
+                <div className="absolute left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-blue to-transparent shadow-[0_0_14px_#6366F1] animate-[bounce_1.8s_infinite]" />
               </div>
 
               <div className="space-y-2 max-w-xs">

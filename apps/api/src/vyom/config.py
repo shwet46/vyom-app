@@ -6,6 +6,7 @@ Verified against Sarvam docs Sept 2026.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Literal
 
 from pydantic import AliasChoices, Field
@@ -109,6 +110,12 @@ class Settings(BaseSettings):
     debug: bool = False
 
 
+@lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """Factory for settings, cached at module level."""
+    """Factory for settings — cached as a true process-level singleton.
+
+    Using lru_cache ensures that Render's injected environment variables are
+    read exactly once at first call and reused for the process lifetime.
+    Call ``get_settings.cache_clear()`` in tests to reset between cases.
+    """
     return Settings()

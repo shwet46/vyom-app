@@ -126,12 +126,12 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNaviga
             <div className="h-36 w-full pt-1">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
                   <Tooltip
                     formatter={(val: any) => [formatRupee(Number(val)), 'Sales']}
                     contentStyle={{
-                      backgroundColor: '#09090b',
+                      backgroundColor: '#111827',
                       borderRadius: '10px',
                       color: '#ffffff',
                       fontSize: '11px',
@@ -141,9 +141,9 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNaviga
                   <Line
                     type="monotone"
                     dataKey="sales"
-                    stroke="#2597d0"
+                    stroke="#6366F1"
                     strokeWidth={2.5}
-                    dot={{ fill: '#2597d0', r: 3 }}
+                    dot={{ fill: '#6366F1', r: 3 }}
                     activeDot={{ r: 5 }}
                   />
                 </LineChart>
@@ -239,8 +239,8 @@ export const InsightsView: React.FC<InsightsViewProps> = ({ lang, city, onNaviga
                       if (intensity === 0) bg = 'bg-rose-50 text-error border border-rose-100 font-bold';
                       else if (intensity === 1) bg = 'bg-sky/30 border border-sky/50';
                       else if (intensity === 2) bg = 'bg-sky text-blue font-bold';
-                      else if (intensity === 3) bg = 'bg-[#2597d0] text-white font-bold';
-                      else if (intensity === 4) bg = 'bg-[#0f6896] text-white font-black';
+                      else if (intensity === 3) bg = 'bg-blue text-white font-bold';
+                      else if (intensity === 4) bg = 'bg-blue-dark text-white font-black';
 
                       return (
                         <div

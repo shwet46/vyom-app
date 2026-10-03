@@ -1,47 +1,121 @@
 services:
-  # -------------------------------------------------------------
-  # 1. FastAPI Core + Telegram Bot (Web Service)
-  # -------------------------------------------------------------
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 1. FastAPI Web Service (API + health endpoints)
+  # ─────────────────────────────────────────────────────────────────────────────
   - type: web
     name: vyom-api
     runtime: docker
     dockerfilePath: ./docker/Dockerfile.api
     dockerContext: .
-    plan: free # Change to 'starter' if you want 24/7 uptime without sleep
+    plan: free           # Upgrade to 'starter' for 24/7 uptime (no sleep)
     healthCheckPath: /healthz
     envVars:
       - key: PORT
         value: 8000
+
+      # ── MongoDB Atlas ──────────────────────────────────────────────────────
       - key: MONGODB_URI
-        sync: false # Provide your MongoDB Atlas connection string in Render Dashboard
+        sync: false      # Paste your Atlas connection string in Render Dashboard
+
       - key: MONGODB_DATABASE
         value: vyom
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false # Telegram Bot Token from @BotFather
+
+      # ── Bot mode: MUST be 'polling' so the API process does NOT also poll ──
+      # The actual polling is handled by the vyom-bot background worker below.
+      # Set to 'webhook' only if you configure a webhook endpoint separately.
       - key: BOT_MODE
-        value: webhook # 'webhook' (recommended on Render) or 'polling'
+        value: polling
+
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false      # Your bot token from @BotFather — set in Render Dashboard
+
       - key: BOT_USERNAME
-        sync: false # e.g. VyomShopBot
+        sync: false      # e.g. VyomShopBot (without @)
+
+      # ── Background worker embedded in API process ──────────────────────────
+      # Keep 'true' so the APScheduler (udhaar/opportunity jobs) runs inside
+      # the API container (avoids needing a third service on the free plan).
       - key: RUN_WORKER_IN_API
-        value: "true" # Embeds background opportunity/udhaar scheduler inside API container
+        value: "true"
+
+      # ── AI configuration ───────────────────────────────────────────────────
       - key: AI_MODE
-        value: mock # Set to 'live' if providing SARVAM_API_KEY / GEMINI_API_KEY
+        value: mock      # Change to 'live' when SARVAM_API_KEY / GEMINI_API_KEY are set
+
       - key: DEMO_MODE
         value: "true"
+
+      # ── Security ───────────────────────────────────────────────────────────
       - key: JWT_SECRET
         generateValue: true
+
+      # ── CORS / Frontend ────────────────────────────────────────────────────
       - key: WEB_ORIGIN
-        sync: false # Set to your frontend URL, e.g. https://vyom-web.onrender.com
+        sync: false      # e.g. https://vyom-web.onrender.com
+
       - key: PUBLIC_API_URL
-        sync: false # Set to your API URL, e.g. https://vyom-api.onrender.com
+        sync: false      # e.g. https://vyom-api.onrender.com
+
+      # ── Optional AI providers ──────────────────────────────────────────────
       - key: SARVAM_API_KEY
         sync: false
+
       - key: GEMINI_API_KEY
         sync: false
 
-  # -------------------------------------------------------------
-  # 2. Merchant PWA Frontend (Static Site - Free on Render)
-  # -------------------------------------------------------------
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 2. Telegram Bot — Background Worker (long-polling)
+  #
+  # WHY a separate Background Worker?
+  #   • Render "web" services sleep after 15 min of no HTTP traffic on the free
+  #     plan — this kills long-polling.  Background Workers NEVER sleep.
+  #   • A separate process isolates bot crashes from the API.
+  #   • uvicorn's multi-worker mode is incompatible with embedded polling
+  #     (causes Telegram 409 Conflict). Background Worker sidesteps this.
+  # ─────────────────────────────────────────────────────────────────────────────
+  - type: worker
+    name: vyom-bot
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile.bot
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        sync: false      # Same Atlas URI as the API service
+
+      - key: MONGODB_DATABASE
+        value: vyom
+
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false      # Same token as the API service
+
+      - key: BOT_USERNAME
+        sync: false
+
+      - key: BOT_MODE
+        value: polling
+
+      - key: AI_MODE
+        value: mock
+
+      - key: DEMO_MODE
+        value: "true"
+
+      - key: PUBLIC_API_URL
+        sync: false      # Needed by any handler that builds callback URLs
+
+      - key: SARVAM_API_KEY
+        sync: false
+
+      - key: GEMINI_API_KEY
+        sync: false
+
+      - key: JWT_SECRET
+        sync: false      # Should match the API's JWT_SECRET for token validation
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 3. Merchant PWA Frontend (Static Site — always free on Render)
+  # ─────────────────────────────────────────────────────────────────────────────
   - type: web
     name: vyom-web
     runtime: static
@@ -54,4 +128,4 @@ services:
         destination: /index.html
     envVars:
       - key: PUBLIC_API_URL
-        sync: false # Set to your deployed vyom-api URL, e.g. https://vyom-api.onrender.com
+        sync: false      # e.g. https://vyom-api.onrender.com

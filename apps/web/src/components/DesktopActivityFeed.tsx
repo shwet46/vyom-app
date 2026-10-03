@@ -31,7 +31,7 @@ export const DesktopActivityFeed: React.FC<DesktopActivityFeedProps> = ({ items 
             icon = <Send className="w-3 h-3 text-blue" />;
             bgClass = 'card-pastel-lavender border-lavender/30';
           } else if (item.iconType === 'campaign') {
-            icon = <TrendingUp className="w-3 h-3 text-purple-600" />;
+            icon = <TrendingUp className="w-3 h-3 text-amber-600" />;
             bgClass = 'card-pastel-blush border-blush/30';
           } else if (item.iconType === 'insight') {
             icon = <Sparkles className="w-3 h-3 text-amber-600" />;

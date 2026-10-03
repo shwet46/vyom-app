@@ -67,13 +67,43 @@ async def feed_telegram_update(update_dict: dict[str, Any]) -> None:
 
 
 async def run_polling() -> None:
-    """Run the Telegram bot as a standalone polling process."""
+    """Run the Telegram bot as a standalone polling process.
+
+    Designed for use in a dedicated Docker container or Render Background Worker.
+    Automatically retries on transient Telegram API errors.
+    """
+    global _bot, _dp
     settings = get_settings()
     await init_mongo(settings)
+    _backoff = 2.0
+    _max_backoff = 60.0
     try:
-        await bot.delete_webhook(drop_pending_updates=False)
-        logger.info("telegram_bot_polling_started", username=settings.bot_username or "configured")
-        await dp.start_polling(bot)
+        while True:
+            try:
+                # Re-create bot/dispatcher on each reconnect attempt to
+                # ensure a clean connection session
+                _bot = None
+                _dp = None
+                local_bot, local_dp = create_bot_and_dispatcher(settings)
+                await local_bot.delete_webhook(drop_pending_updates=False)
+                logger.info(
+                    "telegram_bot_polling_started",
+                    username=settings.bot_username or "configured",
+                )
+                # handle_signals=False: caller owns SIGINT/SIGTERM
+                await local_dp.start_polling(local_bot, handle_signals=False)
+                # Clean exit
+                break
+            except asyncio.CancelledError:
+                raise
+            except Exception as err:
+                logger.warning(
+                    "telegram_bot_polling_error",
+                    error=str(err),
+                    retry_in=_backoff,
+                )
+                await asyncio.sleep(_backoff)
+                _backoff = min(_backoff * 2, _max_backoff)
     finally:
         await close_mongo()
 

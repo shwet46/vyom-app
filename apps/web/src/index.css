@@ -1,35 +1,38 @@
 @import "tailwindcss";
 
 :root, .app-shell {
-  /* Soft lavender + butter pastel palette */
-  --obsidian: #302b3f;
-  --paper: #fffdfb;
-  --cloud: #f3f0f8;
-  --sky: #e9e5f8;
-  --charcoal: #625d70;
-  --slate: #9993aa;
-  --ink: #302b3f;
-  --blue: #897dc2;
-  --blue-dark: #7065aa;
-  --line: rgba(137, 125, 194, 0.18);
-  --soft-line: rgba(137, 125, 194, 0.09);
-  --error: #d96b7d;
+  /* Indigo/violet product palette */
+  --obsidian: #111827;
+  --paper: #ffffff;
+  --cloud: #f7f8fc;
+  --sky: #eef2ff;
+  --charcoal: #6b7280;
+  --slate: #6b7280;
+  --ink: #111827;
+  --blue: #6366f1;
+  --blue-dark: #4f46e5;
+  --violet: #8b5cf6;
+  --line: #e5e7eb;
+  --soft-line: rgba(229, 231, 235, 0.72);
+  --error: #dc2626;
+  --success: #16a34a;
+  --warning: #f59e0b;
 
-  /* Pastel accent palette */
-  --peach: #f9d8c8;
-  --lavender: #ddd7f3;
-  --mint: #d6eee5;
-  --blush: #f2d6e0;
-  --cream: #fff1c9;
-  --sky-blue: #d8e8f4;
-  --coral: #efad98;
-  --sage: #c9dfd2;
+  /* Supporting accent palette */
+  --peach: #f5f3ff;
+  --lavender: #ede9fe;
+  --mint: #dcfce7;
+  --blush: #fee2e2;
+  --cream: #fef3c7;
+  --sky-blue: #eef2ff;
+  --coral: #8b5cf6;
+  --sage: #dcfce7;
 
-  /* Soft shadows with a lavender tint */
-  --feature-shadow: 0 1px 3px 0 rgba(137, 125, 194, 0.05), 0 8px 32px -4px rgba(137, 125, 194, 0.12);
-  --button-shadow: 0 2px 8px -1px rgba(137, 125, 194, 0.24), 0 1px 2px 0 rgba(48, 43, 63, 0.05);
-  --card-shadow: 0 2px 12px -2px rgba(137, 125, 194, 0.09), 0 0 0 1px rgba(137, 125, 194, 0.04);
-  --glow-shadow: 0 0 32px rgba(137, 125, 194, 0.22);
+  /* Soft shadows with an indigo tint */
+  --feature-shadow: 0 1px 3px 0 rgba(17, 24, 39, 0.05), 0 8px 32px -4px rgba(99, 102, 241, 0.12);
+  --button-shadow: 0 2px 8px -1px rgba(99, 102, 241, 0.24), 0 1px 2px 0 rgba(17, 24, 39, 0.05);
+  --card-shadow: 0 2px 12px -2px rgba(17, 24, 39, 0.09), 0 0 0 1px rgba(17, 24, 39, 0.04);
+  --glow-shadow: 0 0 32px rgba(99, 102, 241, 0.22);
 }
 
 @theme {
@@ -42,9 +45,12 @@
   --color-ink: var(--ink);
   --color-blue: var(--blue);
   --color-blue-dark: var(--blue-dark);
+  --color-violet: var(--violet);
   --color-line: var(--line);
   --color-soft-line: var(--soft-line);
   --color-error: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-peach: var(--peach);
   --color-lavender: var(--lavender);
   --color-mint: var(--mint);
@@ -69,7 +75,7 @@ html {
 .app-shell {
   min-height: 100vh;
   min-height: 100dvh;
-  background: linear-gradient(160deg, #fffdfb 0%, #f8f5ff 46%, #fff5e8 100%);
+  background: linear-gradient(160deg, #ffffff 0%, #f7f8fc 60%, #eef2ff 100%);
   color: var(--obsidian);
   font-family: 'Instrument Sans', 'Noto Sans', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-tap-highlight-color: transparent;
@@ -104,36 +110,36 @@ html {
 
 /* Glassmorphism card style */
 .glass-card {
-  background: rgba(255, 253, 251, 0.78);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
-  border: 1px solid rgba(137, 125, 194, 0.1);
+  border: 1px solid rgba(229, 231, 235, 0.9);
   box-shadow: var(--card-shadow);
 }
 
 /* Pastel gradient cards */
 .card-pastel-lavender {
-  background: linear-gradient(135deg, rgba(213, 208, 240, 0.25) 0%, rgba(254, 254, 254, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(237, 233, 254, 0.72) 0%, rgba(255, 255, 255, 0.96) 100%);
 }
 
 .card-pastel-mint {
-  background: linear-gradient(135deg, rgba(194, 237, 223, 0.28) 0%, rgba(254, 254, 254, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.28) 0%, rgba(254, 254, 254, 0.92) 100%);
 }
 
 .card-pastel-peach {
-  background: linear-gradient(135deg, rgba(255, 214, 196, 0.25) 0%, rgba(254, 254, 254, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(245, 243, 255, 0.72) 0%, rgba(255, 255, 255, 0.96) 100%);
 }
 
 .card-pastel-blush {
-  background: linear-gradient(135deg, rgba(245, 208, 221, 0.25) 0%, rgba(254, 254, 254, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.14) 0%, rgba(255, 255, 255, 0.94) 100%);
 }
 
 .card-pastel-coral {
-  background: linear-gradient(135deg, rgba(247, 169, 139, 0.15) 0%, rgba(254, 254, 254, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(255, 255, 255, 0.94) 100%);
 }
 
 .card-pastel-sage {
-  background: linear-gradient(135deg, rgba(181, 213, 197, 0.22) 0%, rgba(254, 254, 254, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.22) 0%, rgba(254, 254, 254, 0.92) 100%);
 }
 
 .card-pastel-cream {
@@ -248,5 +254,5 @@ html {
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px -4px rgba(43, 168, 156, 0.12);
+  box-shadow: 0 8px 32px -4px rgba(99, 102, 241, 0.12);
 }

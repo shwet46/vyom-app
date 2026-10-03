@@ -75,7 +75,7 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.7 },
-        colors: ['#2597d0', '#d7e6f5', '#070709', '#10b981'],
+        colors: ['#6366F1', '#EEF2FF', '#111827', '#16A34A'],
       });
     } catch (e) {
       // ignore
@@ -170,7 +170,7 @@ export const OpportunityDetailSheet: React.FC<OpportunityDetailSheetProps> = ({
 
             <div className="p-3 rounded-2xl bg-white border border-line text-center">
               <div className="text-[11px] text-slate font-medium flex items-center justify-center gap-1">
-                <TrendingUp className="w-3 h-3 text-purple-600" /> Exp. ROI
+                <TrendingUp className="w-3 h-3 text-amber-600" /> Exp. ROI
               </div>
               <div className="font-extrabold text-sm text-emerald-700 mt-0.5">
                 {opportunity.expectedRoi}
