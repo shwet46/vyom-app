@@ -145,7 +145,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           onMouseUp={(e) => { e.currentTarget.style.boxShadow = '4px 4px 0px var(--shadow-color)'; e.currentTarget.style.transform = 'none'; }}
           onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '4px 4px 0px var(--shadow-color)'; e.currentTarget.style.transform = 'none'; }}
         >
-          <Plus className="w-4 h-4" /> Naya Udhaar
+          <Plus className="w-4 h-4" /> {t.ledgerUdhaar}
         </button>
         <button
           onClick={() => { setEntryType('jama'); setShowAddEntryModal(true); }}
@@ -167,7 +167,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           onMouseUp={(e) => { e.currentTarget.style.boxShadow = '4px 4px 0px var(--shadow-color)'; e.currentTarget.style.transform = 'none'; }}
           onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '4px 4px 0px var(--shadow-color)'; e.currentTarget.style.transform = 'none'; }}
         >
-          <Check className="w-4 h-4" /> Jama Darj
+          <Check className="w-4 h-4" /> {t.ledgerJama}
         </button>
       </div>
 
@@ -282,17 +282,17 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Grahak ka naam, phone..."
+            placeholder={t.searchCustomer}
             className="comic-input"
             style={{ paddingLeft: 36, fontSize: 13 }}
           />
         </div>
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {[
-            { id: 'all' as const, label: 'Sabhi' },
-            { id: 'overdue30' as const, label: '30+ Din' },
-            { id: 'promised' as const, label: 'Wada' },
-            { id: 'paid' as const, label: 'Chukta ✓' },
+            { id: 'all' as const, label: t.allCount },
+            { id: 'overdue30' as const, label: t.overdue30 },
+            { id: 'promised' as const, label: t.promised },
+            { id: 'paid' as const, label: t.paidStatus },
           ].map((f) => (
             <button
               key={f.id}
@@ -369,7 +369,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
 
                   {/* Balance + Status */}
                   <div className="text-right flex-shrink-0">
-                    <span style={{ fontSize: 10, color: '#6B7280' }}>{isPaid ? 'Clear' : 'Baki'}</span>
+                    <span style={{ fontSize: 10, color: '#6B7280' }}>{isPaid ? t.paidStatus : t.bakiStatus}</span>
                     <div
                       className="tabular-nums"
                       style={{
@@ -423,7 +423,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                       className="comic-btn comic-btn-sm"
                       style={{ fontSize: 11, padding: '4px 10px' }}
                     >
-                      Khata
+                      {t.khataBtn}
                     </button>
                   </div>
                 </div>
@@ -443,7 +443,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
           <div className="comic-card w-full" style={{ maxWidth: 360, padding: 20 }}>
             <div className="flex items-center justify-between" style={{ paddingBottom: 10, borderBottom: '1.5px solid rgba(148,163,184,0.35)', marginBottom: 14 }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>
-                {entryType === 'udhaar' ? 'नया उधार (Debit)' : 'जमा दर्ज (Credit)'}
+                {entryType === 'udhaar' ? t.ledgerUdhaar : t.ledgerJama}
               </h3>
               <button
                 onClick={() => setShowAddEntryModal(false)}
@@ -518,7 +518,7 @@ export const UdhaarView: React.FC<UdhaarViewProps> = ({
                 transition: 'box-shadow 0.1s, transform 0.1s',
               }}
             >
-              {entryType === 'udhaar' ? 'उधार लिखें ✓' : 'जमा दर्ज करें ✓'}
+              {entryType === 'udhaar' ? t.ledgerUdhaar : t.ledgerJama}
             </button>
           </div>
         </div>

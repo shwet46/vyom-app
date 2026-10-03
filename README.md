@@ -116,23 +116,6 @@ make web
 
 ---
 
-## 5. Configuration & Environment Reference
-
-All configuration is managed via `.env` (derived from `.env.example`):
-
-| Variable | Default (Demo) | Description |
-|---|---|---|
-| `AI_MODE` | `mock` | `mock` for zero-key demo mode, `live` for actual Sarvam & Google APIs |
-| `DEMO_MODE` | `true` | Enables deterministic clock override and simulation endpoints |
-| `DEMO_TODAY` | `2026-09-30` | Injectable reference date (Day 4 of Pitru Paksha, 11d before Navratri) |
-| `SARVAM_LLM_MODEL` | `sarvam-105b` | Pinned Sarvam model (`sarvam-m` and `sarvam-30b` are deprecated) |
-| `SARVAM_STT_MODEL` | `saaras:v4` | Sarvam Speech-to-Text model |
-| `SARVAM_TTS_MODEL` | `bulbul:v3` | Sarvam Text-to-Speech model |
-| `MONGODB_URI` | `mongodb://localhost:27017/vyom?replicaSet=rs0` | MongoDB 7.0 replica set URI |
-| `APP_TIMEZONE` | `Asia/Kolkata` | Standard Indian Standard Time (IST) |
-
----
-
 ## 6. Verification & Test Suite
 
 The entire backend and data intelligence layer is verified with strict typing and unit tests:
@@ -153,9 +136,3 @@ cd apps/web && pnpm build
 
 ---
 
-## 7. Documentation Index
-
-- [System Architecture](docs/architecture.md)
-- [MongoDB Data Model (27 Collections & ER Diagram)](docs/data-model.md)
-- [Festival Context & Ritual Engine](docs/festival-engine.md)
-- [Customer Telegram Bot Flows](docs/bot-flows.md)

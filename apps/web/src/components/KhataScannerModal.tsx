@@ -13,22 +13,26 @@ import {
   FileText,
   Trash2,
 } from './icons';
-import { ScannedLedgerRow, UdhaarCustomer } from '../types';
+import { ScannedLedgerRow, UdhaarCustomer, Language } from '../types';
 import { sampleScannedRows } from '../data/mockData';
 import { formatRupee } from '../utils/formatters';
+import { translations, translateHindiText } from '../utils/i18n';
 import { confirmKhataScan, updateKhataScanRows, uploadKhataScan } from '../services/api';
 
 interface KhataScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveToLedger: (newCustomers: UdhaarCustomer[]) => void | Promise<void>;
+  lang: Language;
 }
 
 export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   isOpen,
   onClose,
   onSaveToLedger,
+  lang,
 }) => {
+  const t = translations[lang] || translations.hinglish;
   const [step, setStep] = useState<'capture' | 'scanning' | 'results'>('capture');
   const [scannedRows, setScannedRows] = useState<ScannedLedgerRow[]>(sampleScannedRows);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -105,7 +109,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   const executeScan = async (fileToScan?: File) => {
     setStep('scanning');
     setErrorMsg(null);
-    setScanStatusMsg('AI Vision & OCR Engine connect ho raha hai...');
+    setScanStatusMsg(t.scanProgress1);
 
     const timer1 = setTimeout(() => {
       setScanStatusMsg('Handwritten bahi-khata, Devanagari akshar aur ank padhe ja rahe hain...');
@@ -130,6 +134,8 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
         if (res && res.rows && res.rows.length > 0) {
           const rows: ScannedLedgerRow[] = res.rows.map((r: any, idx: number) => {
             const isPayment = r.entry_type === 'payment_received' || String(r.entry_type).toLowerCase().includes('jama');
+            const itemsRaw = r.items_summary || (r.flags?.length ? r.flags.join(', ') : (isPayment ? 'नकद जमा' : 'किराना'));
+            const translatedItems = translateHindiText(itemsRaw, lang);
             return {
               id: r.row_id || `scanned-row-${Date.now()}-${idx}`,
               name: r.name_raw || 'Customer',
@@ -137,7 +143,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               date: r.date ? String(r.date).slice(0, 10) : new Date().toISOString().split('T')[0],
               confidence: r.confidence ? Math.round(r.confidence * 100) : 95,
               selected: true,
-              items: r.items_summary || (r.flags?.length ? r.flags.join(', ') : (isPayment ? 'Cash Jama' : 'Kirana grocery goods')),
+              items: translatedItems,
               entryType: isPayment ? 'jama' : 'udhaar',
             };
           });
@@ -156,7 +162,11 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
       clearTimeout(timer2);
       clearTimeout(timer3);
       await new Promise((resolve) => setTimeout(resolve, 800));
-      setScannedRows(sampleScannedRows);
+      const translatedSample = sampleScannedRows.map(row => ({
+        ...row,
+        items: row.items ? translateHindiText(row.items, lang) : row.items
+      }));
+      setScannedRows(translatedSample);
       setStep('results');
     } catch (err: any) {
       clearTimeout(timer1);
@@ -330,10 +340,10 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
             </div>
             <div>
               <h2 className="font-extrabold text-base text-obsidian tracking-tight">
-                Khata OCR Scanner (AI Vision)
+                {t.khataScannerTitle}
               </h2>
               <p className="text-[11px] text-charcoal">
-                Handwritten register, bill ya chit upload karein aur udhar auto-add karein
+                {t.khataScannerHelp}
               </p>
             </div>
           </div>
@@ -424,13 +434,13 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                     </div>
                     <div>
                       <h4 className="font-extrabold text-sm text-obsidian">
-                        Bahi-Khata Document / Photo Upload Karein
+                        {t.uploadDocument}
                       </h4>
                       <p className="text-xs text-charcoal mt-1">
-                        Yahan photo drag & drop karein ya camera se photo khinchein
+                        {t.dragDropHelp}
                       </p>
                       <p className="text-[10px] text-slate mt-0.5">
-                        JPG, PNG, WEBP, PDF (Hindi, Marathi & English Handwriting)
+                        {t.fileFormats}
                       </p>
                     </div>
 
@@ -497,13 +507,10 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                 </div>
               )}
 
-              {/* Info footer */}
               <div className="text-[11px] text-charcoal bg-cloud/60 p-3 rounded-xl border border-soft-line flex items-start gap-2">
                 <span className="text-blue font-bold">💡</span>
                 <span>
-                  <strong>AI Khata OCR:</strong> Haath se likhe Hindi, Marathi aur English
-                  khata-pustak ko scan karke grahak naam, items, udhari raashi aur jama record
-                  ko automatically structured digital udhaar ledger mein jodta hai.
+                  <strong>AI Khata OCR:</strong> {t.ocrInfo}
                 </span>
               </div>
             </div>
@@ -538,7 +545,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                   <span>{scanStatusMsg}</span>
                 </div>
                 <p className="text-[11px] text-slate">
-                  Multimodal AI & Sarvam Doc AI digitizing handwriting & structuring ledger rows...
+                  {t.scanProcessing}
                 </p>
               </div>
             </div>
@@ -552,7 +559,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div className="text-xs font-bold text-emerald-950">
-                      {scannedRows.length} Entries OCR se Safalta-purvak Extract Hui!
+                      {scannedRows.length} {t.extractSuccess}
                     </div>
                   </div>
                   <button
@@ -560,20 +567,20 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                     onClick={() => setStep('capture')}
                     className="text-xs font-bold text-charcoal hover:text-ink underline cursor-pointer"
                   >
-                    Dusri Photo Upload Karein
+                    {t.uploadAnother}
                   </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-[11px] pt-1 border-t border-emerald-200/60">
                   <span className="font-bold text-rose-800">
-                    🔴 Kul Udhaar: ₹{totalUdhaarAmount.toLocaleString('en-IN')}
+                    🔴 {t.totalUdhaar}: {formatRupee(totalUdhaarAmount)}
                   </span>
                   <span className="text-charcoal/40">•</span>
                   <span className="font-bold text-emerald-800">
-                    🟢 Kul Jama: ₹{totalJamaAmount.toLocaleString('en-IN')}
+                    🟢 {t.totalJama}: {formatRupee(totalJamaAmount)}
                   </span>
                   <span className="text-charcoal/40">•</span>
                   <span className="text-emerald-700">
-                    {selectedCount} Selected
+                    {selectedCount} {t.selected}
                   </span>
                 </div>
               </div>
@@ -656,7 +663,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
 
                     {/* Bottom Line: Date and confidence */}
                     <div className="flex items-center justify-end text-[10px] text-slate pl-7 pr-1">
-                      <span className="shrink-0 text-slate-400">{row.date} • {row.confidence}% AI</span>
+                      <span className="shrink-0 text-slate-400">{row.date} • {row.confidence}% {t.confidence}</span>
                     </div>
                   </div>
                 ))}
@@ -669,7 +676,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
                 className="w-full py-2.5 px-3 rounded-xl border border-dashed border-line text-charcoal hover:text-ink hover:border-blue text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 text-blue" />
-                <span>+ Nayi Entry Jodein (Manual Entry)</span>
+                <span>{t.addManualEntry}</span>
               </button>
             </div>
           )}
@@ -683,7 +690,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               onClick={handleClose}
               className="flex-1 py-3 px-3 rounded-2xl border border-line text-xs font-bold text-charcoal hover:bg-cloud cursor-pointer text-center"
             >
-              Cancel
+              {t.cancel}
             </button>
             <button
               type="button"
@@ -694,12 +701,12 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
               {isSaving ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Ledger Save Ho Raha Hai...</span>
+                  <span>{t.saving}</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Khata Ledger Mein Jodein ({selectedCount} Entries)</span>
+                  <span>{t.saveToLedger} ({selectedCount})</span>
                 </>
               )}
             </button>

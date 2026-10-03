@@ -57,7 +57,6 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
     } else if (opp.type === 'deadhours') {
       chips.push(
         { icon: '☀️', text: 'Dopahar 2-4 PM suni', detail: 'Is time footfall 60% kam hai' },
-        { icon: '📊', text: 'Peer stores mein nahi', detail: 'Aas-paas ki dukaanon mein yeh pattern nahi hai' },
       );
     } else if (opp.type === 'festival') {
       chips.push(
@@ -93,7 +92,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
             <div className="flex items-center gap-1.5" style={{ marginBottom: 2 }}>
               <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--ai-text)' }} />
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Kul Recovery Potential
+                {t.totalRecoveryPotential}
               </span>
             </div>
             <div className="tabular-nums" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-ui)' }}>
@@ -104,40 +103,8 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
             className="comic-badge"
             style={{ background: '#BEF0D8', color: '#0E7A50' }}
           >
-            {activeOpps.length} Mauke
+            {activeOpps.length} {t.opportunities}
           </span>
-        </div>
-      </div>
-
-      {/* Peer Compare at top of Mauke */}
-      <div className="comic-card-sky" style={{ padding: 14, position: 'relative' }}>
-        <div
-          className="comic-badge"
-          style={{
-            position: 'absolute',
-            top: -10,
-            right: 12,
-            background: '#FFFFFF',
-            color: '#1565C0',
-            fontSize: 9,
-          }}
-        >
-          Sirf Paytm Data Se Possible
-        </div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
-          📊 Peer Compare
-        </div>
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Aapki Dukaan</div>
-            <div style={{ height: 16, background: '#FFE4B8', border: '1px solid var(--outline)', borderRadius: 5, width: '62%' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#B5610E' }}>-18%</span>
-          </div>
-          <div className="flex-1">
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Aas-paas</div>
-            <div style={{ height: 16, background: '#BEF0D8', border: '1px solid var(--outline)', borderRadius: 5, width: '88%' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50' }}>-4%</span>
-          </div>
         </div>
       </div>
 
@@ -188,7 +155,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
                           : 'Sales drop'}
                       </span>
                       <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <Users className="w-3 h-3" /> {opp.customerCount} customers
+                        <Users className="w-3 h-3" /> {opp.customerCount} {t.customers}
                       </span>
                     </div>
                     <h3
@@ -203,7 +170,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
                     <div className="tabular-nums" style={{ fontSize: 15, fontWeight: 700, color: 'var(--ai-text)' }}>
                       {formatRupee(opp.potentialRevenue)}
                     </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50' }}>ROI: {opp.expectedRoi}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#0E7A50' }}>{t.roi}: {opp.expectedRoi}</div>
                   </div>
                 </div>
 
@@ -244,7 +211,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
                     padding: 0,
                   }}
                 >
-                  Kyun? <ChevronDown className="w-3.5 h-3.5" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                  {t.whyQuestion} <ChevronDown className="w-3.5 h-3.5" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                 </button>
 
                 {/* Expanded evidence detail */}
@@ -274,7 +241,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
                     className="comic-btn-outline comic-btn-sm"
                     style={{ fontSize: 13 }}
                   >
-                    Details <ChevronRight className="w-3.5 h-3.5" />
+                    {t.details} <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => onQuickApproveOpportunity(opp)}
@@ -282,7 +249,7 @@ export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
                     style={{ fontSize: 13 }}
                   >
                     <Check className="w-3.5 h-3.5" />
-                    Haan, chalao
+                    {t.runCampaign}
                   </button>
                 </div>
               </div>
