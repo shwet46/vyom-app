@@ -13,8 +13,31 @@ import {
   UdhaarCustomer,
 } from '../types';
 
-// In development, Vite proxies /api to http://localhost:8000
-const API_BASE = import.meta.env.VITE_API_URL || '/api/v1';
+// Dynamic API base resolver: supports local proxy, custom URL, and auto-detects deployed hosts
+export function getApiBase(): string {
+  if (typeof window !== 'undefined') {
+    // 1. Check runtime override
+    const custom = localStorage.getItem('vyom_api_url') || (window as any).__VYOM_API_URL__;
+    if (custom) return `${custom.replace(/\/+$/, '')}/api/v1`;
+
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const envUrl = import.meta.env.VITE_API_URL || '';
+
+    // 2. If running on deployed host (not localhost), but envUrl points to localhost:
+    if (!isLocalhost && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1') || !envUrl)) {
+      // Auto-detect Render deployment: vyom-web.onrender.com -> vyom-api.onrender.com
+      if (window.location.hostname.includes('.onrender.com')) {
+        const apiHostname = window.location.hostname.replace('-web.', '-api.');
+        return `${window.location.protocol}//${apiHostname}/api/v1`;
+      }
+      return '/api/v1';
+    }
+
+    if (envUrl) return envUrl;
+  }
+
+  return import.meta.env.VITE_API_URL || '/api/v1';
+}
 
 export interface HomeMetrics {
   today_sales_paise: number;
@@ -104,7 +127,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   };
 
   try {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    const res = await fetch(`${getApiBase()}${endpoint}`, {
       ...options,
       headers,
       signal: controller.signal,
@@ -351,7 +374,7 @@ export async function uploadKhataScan(file: File, createdVia: string = 'upload')
   const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
-    const res = await fetch(`${API_BASE}/khata/scans`, {
+    const res = await fetch(`${getApiBase()}/khata/scans`, {
       method: 'POST',
       body: formData,
       signal: controller.signal,
@@ -386,7 +409,7 @@ export function subscribeToEvents(
   onEvent: (eventType: string, data: any) => void,
   onError?: (err: any) => void
 ): () => void {
-  const sseUrl = `${API_BASE}/events`;
+  const sseUrl = `${getApiBase()}/events`;
   let eventSource: EventSource | null = null;
 
   try {
