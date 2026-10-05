@@ -57,6 +57,7 @@ import { KhataScannerModal } from './components/KhataScannerModal';
 import { UdhaarDetailSheet } from './components/UdhaarDetailSheet';
 import { OnboardingModal } from './components/OnboardingModal';
 import { NotificationDrawer } from './components/NotificationDrawer';
+import { DesktopPwaAside } from './components/DesktopPwaAside';
 import { HomeView, DynamicHomeMetrics } from './views/HomeView';
 import { OpportunitiesView } from './views/OpportunitiesView';
 import { CampaignsView } from './views/CampaignsView';
@@ -1056,6 +1057,7 @@ export default function App() {
           isOpen={isKhataScanOpen}
           onClose={() => setIsKhataScanOpen(false)}
           onSaveToLedger={handleSaveScannedToLedger}
+          lang={lang}
         />
 
         {/* Udhaar Customer Detail Sheet */}
@@ -1087,6 +1089,13 @@ export default function App() {
           onNavigateToTab={setCurrentTab}
         />
       </div>
+
+      {/* Desktop Side Information Card: Explaining VYOM is a PWA designed for smartphones */}
+      <DesktopPwaAside
+        onOpenKhataScan={() => setIsKhataScanOpen(true)}
+        onOpenVoice={() => setIsVoiceOpen(true)}
+        onShowToast={showToast}
+      />
     </div>
   );
 }

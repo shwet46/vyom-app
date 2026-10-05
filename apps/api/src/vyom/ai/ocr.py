@@ -129,8 +129,13 @@ RULES FOR ACCURATE EXTRACTION:
             mime_type = "image/jpeg"
 
         b64_data = base64.b64encode(image_bytes).decode("utf-8")
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-        headers = {"Content-Type": "application/json"}
+        model_name = self.model
+        if "2.5" in model_name:
+            model_name = "gemini-2.0-flash"
+
+        models_to_try = [model_name]
+        if "1.5-flash" not in model_name:
+            models_to_try.append("gemini-1.5-flash")
 
         body = {
             "contents": [
@@ -155,35 +160,42 @@ RULES FOR ACCURATE EXTRACTION:
 
         timeout = httpx.Timeout(60.0, connect=15.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
-            try:
-                resp = await client.post(url, headers=headers, json=body)
-                resp.raise_for_status()
-                data = resp.json()
-                candidates = data.get("candidates", [])
-                if not candidates:
-                    return []
-
-                raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                parsed_results = self._parse_json_result(raw_text)
-                
-                # Store raw OCR data in DB
+            last_err = None
+            for m in models_to_try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
                 try:
-                    from vyom.db import get_db
-                    db = get_db()
-                    await db.raw_ocr_scans.insert_one({
-                        "filename": filename,
-                        "raw_text": raw_text,
-                        "parsed_results": parsed_results,
-                        "model": self.model,
-                        "created_at": Clock.now()
-                    })
-                except Exception as db_exc:
-                    logger.warning("failed_to_store_raw_ocr", error=str(db_exc))
-                    
-                return parsed_results
-            except Exception as exc:
-                logger.error("gemini_vision_ocr_failed", error=str(exc))
-                raise
+                    resp = await client.post(url, headers=headers, json=body)
+                    resp.raise_for_status()
+                    data = resp.json()
+                    candidates = data.get("candidates", [])
+                    if not candidates:
+                        return []
+
+                    raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                    parsed_results = self._parse_json_result(raw_text)
+
+                    # Store raw OCR data in DB
+                    try:
+                        from vyom.db import get_db
+                        db = get_db()
+                        await db.raw_ocr_scans.insert_one({
+                            "filename": filename,
+                            "raw_text": raw_text,
+                            "parsed_results": parsed_results,
+                            "model": m,
+                            "created_at": Clock.now()
+                        })
+                    except Exception as db_exc:
+                        logger.warning("failed_to_store_raw_ocr", error=str(db_exc))
+
+                    return parsed_results
+                except Exception as exc:
+                    last_err = exc
+                    logger.warning("gemini_vision_model_attempt_failed", model=m, error=str(exc))
+                    continue
+
+            logger.error("gemini_vision_ocr_all_models_failed", error=str(last_err))
+            raise last_err or RuntimeError("Gemini Vision OCR failed")
 
     def _parse_json_result(self, raw_text: str) -> list[dict[str, Any]]:
         """Clean and validate JSON array or object returned by Gemini."""

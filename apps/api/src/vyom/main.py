@@ -158,7 +158,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # CORS configuration - supports comma-separated list of origins
+    # CORS configuration - supports comma-separated list of origins + deployed regex pattern
     allowed_origins = [o.strip() for o in settings.web_origin.split(",") if o.strip()]
     for fallback_origin in ("http://localhost:3000", "http://127.0.0.1:3000"):
         if fallback_origin not in allowed_origins:
@@ -167,6 +167,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
+        allow_origin_regex=r"https://.*\.onrender\.com|https://.*\.vercel\.app|https://.*\.netlify\.app|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
