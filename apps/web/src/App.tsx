@@ -812,7 +812,7 @@ export default function App() {
         />
 
         {/* Central Content Area — single column phone layout */}
-        <main className="flex-1 px-3 py-3" style={{ paddingBottom: 'calc(56px + 60px + 16px)' }}>
+        <main className="flex-1 px-3 py-3" style={{ paddingBottom: 'calc(60px + env(safe-area-inset-bottom) + 76px)' }}>
           {currentTab === 'home' && (
             <HomeView
               lang={lang}

@@ -54,14 +54,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 safe-bottom"
-      style={{ maxWidth: 420, margin: '0 auto', left: 0, right: 0 }}
+      className="bottom-nav fixed bottom-0 left-1/2 z-30 safe-bottom"
+      aria-label="Primary navigation"
     >
       <div
         style={{
           background: '#FFFFFF',
           borderTop: '2px solid var(--shadow-color)',
           boxShadow: '0 -1px 0 var(--outline)',
+          minHeight: '60px',
         }}
       >
         <div className="flex items-center justify-around" style={{ height: 60 }}>

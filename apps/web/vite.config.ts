@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({ mode }) => {
   // The root .env is shared by the frontend and backend.
   const env = loadEnv(mode, path.resolve(__dirname, '../..'), '');
-  const apiUrl = (process.env.VITE_API_URL || process.env.PUBLIC_API_URL || env.PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+  const apiUrl = (process.env.VITE_API_URL || process.env.PUBLIC_API_URL || env.PUBLIC_API_URL || 'https://vyom-api-34z6.onrender.com').replace(/\/+$/, '');
   const apiBase = `${apiUrl}/api/v1`;
 
   return {

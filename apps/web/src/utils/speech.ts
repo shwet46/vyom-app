@@ -1,4 +1,5 @@
 import { Language } from '../types';
+import { getApiBase } from '../services/api';
 
 export interface VoiceOption {
   id: string;
@@ -92,7 +93,7 @@ export async function playSarvamTtsAudio(
         ? 'en-IN'
         : 'hi-IN';
 
-    const res = await fetch('/api/v1/copilot/tts', {
+    const res = await fetch(`${getApiBase()}/copilot/tts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
