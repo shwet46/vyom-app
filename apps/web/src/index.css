@@ -430,6 +430,12 @@ body {
   }
 }
 
+  .bottom-nav {
+    width: min(100vw, 420px);
+    transform: translateX(-50%);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
 /* ═══════════════════════════════════════════
    SPEECH BUBBLE (voice moment)
    ═══════════════════════════════════════════ */

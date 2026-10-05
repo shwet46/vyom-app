@@ -162,6 +162,11 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   };
 
   const handleClose = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+    setShowLiveCamera(false);
     resetState();
     onClose();
   };
@@ -176,6 +181,16 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
   };
 
   const processSelectedFile = (file: File) => {
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+      setErrorMsg('Sirf image ya PDF khata file upload karein.');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMsg('File 15 MB se chhoti honi chahiye.');
+      return;
+    }
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(file);
     setErrorMsg(null);
     if (file.type.startsWith('image/')) {
@@ -229,7 +244,7 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
     try {
       const file = fileToScan || selectedFile;
       if (file) {
-        const res = await uploadKhataScan(file, 'upload');
+        const res = await uploadKhataScan(file, showLiveCamera ? 'camera' : 'upload');
         clearTimeout(timer1);
         clearTimeout(timer2);
         clearTimeout(timer3);
@@ -275,15 +290,13 @@ export const KhataScannerModal: React.FC<KhataScannerModalProps> = ({
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
-      console.warn('OCR scan failed or offline, falling back to smart parsed rows:', err);
-      // Fallback seamlessly so merchant is never blocked
-      const translatedSample = sampleScannedRows.map((row) => ({
-        ...row,
-        items: row.items ? translateHindiText(row.items, lang) : row.items,
-      }));
-      setScannedRows(translatedSample);
-      setErrorMsg(null);
-      setStep('results');
+      console.error('OCR scan failed:', err);
+      setStep('capture');
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : 'OCR scan nahi ho paaya. Photo saaf karke dobara try karein.'
+      );
     }
   };
 

@@ -21,7 +21,7 @@ export function getApiBase(): string {
     if (custom) return `${custom.replace(/\/+$/, '')}/api/v1`;
 
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const envUrl = import.meta.env.VITE_API_URL || '';
+    const envUrl = import.meta.env.VITE_API_URL || 'https://vyom-api-34z6.onrender.com/api/v1';
 
     // 2. If running on deployed host (not localhost), but envUrl points to localhost:
     if (!isLocalhost && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1') || !envUrl)) {
@@ -36,7 +36,7 @@ export function getApiBase(): string {
     if (envUrl) return envUrl;
   }
 
-  return import.meta.env.VITE_API_URL || '/api/v1';
+  return import.meta.env.VITE_API_URL || 'https://vyom-api-34z6.onrender.com/api/v1';
 }
 
 export interface HomeMetrics {
@@ -333,7 +333,7 @@ export async function transcribeVoiceAudio(audio: Blob, language: Language): Pro
   const formData = new FormData();
   formData.append('audio', audio, 'onboarding-description.webm');
 
-  const res = await fetch(`${API_BASE}/copilot/transcribe?language_code=${languageCode}`, {
+  const res = await fetch(`${getApiBase()}/copilot/transcribe?language_code=${languageCode}`, {
     method: 'POST',
     body: formData,
   });
